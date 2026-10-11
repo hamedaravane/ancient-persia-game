@@ -1,7 +1,10 @@
-import StartGame from './game/main';
+import { StartGame } from './game/main';
+import './styles/global.css';
 
-document.addEventListener('DOMContentLoaded', () => {
+const parent = document.querySelector<HTMLElement>('#game-container');
 
-    StartGame('game-container');
+if (!parent) {
+    throw new Error('Game container #game-container was not found.');
+}
 
-});
+StartGame(parent);

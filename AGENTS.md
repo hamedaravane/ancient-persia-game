@@ -1,25 +1,54 @@
-# Agent Instructions
+# Repository guide for coding agents
 
-Before implementing gameplay changes, read:
+This repository is a Phaser 4 and TypeScript MVP for a mobile-first Persian-language local multiplayer strategy board game. Preserve the project’s real art and documented decisions. Do not treat a familiar board-game convention as an agreed rule.
 
-1. docs/GAME_OVERVIEW.md
-2. docs/GAME_RULES.md
-3. docs/GAMEPLAY_INVARIANTS.md
+## Read before changing
 
-For visual/UI work also read:
+For gameplay, state, or rule work, read:
 
-4. docs/ART_DIRECTION.md
-5. docs/UI_SYSTEM.md
-6. docs/ASSET_GUIDE.md
+1. `docs/GAME_OVERVIEW.md`
+2. `docs/GAME_RULES.md`
+3. `docs/GAMEPLAY_INVARIANTS.md`
 
-Architecture rules:
+For visual or interface work, also read:
 
-- Phaser is the presentation layer.
-- Core gameplay rules belong in src/game/core.
-- Do not place rule calculations inside Scenes or sprites.
-- Gameplay state determines animation, never the opposite.
-- Do not duplicate player-colored assets.
-- Player ownership color is runtime data.
-- Persian text is rendered at runtime and must not be baked into image assets.
-- Mobile portrait is the primary target.
-- Do not modify fixed gameplay rules without explicitly updating documentation.
+4. `docs/ART_DIRECTION.md`
+5. `docs/UI_SYSTEM.md`
+6. `docs/ASSET_GUIDE.md`
+
+## Architecture
+
+- Phaser is the presentation and input layer.
+- Put deterministic rules, game state, and rule calculations in `src/game/core/` as plain TypeScript. Keep Phaser imports out of core modules.
+- Scenes and game objects read state and send player actions to core APIs. Do not put rule calculations in scenes, sprites, or animation callbacks.
+- Game state is authoritative. Animation displays state changes and never creates or reverses them.
+- Keep rendering, layout, and input adapters separate from game rules.
+- Prefer small modules with explicit types and no hidden global state.
+
+## Product and visual conventions
+
+- Design for mobile portrait first; 390 × 844 CSS pixels is the current reference size.
+- The interface is Persian and right-to-left. Keep all text as runtime text; never bake Persian words into image files.
+- Keep the board visually primary. Respect readable touch targets and the UI guidance in `docs/UI_SYSTEM.md`.
+- Follow the Achaemenid-first historical direction in `docs/ART_DIRECTION.md`.
+- Do not create separate copies of assets for each player color. Ownership color is runtime data.
+- Treat existing assets as project work. Document a specific art issue before replacing an asset.
+
+## Assets and naming
+
+- Store runtime assets below `public/assets/`, grouped by purpose as described in `docs/ASSET_GUIDE.md`.
+- Use lowercase kebab-case for asset files and stable lowercase directory names.
+- Reference public assets by URL from the public root, such as `/assets/board/terrains/forest.png`.
+- Keep source art outside the runtime asset tree if it is not loaded by the game, and document its location when added.
+
+## Rules and documentation
+
+- `docs/GAME_RULES.md` records only decisions that have actually been specified. Keep unknown values and mappings marked as undecided; do not fill them in by inference.
+- Do not change a fixed gameplay rule without updating `docs/GAME_RULES.md` and, if relevant, `docs/GAMEPLAY_INVARIANTS.md` in the same change.
+- Update architecture, naming, asset, or art guidance when implementation conventions change.
+
+## Project checks
+
+- `npm run typecheck` checks TypeScript.
+- `npm run build` type-checks and creates the Vite production build.
+- Keep configuration small and shared between development and production unless a concrete deployment need requires a difference.

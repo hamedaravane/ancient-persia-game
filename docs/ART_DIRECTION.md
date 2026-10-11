@@ -1,8 +1,24 @@
-Achaemenid-first
-pre-Islamic
-Parthian/Sasanian secondary influence
-upper-left lighting
-mobile readability
-no Arabian Nights
-no medieval Islamic Persian visual language
-same silhouette / shading / rendering language
+# Art direction
+
+## Historical language
+
+- Lead with Achaemenid Persian forms and references.
+- Parthian and Sasanian influence may support the main direction.
+- Avoid Arabian Nights imagery and medieval Islamic Persian visual language.
+- Prefer historically grounded architecture, materials, landscape, ornament, and objects over generic fantasy shorthand.
+
+## Rendering and composition
+
+- Keep silhouettes, lighting, shading, detail, and material rendering consistent across the game.
+- Use light from the upper left as the default unless a scene has a clear reason to differ.
+- Design board art for quick recognition at mobile portrait size.
+- Keep the board as the primary visual focus when interface elements are added.
+- Keep ownership colors and Persian text in runtime UI or rendering data, not duplicated or text-baked artwork.
+
+## Existing art
+
+The repository includes a palace terrace background and illustrated terrain, dice, resources, and building assets. Retain this work while organizing the project. Review each asset for historical fit, readability, transparency, atlas boundaries, and consistency before putting it into gameplay. The current files do not yet establish a complete palette, typography system, or final camera composition. The MVP terrain-to-resource mapping is listed in `docs/GAME_RULES.md`.
+
+## MVP presentation
+
+The current MVP uses the palace art as a subdued background, draws clear hexes and player pieces at runtime, and crops the existing resource sheet for the hand display. The scenic terrain images are retained for later art use; their isometric landform compositions are not used as flat hex faces.

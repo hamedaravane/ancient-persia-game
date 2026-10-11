@@ -15,7 +15,7 @@
         "isolatedModules": true,
         "moduleDetection": "force",
         "noEmit": true,
-        /* Linting */
+        /* Keep the TypeScript codebase strict. */
         "strictPropertyInitialization": false,
         "strict": true,
         "noUnusedLocals": true,

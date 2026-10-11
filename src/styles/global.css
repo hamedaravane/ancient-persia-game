@@ -1,7 +1,16 @@
+@font-face {
+    font-family: 'Vazirmatn';
+    src: url('/assets/fonts/vazirmatn-regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
 :root {
     color-scheme: dark;
     background: #151923;
-    font-family: Tahoma, Arial, sans-serif;
+    font-family: 'Vazirmatn', Tahoma, Arial, sans-serif;
+    font-weight: 400;
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;

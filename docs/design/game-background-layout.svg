@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="740" height="844" viewBox="0 0 740 844" role="img" aria-labelledby="title desc">
+<title id="title">Proposed gameplay sea background layout</title>
+<desc id="desc">Measured schematic of the 390 by 844 game canvas, with 19 point-up hexes centered at 195,312 and radius 38, surrounded by a renderer-generated coast. Text outside the mobile canvas explains the layers.</desc>
+<defs><linearGradient id="sea" x2="0" y2="1"><stop stop-color="#21475c"/><stop offset=".37" stop-color="#32667c"/><stop offset="1" stop-color="#21475c"/></linearGradient><clipPath id="screen"><rect width="390" height="844"/></clipPath></defs>
+<rect width="740" height="844" fill="#101820"/>
+<g font-family="Arial,sans-serif" font-size="13" fill="#e7eced">
+<g clip-path="url(#screen)"><rect width="390" height="844" fill="url(#sea)"/>
+<rect x="1" y="128" width="388" height="368" fill="none" stroke="#86b3c2" stroke-dasharray="4 5" opacity=".5"/>
+<path d="M 129.182,160.000 L 162.091,179.000 L 195.000,160.000 L 227.909,179.000 L 260.818,160.000 L 293.727,179.000 L 293.727,217.000 L 326.636,236.000 L 326.636,274.000 L 359.545,293.000 L 359.545,331.000 L 326.636,350.000 L 326.636,388.000 L 293.727,407.000 L 293.727,445.000 L 260.818,464.000 L 227.909,445.000 L 195.000,464.000 L 162.091,445.000 L 129.182,464.000 L 96.273,445.000 L 96.273,407.000 L 63.364,388.000 L 63.364,350.000 L 30.455,331.000 L 30.455,293.000 L 63.364,274.000 L 63.364,236.000 L 96.273,217.000 L 96.273,179.000 Z" fill="none" stroke="#60979c" stroke-width="32" stroke-linejoin="round" opacity=".45"/>
+<path d="M 129.182,160.000 L 162.091,179.000 L 195.000,160.000 L 227.909,179.000 L 260.818,160.000 L 293.727,179.000 L 293.727,217.000 L 326.636,236.000 L 326.636,274.000 L 359.545,293.000 L 359.545,331.000 L 326.636,350.000 L 326.636,388.000 L 293.727,407.000 L 293.727,445.000 L 260.818,464.000 L 227.909,445.000 L 195.000,464.000 L 162.091,445.000 L 129.182,464.000 L 96.273,445.000 L 96.273,407.000 L 63.364,388.000 L 63.364,350.000 L 30.455,331.000 L 30.455,293.000 L 63.364,274.000 L 63.364,236.000 L 96.273,217.000 L 96.273,179.000 Z" fill="none" stroke="#c9b489" stroke-width="6" stroke-linejoin="round"/>
+<polygon points="63.364,274.000 96.273,293.000 96.273,331.000 63.364,350.000 30.455,331.000 30.455,293.000" fill="#8b9b62" stroke="#e4d4ae" stroke-width="1.2"/>
+<polygon points="96.273,331.000 129.182,350.000 129.182,388.000 96.273,407.000 63.364,388.000 63.364,350.000" fill="#637c60" stroke="#e4d4ae" stroke-width="1.2"/>
+<polygon points="129.182,388.000 162.091,407.000 162.091,445.000 129.182,464.000 96.273,445.000 96.273,407.000" fill="#b99e65" stroke="#e4d4ae" stroke-width="1.2"/>
+<polygon points="96.273,217.000 129.182,236.000 129.182,274.000 96.273,293.000 63.364,274.000 63.364,236.000" fill="#77848b" stroke="#e4d4ae" stroke-width="1.2"/>
+<polygon points="129.182,274.000 162.091,293.000 162.091,331.000 129.182,350.000 96.273,331.000 96.273,293.000" fill="#9d795d" stroke="#e4d4ae" stroke-width="1.2"/>
+<polygon points="162.091,331.000 195.000,350.000 195.000,388.000 162.091,407.000 129.182,388.000 129.182,350.000" fill="#8c9f74" stroke="#e4d4ae" stroke-width="1.2"/>
+<polygon points="195.000,388.000 227.909,407.000 227.909,445.000 195.000,464.000 162.091,445.000 162.091,407.000" fill="#8b9b62" stroke="#e4d4ae" stroke-width="1.2"/>
+<polygon points="129.182,160.000 162.091,179.000 162.091,217.000 129.182,236.000 96.273,217.000 96.273,179.000" fill="#637c60" stroke="#e4d4ae" stroke-width="1.2"/>
+<polygon points="162.091,217.000 195.000,236.000 195.000,274.000 162.091,293.000 129.182,274.000 129.182,236.000" fill="#b99e65" stroke="#e4d4ae" stroke-width="1.2"/>
+<polygon points="195.000,274.000 227.909,293.000 227.909,331.000 195.000,350.000 162.091,331.000 162.091,293.000" fill="#77848b" stroke="#e4d4ae" stroke-width="1.2"/>
+<polygon points="227.909,331.000 260.818,350.000 260.818,388.000 227.909,407.000 195.000,388.000 195.000,350.000" fill="#9d795d" stroke="#e4d4ae" stroke-width="1.2"/>
+<polygon points="260.818,388.000 293.727,407.000 293.727,445.000 260.818,464.000 227.909,445.000 227.909,407.000" fill="#8c9f74" stroke="#e4d4ae" stroke-width="1.2"/>
+<polygon points="195.000,160.000 227.909,179.000 227.909,217.000 195.000,236.000 162.091,217.000 162.091,179.000" fill="#8b9b62" stroke="#e4d4ae" stroke-width="1.2"/>
+<polygon points="227.909,217.000 260.818,236.000 260.818,274.000 227.909,293.000 195.000,274.000 195.000,236.000" fill="#637c60" stroke="#e4d4ae" stroke-width="1.2"/>
+<polygon points="260.818,274.000 293.727,293.000 293.727,331.000 260.818,350.000 227.909,331.000 227.909,293.000" fill="#b99e65" stroke="#e4d4ae" stroke-width="1.2"/>
+<polygon points="293.727,331.000 326.636,350.000 326.636,388.000 293.727,407.000 260.818,388.000 260.818,350.000" fill="#77848b" stroke="#e4d4ae" stroke-width="1.2"/>
+<polygon points="260.818,160.000 293.727,179.000 293.727,217.000 260.818,236.000 227.909,217.000 227.909,179.000" fill="#9d795d" stroke="#e4d4ae" stroke-width="1.2"/>
+<polygon points="293.727,217.000 326.636,236.000 326.636,274.000 293.727,293.000 260.818,274.000 260.818,236.000" fill="#8c9f74" stroke="#e4d4ae" stroke-width="1.2"/>
+<polygon points="326.636,274.000 359.545,293.000 359.545,331.000 326.636,350.000 293.727,331.000 293.727,293.000" fill="#8b9b62" stroke="#e4d4ae" stroke-width="1.2"/>
+<rect x="30.455" y="160" width="329.09" height="304" fill="none" stroke="#fff4cb" stroke-dasharray="5 4" opacity=".8"/>
+<circle cx="195" cy="312" r="3" fill="#fff"/>
+<text x="195" y="335" text-anchor="middle" fill="#17212a" font-weight="bold">19 existing terrain tiles</text>
+<rect x="16" y="12" width="358" height="108" rx="18" fill="#141a23" fill-opacity=".94"/>
+<text x="195" y="68" text-anchor="middle">Existing header / players / dice</text>
+<rect x="13" y="500" width="364" height="88" rx="18" fill="#141a23" fill-opacity=".96"/>
+<text x="195" y="549" text-anchor="middle">Existing resources panel</text>
+<text x="195" y="610" text-anchor="middle">Runtime feedback</text>
+<rect x="16" y="624" width="174" height="56" rx="15" fill="#192b38" stroke="#778579"/><text x="103.0" y="657.0" text-anchor="middle">Road</text>
+<rect x="200" y="624" width="174" height="56" rx="15" fill="#192b38" stroke="#778579"/><text x="287.0" y="657.0" text-anchor="middle">Settlement</text>
+<rect x="16" y="686" width="174" height="56" rx="15" fill="#192b38" stroke="#778579"/><text x="103.0" y="719.0" text-anchor="middle">City</text>
+<rect x="200" y="686" width="174" height="56" rx="15" fill="#192b38" stroke="#778579"/><text x="287.0" y="719.0" text-anchor="middle">Trade</text>
+<rect x="16" y="747" width="358" height="58" rx="15" fill="#192b38" stroke="#778579"/><text x="195.0" y="781.0" text-anchor="middle">End turn</text>
+</g>
+<path d="M390 0V844" stroke="#7b919c"/>
+<text x="416" y="32" font-size="17" fill="#fff4d6">GAME BACKGROUND PLAN</text>
+<text x="416" y="56" font-size="13" fill="#ced9dd">Schematic composition; not final artwork.</text>
+<text x="416" y="80" font-size="13" fill="#ced9dd">Left: fixed 390 × 844 logical canvas.</text>
+<text x="416" y="145" font-size="15" fill="#a8d8df">One continuous AI sea image</text>
+<text x="416" y="168" font-size="13" fill="#ced9dd">Fills the entire canvas behind the UI.</text>
+<text x="416" y="191" font-size="13" fill="#ced9dd">Master: 1560 × 3376 px; opaque PNG.</text>
+<text x="416" y="225" font-size="13" fill="#ced9dd">Board environment: y = 128–496</text>
+<text x="416" y="248" font-size="13" fill="#ced9dd">Dashed rectangle is a guide only.</text>
+<text x="416" y="288" font-size="15" fill="#fff4d6">Playable island: existing terrain</text>
+<text x="416" y="311" font-size="13" fill="#ced9dd">Center: (195, 312); hex radius: 38.</text>
+<text x="416" y="334" font-size="13" fill="#ced9dd">Land bounds: 329.09 × 304 px.</text>
+<text x="416" y="357" font-size="13" fill="#ced9dd">x = 30.46–359.54; y = 160–464.</text>
+<text x="416" y="380" font-size="13" fill="#ced9dd">Each hex: 65.82 × 76 px.</text>
+<text x="416" y="421" font-size="15" fill="#ead2a2">Coast follows actual outer edges</text>
+<text x="416" y="444" font-size="13" fill="#ced9dd">Runtime stone/sand rim: 2–3 px.</text>
+<text x="416" y="467" font-size="13" fill="#ced9dd">Shallow wash: up to 12–16 px outward.</text>
+<text x="416" y="490" font-size="13" fill="#ced9dd">No coastline in the generated image.</text>
+<text x="416" y="536" font-size="13" fill="#ced9dd">About 30 px side water before coast.</text>
+<text x="416" y="559" font-size="13" fill="#ced9dd">32 px above and below land within</text>
+<text x="416" y="582" font-size="13" fill="#ced9dd">the reserved board environment.</text>
+<text x="416" y="632" font-size="15" fill="#fff4d6">Existing lower controls</text>
+<text x="416" y="655" font-size="13" fill="#ced9dd">Water stays subtle behind the panels.</text>
+<text x="416" y="678" font-size="13" fill="#ced9dd">Guide labels are English for planning;</text>
+<text x="416" y="701" font-size="13" fill="#ced9dd">game UI remains runtime Persian text.</text>
+<text x="416" y="758" font-size="15" fill="#fff4d6">Planned layout adjustments</text>
+<text x="416" y="781" font-size="13" fill="#ced9dd">5% smaller tiles; center 10 px higher.</text>
+<text x="416" y="804" font-size="13" fill="#ced9dd">Core board and rules stay authoritative.</text>
+</g></svg>

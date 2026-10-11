@@ -49,6 +49,7 @@ For visual or interface work, also read:
 
 ## Project checks
 
+- The user handles interactive testing. Do not launch a browser or perform manual browser checks unless explicitly requested; use the project checks below for routine implementation verification.
 - `npm run typecheck` checks TypeScript.
 - `npm run build` type-checks and creates the Vite production build.
 - Keep configuration small and shared between development and production unless a concrete deployment need requires a difference.

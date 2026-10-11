@@ -21,4 +21,6 @@ The repository includes a palace terrace background and illustrated terrain, dic
 
 ## MVP presentation
 
-The current MVP uses the palace art as a subdued background and displays the terrain paintings across the full faces of point-up runtime hexes. Keep the paintings centered, preserve their aspect ratio, and clip export fringes at the hex boundary. Number tokens sit near the lower part of each tile to leave the landscape visible; roads and player pieces render above the artwork. The existing resource sheet supplies the hand icons.
+The main menu uses the palace art as its background. During a match, the existing terrain paintings form a fictional coastal island over the user-supplied ocean background. A subtle runtime shallow-water wash, narrow warm coastal rim, and broken surf follow the board's actual stepped outer boundary. Keep the sea secondary to the land and darken it gradually behind the interface. The ocean is a visual setting and adds no maritime rules.
+
+Display the terrain paintings across the full faces of point-up runtime hexes. Keep the paintings centered, preserve their aspect ratio, and clip export fringes at the hex boundary. Number tokens sit near the lower part of each tile to leave the landscape visible; roads and player pieces render above the artwork. The existing resource sheet supplies the hand icons. Vazirmatn Regular supplies runtime Persian text.

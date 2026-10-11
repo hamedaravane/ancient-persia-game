@@ -1,8 +1,6 @@
 import { AUTO, Game, Scale } from 'phaser';
 import { GameScene } from './scenes/GameScene';
-
-const GAME_WIDTH = 390;
-const GAME_HEIGHT = 844;
+import { GAME_WIDTH, GAME_HEIGHT } from './ui/layout';
 
 export function StartGame(parent: HTMLElement): Game {
     return new Game({

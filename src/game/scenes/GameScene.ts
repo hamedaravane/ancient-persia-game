@@ -11,6 +11,9 @@ import {
     upgradeCity,
 } from '../core/game';
 import { FA } from '../ui/messages.fa';
+import { UI_FONT_FAMILY } from '../ui/typography';
+import { createBoardCoast } from '../rendering/boardCoast';
+import { BOARD_LAYOUT, boardToScreen, GAME_WIDTH as WIDTH, GAME_HEIGHT as HEIGHT } from '../ui/layout';
 import {
     RESOURCE_TYPES,
     type BoardEdge,
@@ -20,14 +23,12 @@ import {
     type TerrainType,
 } from '../core/types';
 
-const WIDTH = 390;
-const HEIGHT = 844;
-const BOARD_CENTER_X = 195;
-const BOARD_CENTER_Y = 322;
-const HEX_SIZE = 40;
-const BACKGROUND_KEY = 'achaemenid-palace';
+const HEX_SIZE = BOARD_LAYOUT.hexRadius;
+const MENU_BACKGROUND_KEY = 'main-menu-background';
+const GAME_BACKGROUND_KEY = 'game-background';
 const RESOURCE_SHEET_KEY = 'resource-icons';
-const BACKGROUND_PATH = `${import.meta.env.BASE_URL}assets/backgrounds/achaemenid-palace-terrace-sunset.png`;
+const MENU_BACKGROUND_PATH = `${import.meta.env.BASE_URL}assets/backgrounds/main-menu.png`;
+const GAME_BACKGROUND_PATH = `${import.meta.env.BASE_URL}assets/backgrounds/game.png`;
 const RESOURCE_SHEET_PATH = `${import.meta.env.BASE_URL}assets/resources/resources.png`;
 const TERRAIN_KEYS: Record<TerrainType, string> = {
     forest: 'terrain-forest',
@@ -58,7 +59,10 @@ const TERRAIN_COLORS: Record<TerrainType, number> = {
 type InteractionMode = 'none' | 'road' | 'settlement' | 'city' | 'trade-give' | 'trade-receive';
 
 export class GameScene extends Scene {
-    private background!: GameObjects.Image;
+    private menuBackground!: GameObjects.Image;
+    private gameBackground!: GameObjects.Image;
+    private gameEnvironment!: GameObjects.Container;
+    private coast: GameObjects.Graphics | null = null;
     private ui!: GameObjects.Container;
     private gameState: GameState | null = null;
     private mode: InteractionMode = 'none';
@@ -70,7 +74,8 @@ export class GameScene extends Scene {
     }
 
     preload(): void {
-        this.load.image(BACKGROUND_KEY, BACKGROUND_PATH);
+        this.load.image(MENU_BACKGROUND_KEY, MENU_BACKGROUND_PATH);
+        this.load.image(GAME_BACKGROUND_KEY, GAME_BACKGROUND_PATH);
         this.load.image(RESOURCE_SHEET_KEY, RESOURCE_SHEET_PATH);
         for (const [terrain, key] of Object.entries(TERRAIN_KEYS)) {
             this.load.image(key, `${import.meta.env.BASE_URL}assets/board/terrains/${terrain}.png`);
@@ -78,9 +83,20 @@ export class GameScene extends Scene {
     }
 
     create(): void {
-        this.background = this.add.image(WIDTH / 2, HEIGHT / 2, BACKGROUND_KEY).setAlpha(0.3);
+        this.menuBackground = this.add.image(WIDTH / 2, HEIGHT / 2, MENU_BACKGROUND_KEY).setAlpha(0.3);
+        this.gameBackground = this.add.image(WIDTH / 2, HEIGHT / 2, GAME_BACKGROUND_KEY);
+        const shade = this.add.graphics();
+
+        // Fade the sea gently behind UI while keeping the island area luminous.
+        for (let y = 0; y < HEIGHT; y += 4) {
+            const alpha = y < 128 ? ((128 - y) / 128) * 0.14
+                : y > 496 ? ((y - 496) / (HEIGHT - 496)) * 0.42 : 0;
+            if (alpha > 0) shade.fillStyle(0x101a26, alpha).fillRect(0, y, WIDTH, 4);
+        }
+
+        this.gameEnvironment = this.add.container(0, 0, [this.gameBackground, shade]);
         this.ui = this.add.container(0, 0);
-        this.fitBackground();
+        this.fitBackgrounds();
 
         const resourceTexture = this.textures.get(RESOURCE_SHEET_KEY);
 
@@ -88,17 +104,22 @@ export class GameScene extends Scene {
             resourceTexture.add(resource, 0, frame.x, frame.y, frame.width, frame.height);
         }
 
-        this.scale.on('resize', this.fitBackground, this);
+        this.scale.on('resize', this.fitBackgrounds, this);
+        this.events.once('shutdown', () => this.scale.off('resize', this.fitBackgrounds, this));
         this.render();
     }
 
-    private fitBackground(): void {
-        const scale = Math.max(WIDTH / this.background.width, HEIGHT / this.background.height);
-        this.background.setScale(scale).setPosition(WIDTH / 2, HEIGHT / 2);
+    private fitBackgrounds(): void {
+        for (const background of [this.menuBackground, this.gameBackground]) {
+            const scale = Math.max(WIDTH / background.width, HEIGHT / background.height);
+            background.setScale(scale).setPosition(WIDTH / 2, HEIGHT / 2);
+        }
     }
 
     private render(): void {
         this.ui.removeAll(true);
+        this.menuBackground.setVisible(this.gameState === null);
+        this.gameEnvironment.setVisible(this.gameState !== null);
 
         if (this.gameState === null) {
             this.renderSetup();
@@ -130,6 +151,9 @@ export class GameScene extends Scene {
     private startGame(playerCount: number): void {
         const names = Array.from({ length: playerCount }, (_, index) => `${FA.player} ${this.toPersianNumber(index + 1)}`);
         this.gameState = createGame(names);
+        this.coast?.destroy();
+        this.coast = createBoardCoast(this, this.gameState.board);
+        this.gameEnvironment.add(this.coast);
         this.mode = 'none';
         this.tradeGive = null;
         this.notice = FA.startNote;
@@ -214,8 +238,7 @@ export class GameScene extends Scene {
     }
 
     private renderTile(tile: GameState['board']['tiles'][number]): void {
-        const centerX = BOARD_CENTER_X + tile.x * HEX_SIZE;
-        const centerY = BOARD_CENTER_Y + tile.y * HEX_SIZE;
+        const { x: centerX, y: centerY } = boardToScreen(tile);
         const points = Array.from({ length: 6 }, (_, index) => {
             const angle = ((-90 + index * 60) * Math.PI) / 180;
             return {
@@ -225,7 +248,7 @@ export class GameScene extends Scene {
         });
         const tileGraphics = this.add.graphics({ x: centerX, y: centerY });
 
-        tileGraphics.fillStyle(TERRAIN_COLORS[tile.terrain], 0.98);
+        tileGraphics.fillStyle(TERRAIN_COLORS[tile.terrain], 1);
         tileGraphics.lineStyle(2, 0xe4d4ae, 0.95);
         tileGraphics.beginPath();
         tileGraphics.moveTo(points[0].x, points[0].y);
@@ -489,7 +512,7 @@ export class GameScene extends Scene {
         rightToLeft = true,
     ): GameObjects.Text {
         const text = this.add.text(x, y, value, {
-            fontFamily: 'Tahoma, Arial, sans-serif',
+            fontFamily: UI_FONT_FAMILY,
             fontSize: `${fontSize}px`,
             color,
             align: rightToLeft ? 'right' : 'center',
@@ -537,10 +560,7 @@ export class GameScene extends Scene {
     }
 
     private toScreen(vertex: Pick<BoardVertex, 'x' | 'y'>): { x: number; y: number } {
-        return {
-            x: BOARD_CENTER_X + vertex.x * HEX_SIZE,
-            y: BOARD_CENTER_Y + vertex.y * HEX_SIZE,
-        };
+        return boardToScreen(vertex);
     }
 
     private segmentHitArea(x1: number, y1: number, x2: number, y2: number, halfWidth: number): Geom.Polygon {

@@ -29,6 +29,14 @@ const BACKGROUND_KEY = 'achaemenid-palace';
 const RESOURCE_SHEET_KEY = 'resource-icons';
 const BACKGROUND_PATH = `${import.meta.env.BASE_URL}assets/backgrounds/achaemenid-palace-terrace-sunset.png`;
 const RESOURCE_SHEET_PATH = `${import.meta.env.BASE_URL}assets/resources/resources.png`;
+const TERRAIN_KEYS: Record<TerrainType, string> = {
+    forest: 'terrain-forest',
+    mesa: 'terrain-mesa',
+    wheat: 'terrain-wheat',
+    pasture: 'terrain-pasture',
+    mountain: 'terrain-mountain',
+    desert: 'terrain-desert',
+};
 
 const RESOURCE_FRAMES: Record<ResourceType, { x: number; y: number; width: number; height: number }> = {
     wood: { x: 44, y: 164, width: 476, height: 404 },
@@ -64,6 +72,9 @@ export class GameScene extends Scene {
     preload(): void {
         this.load.image(BACKGROUND_KEY, BACKGROUND_PATH);
         this.load.image(RESOURCE_SHEET_KEY, RESOURCE_SHEET_PATH);
+        for (const [terrain, key] of Object.entries(TERRAIN_KEYS)) {
+            this.load.image(key, `${import.meta.env.BASE_URL}assets/board/terrains/${terrain}.png`);
+        }
     }
 
     create(): void {
@@ -226,15 +237,31 @@ export class GameScene extends Scene {
         tileGraphics.strokePath();
         this.ui.add(tileGraphics);
 
-        if (tile.number !== null) {
-            this.addCircle(centerX, centerY - 5, 17, 0xf0dfb7, 1, 0x392f25);
-            this.addText(centerX, centerY - 5, this.toPersianNumber(tile.number), 14, tile.number === 6 || tile.number === 8 ? '#a33d2e' : '#332a22');
-        } else {
-            this.addText(centerX, centerY - 5, FA.desert, 12, '#2f261d');
+        // The point-up hex fills the source canvas vertically; preserve its aspect
+        // ratio and clip stray export pixels to the same geometry as the board.
+        const terrain = this.add.image(centerX, centerY, TERRAIN_KEYS[tile.terrain]);
+        terrain.setScale((HEX_SIZE * 2) / terrain.height);
+        const maskShape = this.add.graphics({ x: centerX, y: centerY });
+        maskShape.fillStyle(0xffffff);
+        maskShape.beginPath();
+        maskShape.moveTo(points[0].x, points[0].y);
+        for (const point of points.slice(1)) {
+            maskShape.lineTo(point.x, point.y);
         }
+        maskShape.closePath();
+        maskShape.fillPath();
+        maskShape.setVisible(false);
+        const mask = maskShape.createGeometryMask();
+        terrain.setMask(mask);
+        terrain.once('destroy', () => mask.destroy());
+        this.ui.add([terrain, maskShape]);
 
-        if (tile.resource !== null) {
-            this.addText(centerX, centerY + 19, this.resourceShortLabel(tile.resource), 10, '#fff0d5');
+        if (tile.number !== null) {
+            this.addCircle(centerX, centerY + 19, 12, 0xf0dfb7, 1, 0x392f25);
+            this.addText(centerX, centerY + 19, this.toPersianNumber(tile.number), 14, tile.number === 6 || tile.number === 8 ? '#a33d2e' : '#332a22');
+        } else {
+            const label = this.addText(centerX, centerY + 19, FA.desert, 11, '#2f261d');
+            label.setBackgroundColor('#f0dfb7').setPadding(4, 2);
         }
 
         if (tile.robber) {
@@ -528,10 +555,6 @@ export class GameScene extends Scene {
             { x: x2 - offsetX, y: y2 - offsetY },
             { x: x1 - offsetX, y: y1 - offsetY },
         ]);
-    }
-
-    private resourceShortLabel(resource: ResourceType): string {
-        return FA.resources[resource];
     }
 
     private toPersianNumber(value: number): string {

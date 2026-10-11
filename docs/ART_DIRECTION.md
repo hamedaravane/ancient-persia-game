@@ -21,4 +21,4 @@ The repository includes a palace terrace background and illustrated terrain, dic
 
 ## MVP presentation
 
-The current MVP uses the palace art as a subdued background, draws clear hexes and player pieces at runtime, and crops the existing resource sheet for the hand display. The scenic terrain images are retained for later art use; their isometric landform compositions are not used as flat hex faces.
+The current MVP uses the palace art as a subdued background and displays the terrain paintings across the full faces of point-up runtime hexes. Keep the paintings centered, preserve their aspect ratio, and clip export fringes at the hex boundary. Number tokens sit near the lower part of each tile to leave the landscape visible; roads and player pieces render above the artwork. The existing resource sheet supplies the hand icons.

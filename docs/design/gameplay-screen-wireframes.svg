@@ -1,0 +1,587 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1246" height="1000" viewBox="0 0 1246 1000" role="img" aria-labelledby="title desc">
+<title id="title">Proposed portrait gameplay screen: overview, building, and trading</title>
+<desc id="desc">Three schematic 390 by 844 safe-content views. The overview keeps players, board, private resources, and phase actions visible. Building and trading use focused bottom sheets. Future rule features are illustrative and are not currently implemented.</desc>
+<defs><linearGradient id="sea" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#21475c"/><stop offset=".4" stop-color="#32667c"/><stop offset="1" stop-color="#182c3b"/></linearGradient><clipPath id="phone"><rect width="390" height="844" rx="22"/></clipPath></defs>
+<rect width="1246" height="1000" fill="#101820"/>
+<g font-family="Arial,sans-serif" fill="#f5ead0">
+<text x="18" y="29" font-size="24" fill="#f5ead0" text-anchor="start">Portrait gameplay proposal</text>
+<text x="18" y="51" font-size="13" fill="#c0cbd0" text-anchor="start">Measured schematic · 390 × 844 safe content · Future systems shown conditionally · Runtime UI will be Persian / RTL</text>
+<text x="12" y="78" font-size="16" fill="#f5ead0" text-anchor="start">1. Normal action phase</text>
+<g transform="translate(12 90)" clip-path="url(#phone)">
+<rect x="0" y="0" width="390" height="844" rx="22" fill="url(#sea)"/>
+<rect x="0" y="0" width="390" height="48" rx="0" fill="#152330"/>
+<text x="16" y="30" font-size="20" fill="#f5ead0" text-anchor="start">8</text>
+<text x="195" y="30" font-size="15" fill="#f5ead0" text-anchor="middle">Your turn · Actions</text>
+<text x="362" y="30" font-size="22" fill="#f5ead0" text-anchor="middle">···</text>
+<rect x="12.0" y="55" width="85.5" height="50" rx="9" fill="#243440" stroke="#cf986c"/>
+<circle cx="24.0" cy="69" r="4" fill="#cf986c"/>
+<text x="35.0" y="74" font-size="13" fill="#f5ead0" text-anchor="start">You</text>
+<text x="54.75" y="94" font-size="12" fill="#e1d8c3" text-anchor="middle">4 VP · 10</text>
+<rect x="105.5" y="55" width="85.5" height="50" rx="9" fill="#243440" stroke="#52616a"/>
+<circle cx="117.5" cy="69" r="4" fill="#6c9a78"/>
+<text x="128.5" y="74" font-size="13" fill="#f5ead0" text-anchor="start">Mina</text>
+<text x="148.25" y="94" font-size="12" fill="#e1d8c3" text-anchor="middle">3 VP · 7</text>
+<rect x="199.0" y="55" width="85.5" height="50" rx="9" fill="#243440" stroke="#52616a"/>
+<circle cx="211.0" cy="69" r="4" fill="#88a6c5"/>
+<text x="222.0" y="74" font-size="13" fill="#f5ead0" text-anchor="start">Reza</text>
+<text x="241.75" y="94" font-size="12" fill="#e1d8c3" text-anchor="middle">2 VP · 5</text>
+<rect x="292.5" y="55" width="85.5" height="50" rx="9" fill="#243440" stroke="#52616a"/>
+<circle cx="304.5" cy="69" r="4" fill="#bc90ae"/>
+<text x="315.5" y="74" font-size="13" fill="#f5ead0" text-anchor="start">Sara</text>
+<text x="335.25" y="94" font-size="12" fill="#e1d8c3" text-anchor="middle">3 VP · 6</text>
+<path d="M30.45517,365.0L63.36414,384.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M30.45517,365.0L63.36414,384.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M30.45517,327.0L30.45517,365.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M30.45517,327.0L30.45517,365.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M30.45517,327.0L63.36414,308.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M30.45517,327.0L63.36414,308.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M63.36414,422.0L96.2731,441.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M63.36414,422.0L96.2731,441.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M63.36414,384.0L63.36414,422.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M63.36414,384.0L63.36414,422.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M129.18207,498.0L162.09103,479.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M129.18207,498.0L162.09103,479.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M96.2731,479.0L129.18207,498.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M96.2731,479.0L129.18207,498.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M96.2731,441.0L96.2731,479.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M96.2731,441.0L96.2731,479.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M63.36414,270.0L63.36414,308.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M63.36414,270.0L63.36414,308.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M63.36414,270.0L96.2731,251.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M63.36414,270.0L96.2731,251.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M195.0,498.0L227.90897,479.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M195.0,498.0L227.90897,479.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M162.09103,479.0L195.0,498.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M162.09103,479.0L195.0,498.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M129.18207,194.0L162.09103,213.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M129.18207,194.0L162.09103,213.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M96.2731,213.0L96.2731,251.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M96.2731,213.0L96.2731,251.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M96.2731,213.0L129.18207,194.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M96.2731,213.0L129.18207,194.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M293.7269,441.0L293.7269,479.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M293.7269,441.0L293.7269,479.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M260.81793,498.0L293.7269,479.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M260.81793,498.0L293.7269,479.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M227.90897,479.0L260.81793,498.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M227.90897,479.0L260.81793,498.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M195.0,194.0L227.90897,213.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M195.0,194.0L227.90897,213.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M162.09103,213.0L195.0,194.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M162.09103,213.0L195.0,194.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M326.63586,384.0L326.63586,422.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M326.63586,384.0L326.63586,422.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M293.7269,441.0L326.63586,422.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M293.7269,441.0L326.63586,422.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M260.81793,194.0L293.7269,213.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M260.81793,194.0L293.7269,213.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M293.7269,213.0L293.7269,251.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M293.7269,213.0L293.7269,251.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M227.90897,213.0L260.81793,194.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M227.90897,213.0L260.81793,194.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M293.7269,251.0L326.63586,270.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M293.7269,251.0L326.63586,270.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M326.63586,270.0L326.63586,308.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M326.63586,270.0L326.63586,308.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M326.63586,308.0L359.54483,327.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M326.63586,308.0L359.54483,327.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M359.54483,327.0L359.54483,365.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M359.54483,327.0L359.54483,365.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M326.63586,384.0L359.54483,365.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M326.63586,384.0L359.54483,365.0" stroke="#c5b18d" stroke-width="6"/>
+<polygon points="63.36,308.00 96.27,327.00 96.27,365.00 63.36,384.00 30.46,365.00 30.46,327.00" fill="#67876b" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="63.36413862476533" cy="361.0" r="10" fill="#f2dfb9"/>
+<text x="63.36413862476533" y="365.0" font-size="12" fill="#493b2e" text-anchor="middle">5</text>
+<polygon points="96.27,365.00 129.18,384.00 129.18,422.00 96.27,441.00 63.36,422.00 63.36,384.00" fill="#ae7957" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="96.27310396857399" cy="418.0" r="10" fill="#f2dfb9"/>
+<text x="96.27310396857399" y="422.0" font-size="12" fill="#493b2e" text-anchor="middle">9</text>
+<polygon points="129.18,422.00 162.09,441.00 162.09,479.00 129.18,498.00 96.27,479.00 96.27,441.00" fill="#c5aa67" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="129.18206931238268" cy="475.0" r="10" fill="#f2dfb9"/>
+<text x="129.18206931238268" y="479.0" font-size="12" fill="#493b2e" text-anchor="middle">4</text>
+<polygon points="96.27,251.00 129.18,270.00 129.18,308.00 96.27,327.00 63.36,308.00 63.36,270.00" fill="#98a775" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="96.27310396857399" cy="304.0" r="10" fill="#f2dfb9"/>
+<text x="96.27310396857399" y="308.0" font-size="12" fill="#493b2e" text-anchor="middle">8</text>
+<polygon points="129.18,308.00 162.09,327.00 162.09,365.00 129.18,384.00 96.27,365.00 96.27,327.00" fill="#7c8992" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="129.18206931238268" cy="361.0" r="10" fill="#f2dfb9"/>
+<text x="129.18206931238268" y="365.0" font-size="12" fill="#493b2e" text-anchor="middle">10</text>
+<polygon points="162.09,365.00 195.00,384.00 195.00,422.00 162.09,441.00 129.18,422.00 129.18,384.00" fill="#b6a07e" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="162.09103465619134" cy="418.0" r="10" fill="#f2dfb9"/>
+<text x="162.09103465619134" y="422.0" font-size="12" fill="#493b2e" text-anchor="middle">3</text>
+<polygon points="195.00,422.00 227.91,441.00 227.91,479.00 195.00,498.00 162.09,479.00 162.09,441.00" fill="#67876b" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="195.0" cy="475.0" r="10" fill="#f2dfb9"/>
+<text x="195.0" y="479.0" font-size="12" fill="#493b2e" text-anchor="middle">6</text>
+<polygon points="129.18,194.00 162.09,213.00 162.09,251.00 129.18,270.00 96.27,251.00 96.27,213.00" fill="#ae7957" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="129.18206931238268" cy="247.0" r="10" fill="#f2dfb9"/>
+<text x="129.18206931238268" y="251.0" font-size="12" fill="#493b2e" text-anchor="middle">11</text>
+<polygon points="162.09,251.00 195.00,270.00 195.00,308.00 162.09,327.00 129.18,308.00 129.18,270.00" fill="#c5aa67" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="162.09103465619134" cy="304.0" r="10" fill="#f2dfb9"/>
+<text x="162.09103465619134" y="308.0" font-size="12" fill="#493b2e" text-anchor="middle">4</text>
+<polygon points="195.00,308.00 227.91,327.00 227.91,365.00 195.00,384.00 162.09,365.00 162.09,327.00" fill="#98a775" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="195.0" cy="338.0" r="8" fill="#28313a"/>
+<polygon points="227.91,365.00 260.82,384.00 260.82,422.00 227.91,441.00 195.00,422.00 195.00,384.00" fill="#7c8992" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="227.90896534380866" cy="418.0" r="10" fill="#f2dfb9"/>
+<text x="227.90896534380866" y="422.0" font-size="12" fill="#493b2e" text-anchor="middle">10</text>
+<polygon points="260.82,422.00 293.73,441.00 293.73,479.00 260.82,498.00 227.91,479.00 227.91,441.00" fill="#b6a07e" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="260.8179306876173" cy="475.0" r="10" fill="#f2dfb9"/>
+<text x="260.8179306876173" y="479.0" font-size="12" fill="#493b2e" text-anchor="middle">8</text>
+<polygon points="195.00,194.00 227.91,213.00 227.91,251.00 195.00,270.00 162.09,251.00 162.09,213.00" fill="#67876b" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="195.0" cy="247.0" r="10" fill="#f2dfb9"/>
+<text x="195.0" y="251.0" font-size="12" fill="#493b2e" text-anchor="middle">3</text>
+<polygon points="227.91,251.00 260.82,270.00 260.82,308.00 227.91,327.00 195.00,308.00 195.00,270.00" fill="#ae7957" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="227.90896534380866" cy="304.0" r="10" fill="#f2dfb9"/>
+<text x="227.90896534380866" y="308.0" font-size="12" fill="#493b2e" text-anchor="middle">12</text>
+<polygon points="260.82,308.00 293.73,327.00 293.73,365.00 260.82,384.00 227.91,365.00 227.91,327.00" fill="#c5aa67" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="260.8179306876173" cy="361.0" r="10" fill="#f2dfb9"/>
+<text x="260.8179306876173" y="365.0" font-size="12" fill="#493b2e" text-anchor="middle">6</text>
+<polygon points="293.73,365.00 326.64,384.00 326.64,422.00 293.73,441.00 260.82,422.00 260.82,384.00" fill="#98a775" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="293.726896031426" cy="418.0" r="10" fill="#f2dfb9"/>
+<text x="293.726896031426" y="422.0" font-size="12" fill="#493b2e" text-anchor="middle">9</text>
+<polygon points="260.82,194.00 293.73,213.00 293.73,251.00 260.82,270.00 227.91,251.00 227.91,213.00" fill="#7c8992" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="260.8179306876173" cy="247.0" r="10" fill="#f2dfb9"/>
+<text x="260.8179306876173" y="251.0" font-size="12" fill="#493b2e" text-anchor="middle">2</text>
+<polygon points="293.73,251.00 326.64,270.00 326.64,308.00 293.73,327.00 260.82,308.00 260.82,270.00" fill="#b6a07e" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="293.726896031426" cy="304.0" r="10" fill="#f2dfb9"/>
+<text x="293.726896031426" y="308.0" font-size="12" fill="#493b2e" text-anchor="middle">5</text>
+<polygon points="326.64,308.00 359.54,327.00 359.54,365.00 326.64,384.00 293.73,365.00 293.73,327.00" fill="#67876b" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="326.63586137523464" cy="361.0" r="10" fill="#f2dfb9"/>
+<text x="326.63586137523464" y="365.0" font-size="12" fill="#493b2e" text-anchor="middle">11</text>
+<text x="195" y="153" font-size="12" fill="#c7dedc" text-anchor="middle">Existing terrain art + runtime coast</text>
+<rect x="324" y="522" width="48" height="48" rx="10" fill="#293b49" stroke="#536773"/>
+<text x="348.0" y="551.0" font-size="15" fill="#f5ead0" text-anchor="middle">Fit</text>
+<rect x="12" y="582" width="366" height="36" rx="9" fill="#192b37"/>
+<text x="195" y="605" font-size="13" fill="#f5ead0" text-anchor="middle">Rolled 8 · You gained +1 wheat</text>
+<rect x="12" y="624" width="366" height="72" rx="12" fill="#182431" stroke="#50616b"/>
+<circle cx="48.6" cy="641" r="7" fill="#67876b"/>
+<text x="48.6" y="668" font-size="20" fill="#f5ead0" text-anchor="middle">4</text>
+<text x="48.6" y="686" font-size="12" fill="#c6c4b7" text-anchor="middle">Wood</text>
+<circle cx="121.80000000000001" cy="641" r="7" fill="#ae7957"/>
+<text x="121.80000000000001" y="668" font-size="20" fill="#f5ead0" text-anchor="middle">1</text>
+<text x="121.80000000000001" y="686" font-size="12" fill="#c6c4b7" text-anchor="middle">Brick</text>
+<circle cx="195.0" cy="641" r="7" fill="#c5aa67"/>
+<text x="195.0" y="668" font-size="20" fill="#f5ead0" text-anchor="middle">2</text>
+<text x="195.0" y="686" font-size="12" fill="#c6c4b7" text-anchor="middle">Wheat</text>
+<circle cx="268.20000000000005" cy="641" r="7" fill="#98a775"/>
+<text x="268.20000000000005" y="668" font-size="20" fill="#f5ead0" text-anchor="middle">0</text>
+<text x="268.20000000000005" y="686" font-size="12" fill="#c6c4b7" text-anchor="middle">Wool</text>
+<circle cx="341.40000000000003" cy="641" r="7" fill="#7c8992"/>
+<text x="341.40000000000003" y="668" font-size="20" fill="#f5ead0" text-anchor="middle">3</text>
+<text x="341.40000000000003" y="686" font-size="12" fill="#c6c4b7" text-anchor="middle">Ore</text>
+<rect x="12.0" y="706" width="116.67" height="52" rx="10" fill="#293b49" stroke="#536773"/>
+<text x="70.33500000000001" y="737.0" font-size="15" fill="#f5ead0" text-anchor="middle">Build</text>
+<rect x="136.67000000000002" y="706" width="116.67" height="52" rx="10" fill="#293b49" stroke="#536773"/>
+<text x="195.00500000000002" y="737.0" font-size="15" fill="#f5ead0" text-anchor="middle">Trade</text>
+<rect x="261.34000000000003" y="706" width="116.67" height="52" rx="10" fill="#293b49" stroke="#536773"/>
+<text x="319.675" y="737.0" font-size="15" fill="#f5ead0" text-anchor="middle">Cards · 2</text>
+<rect x="12" y="770" width="366" height="52" rx="10" fill="#886b3d" stroke="#b69c6e"/>
+<text x="195.0" y="801.0" font-size="15" fill="#f5ead0" text-anchor="middle">End turn</text>
+<text x="195" y="839" font-size="9" fill="#a2b7bf" text-anchor="middle">Safe-area padding outside this content box</text>
+</g>
+<text x="428" y="78" font-size="16" fill="#f5ead0" text-anchor="start">2. Construction workspace</text>
+<g transform="translate(428 90)" clip-path="url(#phone)">
+<rect x="0" y="0" width="390" height="844" rx="22" fill="url(#sea)"/>
+<rect x="0" y="0" width="390" height="48" rx="0" fill="#152330"/>
+<text x="16" y="30" font-size="20" fill="#f5ead0" text-anchor="start">8</text>
+<text x="195" y="30" font-size="15" fill="#f5ead0" text-anchor="middle">Your turn · Actions</text>
+<text x="362" y="30" font-size="22" fill="#f5ead0" text-anchor="middle">···</text>
+<rect x="12.0" y="55" width="85.5" height="50" rx="9" fill="#243440" stroke="#cf986c"/>
+<circle cx="24.0" cy="69" r="4" fill="#cf986c"/>
+<text x="35.0" y="74" font-size="13" fill="#f5ead0" text-anchor="start">You</text>
+<text x="54.75" y="94" font-size="12" fill="#e1d8c3" text-anchor="middle">4 VP · 10</text>
+<rect x="105.5" y="55" width="85.5" height="50" rx="9" fill="#243440" stroke="#52616a"/>
+<circle cx="117.5" cy="69" r="4" fill="#6c9a78"/>
+<text x="128.5" y="74" font-size="13" fill="#f5ead0" text-anchor="start">Mina</text>
+<text x="148.25" y="94" font-size="12" fill="#e1d8c3" text-anchor="middle">3 VP · 7</text>
+<rect x="199.0" y="55" width="85.5" height="50" rx="9" fill="#243440" stroke="#52616a"/>
+<circle cx="211.0" cy="69" r="4" fill="#88a6c5"/>
+<text x="222.0" y="74" font-size="13" fill="#f5ead0" text-anchor="start">Reza</text>
+<text x="241.75" y="94" font-size="12" fill="#e1d8c3" text-anchor="middle">2 VP · 5</text>
+<rect x="292.5" y="55" width="85.5" height="50" rx="9" fill="#243440" stroke="#52616a"/>
+<circle cx="304.5" cy="69" r="4" fill="#bc90ae"/>
+<text x="315.5" y="74" font-size="13" fill="#f5ead0" text-anchor="start">Sara</text>
+<text x="335.25" y="94" font-size="12" fill="#e1d8c3" text-anchor="middle">3 VP · 6</text>
+<path d="M30.45517,365.0L63.36414,384.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M30.45517,365.0L63.36414,384.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M30.45517,327.0L30.45517,365.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M30.45517,327.0L30.45517,365.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M30.45517,327.0L63.36414,308.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M30.45517,327.0L63.36414,308.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M63.36414,422.0L96.2731,441.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M63.36414,422.0L96.2731,441.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M63.36414,384.0L63.36414,422.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M63.36414,384.0L63.36414,422.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M129.18207,498.0L162.09103,479.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M129.18207,498.0L162.09103,479.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M96.2731,479.0L129.18207,498.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M96.2731,479.0L129.18207,498.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M96.2731,441.0L96.2731,479.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M96.2731,441.0L96.2731,479.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M63.36414,270.0L63.36414,308.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M63.36414,270.0L63.36414,308.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M63.36414,270.0L96.2731,251.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M63.36414,270.0L96.2731,251.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M195.0,498.0L227.90897,479.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M195.0,498.0L227.90897,479.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M162.09103,479.0L195.0,498.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M162.09103,479.0L195.0,498.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M129.18207,194.0L162.09103,213.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M129.18207,194.0L162.09103,213.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M96.2731,213.0L96.2731,251.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M96.2731,213.0L96.2731,251.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M96.2731,213.0L129.18207,194.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M96.2731,213.0L129.18207,194.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M293.7269,441.0L293.7269,479.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M293.7269,441.0L293.7269,479.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M260.81793,498.0L293.7269,479.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M260.81793,498.0L293.7269,479.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M227.90897,479.0L260.81793,498.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M227.90897,479.0L260.81793,498.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M195.0,194.0L227.90897,213.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M195.0,194.0L227.90897,213.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M162.09103,213.0L195.0,194.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M162.09103,213.0L195.0,194.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M326.63586,384.0L326.63586,422.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M326.63586,384.0L326.63586,422.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M293.7269,441.0L326.63586,422.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M293.7269,441.0L326.63586,422.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M260.81793,194.0L293.7269,213.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M260.81793,194.0L293.7269,213.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M293.7269,213.0L293.7269,251.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M293.7269,213.0L293.7269,251.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M227.90897,213.0L260.81793,194.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M227.90897,213.0L260.81793,194.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M293.7269,251.0L326.63586,270.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M293.7269,251.0L326.63586,270.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M326.63586,270.0L326.63586,308.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M326.63586,270.0L326.63586,308.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M326.63586,308.0L359.54483,327.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M326.63586,308.0L359.54483,327.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M359.54483,327.0L359.54483,365.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M359.54483,327.0L359.54483,365.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M326.63586,384.0L359.54483,365.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M326.63586,384.0L359.54483,365.0" stroke="#c5b18d" stroke-width="6"/>
+<polygon points="63.36,308.00 96.27,327.00 96.27,365.00 63.36,384.00 30.46,365.00 30.46,327.00" fill="#67876b" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="63.36413862476533" cy="361.0" r="10" fill="#f2dfb9"/>
+<text x="63.36413862476533" y="365.0" font-size="12" fill="#493b2e" text-anchor="middle">5</text>
+<polygon points="96.27,365.00 129.18,384.00 129.18,422.00 96.27,441.00 63.36,422.00 63.36,384.00" fill="#ae7957" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="96.27310396857399" cy="418.0" r="10" fill="#f2dfb9"/>
+<text x="96.27310396857399" y="422.0" font-size="12" fill="#493b2e" text-anchor="middle">9</text>
+<polygon points="129.18,422.00 162.09,441.00 162.09,479.00 129.18,498.00 96.27,479.00 96.27,441.00" fill="#c5aa67" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="129.18206931238268" cy="475.0" r="10" fill="#f2dfb9"/>
+<text x="129.18206931238268" y="479.0" font-size="12" fill="#493b2e" text-anchor="middle">4</text>
+<polygon points="96.27,251.00 129.18,270.00 129.18,308.00 96.27,327.00 63.36,308.00 63.36,270.00" fill="#98a775" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="96.27310396857399" cy="304.0" r="10" fill="#f2dfb9"/>
+<text x="96.27310396857399" y="308.0" font-size="12" fill="#493b2e" text-anchor="middle">8</text>
+<polygon points="129.18,308.00 162.09,327.00 162.09,365.00 129.18,384.00 96.27,365.00 96.27,327.00" fill="#7c8992" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="129.18206931238268" cy="361.0" r="10" fill="#f2dfb9"/>
+<text x="129.18206931238268" y="365.0" font-size="12" fill="#493b2e" text-anchor="middle">10</text>
+<polygon points="162.09,365.00 195.00,384.00 195.00,422.00 162.09,441.00 129.18,422.00 129.18,384.00" fill="#b6a07e" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="162.09103465619134" cy="418.0" r="10" fill="#f2dfb9"/>
+<text x="162.09103465619134" y="422.0" font-size="12" fill="#493b2e" text-anchor="middle">3</text>
+<polygon points="195.00,422.00 227.91,441.00 227.91,479.00 195.00,498.00 162.09,479.00 162.09,441.00" fill="#67876b" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="195.0" cy="475.0" r="10" fill="#f2dfb9"/>
+<text x="195.0" y="479.0" font-size="12" fill="#493b2e" text-anchor="middle">6</text>
+<polygon points="129.18,194.00 162.09,213.00 162.09,251.00 129.18,270.00 96.27,251.00 96.27,213.00" fill="#ae7957" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="129.18206931238268" cy="247.0" r="10" fill="#f2dfb9"/>
+<text x="129.18206931238268" y="251.0" font-size="12" fill="#493b2e" text-anchor="middle">11</text>
+<polygon points="162.09,251.00 195.00,270.00 195.00,308.00 162.09,327.00 129.18,308.00 129.18,270.00" fill="#c5aa67" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="162.09103465619134" cy="304.0" r="10" fill="#f2dfb9"/>
+<text x="162.09103465619134" y="308.0" font-size="12" fill="#493b2e" text-anchor="middle">4</text>
+<polygon points="195.00,308.00 227.91,327.00 227.91,365.00 195.00,384.00 162.09,365.00 162.09,327.00" fill="#98a775" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="195.0" cy="338.0" r="8" fill="#28313a"/>
+<polygon points="227.91,365.00 260.82,384.00 260.82,422.00 227.91,441.00 195.00,422.00 195.00,384.00" fill="#7c8992" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="227.90896534380866" cy="418.0" r="10" fill="#f2dfb9"/>
+<text x="227.90896534380866" y="422.0" font-size="12" fill="#493b2e" text-anchor="middle">10</text>
+<polygon points="260.82,422.00 293.73,441.00 293.73,479.00 260.82,498.00 227.91,479.00 227.91,441.00" fill="#b6a07e" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="260.8179306876173" cy="475.0" r="10" fill="#f2dfb9"/>
+<text x="260.8179306876173" y="479.0" font-size="12" fill="#493b2e" text-anchor="middle">8</text>
+<polygon points="195.00,194.00 227.91,213.00 227.91,251.00 195.00,270.00 162.09,251.00 162.09,213.00" fill="#67876b" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="195.0" cy="247.0" r="10" fill="#f2dfb9"/>
+<text x="195.0" y="251.0" font-size="12" fill="#493b2e" text-anchor="middle">3</text>
+<polygon points="227.91,251.00 260.82,270.00 260.82,308.00 227.91,327.00 195.00,308.00 195.00,270.00" fill="#ae7957" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="227.90896534380866" cy="304.0" r="10" fill="#f2dfb9"/>
+<text x="227.90896534380866" y="308.0" font-size="12" fill="#493b2e" text-anchor="middle">12</text>
+<polygon points="260.82,308.00 293.73,327.00 293.73,365.00 260.82,384.00 227.91,365.00 227.91,327.00" fill="#c5aa67" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="260.8179306876173" cy="361.0" r="10" fill="#f2dfb9"/>
+<text x="260.8179306876173" y="365.0" font-size="12" fill="#493b2e" text-anchor="middle">6</text>
+<polygon points="293.73,365.00 326.64,384.00 326.64,422.00 293.73,441.00 260.82,422.00 260.82,384.00" fill="#98a775" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="293.726896031426" cy="418.0" r="10" fill="#f2dfb9"/>
+<text x="293.726896031426" y="422.0" font-size="12" fill="#493b2e" text-anchor="middle">9</text>
+<polygon points="260.82,194.00 293.73,213.00 293.73,251.00 260.82,270.00 227.91,251.00 227.91,213.00" fill="#7c8992" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="260.8179306876173" cy="247.0" r="10" fill="#f2dfb9"/>
+<text x="260.8179306876173" y="251.0" font-size="12" fill="#493b2e" text-anchor="middle">2</text>
+<polygon points="293.73,251.00 326.64,270.00 326.64,308.00 293.73,327.00 260.82,308.00 260.82,270.00" fill="#b6a07e" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="293.726896031426" cy="304.0" r="10" fill="#f2dfb9"/>
+<text x="293.726896031426" y="308.0" font-size="12" fill="#493b2e" text-anchor="middle">5</text>
+<polygon points="326.64,308.00 359.54,327.00 359.54,365.00 326.64,384.00 293.73,365.00 293.73,327.00" fill="#67876b" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="326.63586137523464" cy="361.0" r="10" fill="#f2dfb9"/>
+<text x="326.63586137523464" y="365.0" font-size="12" fill="#493b2e" text-anchor="middle">11</text>
+<text x="195" y="153" font-size="12" fill="#c7dedc" text-anchor="middle">Existing terrain art + runtime coast</text>
+<rect x="324" y="522" width="48" height="48" rx="10" fill="#293b49" stroke="#536773"/>
+<text x="348.0" y="551.0" font-size="15" fill="#f5ead0" text-anchor="middle">Fit</text>
+<rect x="12" y="582" width="366" height="36" rx="9" fill="#192b37"/>
+<text x="195" y="605" font-size="13" fill="#f5ead0" text-anchor="middle">Rolled 8 · You gained +1 wheat</text>
+<rect x="12" y="624" width="366" height="72" rx="12" fill="#182431" stroke="#50616b"/>
+<circle cx="48.6" cy="641" r="7" fill="#67876b"/>
+<text x="48.6" y="668" font-size="20" fill="#f5ead0" text-anchor="middle">4</text>
+<text x="48.6" y="686" font-size="12" fill="#c6c4b7" text-anchor="middle">Wood</text>
+<circle cx="121.80000000000001" cy="641" r="7" fill="#ae7957"/>
+<text x="121.80000000000001" y="668" font-size="20" fill="#f5ead0" text-anchor="middle">1</text>
+<text x="121.80000000000001" y="686" font-size="12" fill="#c6c4b7" text-anchor="middle">Brick</text>
+<circle cx="195.0" cy="641" r="7" fill="#c5aa67"/>
+<text x="195.0" y="668" font-size="20" fill="#f5ead0" text-anchor="middle">2</text>
+<text x="195.0" y="686" font-size="12" fill="#c6c4b7" text-anchor="middle">Wheat</text>
+<circle cx="268.20000000000005" cy="641" r="7" fill="#98a775"/>
+<text x="268.20000000000005" y="668" font-size="20" fill="#f5ead0" text-anchor="middle">0</text>
+<text x="268.20000000000005" y="686" font-size="12" fill="#c6c4b7" text-anchor="middle">Wool</text>
+<circle cx="341.40000000000003" cy="641" r="7" fill="#7c8992"/>
+<text x="341.40000000000003" y="668" font-size="20" fill="#f5ead0" text-anchor="middle">3</text>
+<text x="341.40000000000003" y="686" font-size="12" fill="#c6c4b7" text-anchor="middle">Ore</text>
+<rect x="12.0" y="706" width="116.67" height="52" rx="10" fill="#293b49" stroke="#536773"/>
+<text x="70.33500000000001" y="737.0" font-size="15" fill="#f5ead0" text-anchor="middle">Build</text>
+<rect x="136.67000000000002" y="706" width="116.67" height="52" rx="10" fill="#293b49" stroke="#536773"/>
+<text x="195.00500000000002" y="737.0" font-size="15" fill="#f5ead0" text-anchor="middle">Trade</text>
+<rect x="261.34000000000003" y="706" width="116.67" height="52" rx="10" fill="#293b49" stroke="#536773"/>
+<text x="319.675" y="737.0" font-size="15" fill="#f5ead0" text-anchor="middle">Cards · 2</text>
+<rect x="12" y="770" width="366" height="52" rx="10" fill="#886b3d" stroke="#b69c6e"/>
+<text x="195.0" y="801.0" font-size="15" fill="#f5ead0" text-anchor="middle">End turn</text>
+<text x="195" y="839" font-size="9" fill="#a2b7bf" text-anchor="middle">Safe-area padding outside this content box</text>
+<rect width="390" height="844" fill="#061018" opacity=".23"/>
+<rect x="0" y="408" width="390" height="436" rx="20" fill="#162330" stroke="#8b7959"/>
+<rect x="171" y="416" width="48" height="4" rx="2" fill="#71848a"/>
+<text x="20" y="447" font-size="18" fill="#f5ead0" text-anchor="start">Build</text>
+<rect x="326" y="416" width="48" height="48" rx="10" fill="#293b49" stroke="#536773"/>
+<text x="350.0" y="446.0" font-size="15" fill="#f5ead0" text-anchor="middle">×</text>
+<text x="20" y="480" font-size="12" fill="#bfc8c9" text-anchor="start">Costs, legal placement and supplies together</text>
+<rect x="12" y="492" width="366" height="60" rx="10" fill="#263b43" stroke="#6e8074"/>
+<text x="24" y="514" font-size="15" fill="#f5ead0" text-anchor="start">Road</text>
+<text x="364" y="514" font-size="11" fill="#b9d3b8" text-anchor="end">13 available</text>
+<text x="24" y="537" font-size="12" fill="#d6d2c2" text-anchor="start">1 wood + 1 brick</text>
+<rect x="12" y="558" width="366" height="60" rx="10" fill="#243039" stroke="#4f5962"/>
+<text x="24" y="580" font-size="15" fill="#f5ead0" text-anchor="start">Settlement</text>
+<text x="364" y="580" font-size="11" fill="#d1aa83" text-anchor="end">Missing 1 wool</text>
+<text x="24" y="603" font-size="12" fill="#d6d2c2" text-anchor="start">1 wood + 1 brick + 1 wheat + 1 wool</text>
+<rect x="12" y="624" width="366" height="60" rx="10" fill="#263b43" stroke="#6e8074"/>
+<text x="24" y="646" font-size="15" fill="#f5ead0" text-anchor="start">City</text>
+<text x="364" y="646" font-size="11" fill="#b9d3b8" text-anchor="end">3 available · upgrade only</text>
+<text x="24" y="669" font-size="12" fill="#d6d2c2" text-anchor="start">2 wheat + 3 ore</text>
+<rect x="12" y="690" width="366" height="60" rx="10" fill="#243039" stroke="#4f5962"/>
+<text x="24" y="712" font-size="15" fill="#f5ead0" text-anchor="start">Development card</text>
+<text x="364" y="712" font-size="11" fill="#d1aa83" text-anchor="end">Future system · missing 1 wool</text>
+<text x="24" y="735" font-size="12" fill="#d6d2c2" text-anchor="start">1 wheat + 1 wool + 1 ore</text>
+<text x="195" y="780" font-size="12" fill="#c7cfc9" text-anchor="middle">Choose an option, then return to the board.</text>
+<rect x="12" y="788" width="366" height="48" rx="10" fill="#293b49" stroke="#536773"/>
+<text x="195.0" y="819.0" font-size="15" fill="#f5ead0" text-anchor="middle">Close</text>
+</g>
+<text x="844" y="78" font-size="16" fill="#f5ead0" text-anchor="start">3. Player-trade workspace</text>
+<g transform="translate(844 90)" clip-path="url(#phone)">
+<rect x="0" y="0" width="390" height="844" rx="22" fill="url(#sea)"/>
+<rect x="0" y="0" width="390" height="48" rx="0" fill="#152330"/>
+<text x="16" y="30" font-size="20" fill="#f5ead0" text-anchor="start">8</text>
+<text x="195" y="30" font-size="15" fill="#f5ead0" text-anchor="middle">Your turn · Actions</text>
+<text x="362" y="30" font-size="22" fill="#f5ead0" text-anchor="middle">···</text>
+<rect x="12.0" y="55" width="85.5" height="50" rx="9" fill="#243440" stroke="#cf986c"/>
+<circle cx="24.0" cy="69" r="4" fill="#cf986c"/>
+<text x="35.0" y="74" font-size="13" fill="#f5ead0" text-anchor="start">You</text>
+<text x="54.75" y="94" font-size="12" fill="#e1d8c3" text-anchor="middle">4 VP · 10</text>
+<rect x="105.5" y="55" width="85.5" height="50" rx="9" fill="#243440" stroke="#52616a"/>
+<circle cx="117.5" cy="69" r="4" fill="#6c9a78"/>
+<text x="128.5" y="74" font-size="13" fill="#f5ead0" text-anchor="start">Mina</text>
+<text x="148.25" y="94" font-size="12" fill="#e1d8c3" text-anchor="middle">3 VP · 7</text>
+<rect x="199.0" y="55" width="85.5" height="50" rx="9" fill="#243440" stroke="#52616a"/>
+<circle cx="211.0" cy="69" r="4" fill="#88a6c5"/>
+<text x="222.0" y="74" font-size="13" fill="#f5ead0" text-anchor="start">Reza</text>
+<text x="241.75" y="94" font-size="12" fill="#e1d8c3" text-anchor="middle">2 VP · 5</text>
+<rect x="292.5" y="55" width="85.5" height="50" rx="9" fill="#243440" stroke="#52616a"/>
+<circle cx="304.5" cy="69" r="4" fill="#bc90ae"/>
+<text x="315.5" y="74" font-size="13" fill="#f5ead0" text-anchor="start">Sara</text>
+<text x="335.25" y="94" font-size="12" fill="#e1d8c3" text-anchor="middle">3 VP · 6</text>
+<path d="M30.45517,365.0L63.36414,384.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M30.45517,365.0L63.36414,384.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M30.45517,327.0L30.45517,365.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M30.45517,327.0L30.45517,365.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M30.45517,327.0L63.36414,308.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M30.45517,327.0L63.36414,308.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M63.36414,422.0L96.2731,441.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M63.36414,422.0L96.2731,441.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M63.36414,384.0L63.36414,422.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M63.36414,384.0L63.36414,422.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M129.18207,498.0L162.09103,479.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M129.18207,498.0L162.09103,479.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M96.2731,479.0L129.18207,498.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M96.2731,479.0L129.18207,498.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M96.2731,441.0L96.2731,479.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M96.2731,441.0L96.2731,479.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M63.36414,270.0L63.36414,308.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M63.36414,270.0L63.36414,308.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M63.36414,270.0L96.2731,251.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M63.36414,270.0L96.2731,251.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M195.0,498.0L227.90897,479.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M195.0,498.0L227.90897,479.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M162.09103,479.0L195.0,498.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M162.09103,479.0L195.0,498.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M129.18207,194.0L162.09103,213.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M129.18207,194.0L162.09103,213.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M96.2731,213.0L96.2731,251.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M96.2731,213.0L96.2731,251.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M96.2731,213.0L129.18207,194.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M96.2731,213.0L129.18207,194.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M293.7269,441.0L293.7269,479.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M293.7269,441.0L293.7269,479.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M260.81793,498.0L293.7269,479.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M260.81793,498.0L293.7269,479.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M227.90897,479.0L260.81793,498.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M227.90897,479.0L260.81793,498.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M195.0,194.0L227.90897,213.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M195.0,194.0L227.90897,213.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M162.09103,213.0L195.0,194.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M162.09103,213.0L195.0,194.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M326.63586,384.0L326.63586,422.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M326.63586,384.0L326.63586,422.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M293.7269,441.0L326.63586,422.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M293.7269,441.0L326.63586,422.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M260.81793,194.0L293.7269,213.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M260.81793,194.0L293.7269,213.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M293.7269,213.0L293.7269,251.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M293.7269,213.0L293.7269,251.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M227.90897,213.0L260.81793,194.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M227.90897,213.0L260.81793,194.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M293.7269,251.0L326.63586,270.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M293.7269,251.0L326.63586,270.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M326.63586,270.0L326.63586,308.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M326.63586,270.0L326.63586,308.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M326.63586,308.0L359.54483,327.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M326.63586,308.0L359.54483,327.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M359.54483,327.0L359.54483,365.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M359.54483,327.0L359.54483,365.0" stroke="#c5b18d" stroke-width="6"/>
+<path d="M326.63586,384.0L359.54483,365.0" stroke="#78aca8" stroke-width="24" opacity=".36"/>
+<path d="M326.63586,384.0L359.54483,365.0" stroke="#c5b18d" stroke-width="6"/>
+<polygon points="63.36,308.00 96.27,327.00 96.27,365.00 63.36,384.00 30.46,365.00 30.46,327.00" fill="#67876b" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="63.36413862476533" cy="361.0" r="10" fill="#f2dfb9"/>
+<text x="63.36413862476533" y="365.0" font-size="12" fill="#493b2e" text-anchor="middle">5</text>
+<polygon points="96.27,365.00 129.18,384.00 129.18,422.00 96.27,441.00 63.36,422.00 63.36,384.00" fill="#ae7957" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="96.27310396857399" cy="418.0" r="10" fill="#f2dfb9"/>
+<text x="96.27310396857399" y="422.0" font-size="12" fill="#493b2e" text-anchor="middle">9</text>
+<polygon points="129.18,422.00 162.09,441.00 162.09,479.00 129.18,498.00 96.27,479.00 96.27,441.00" fill="#c5aa67" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="129.18206931238268" cy="475.0" r="10" fill="#f2dfb9"/>
+<text x="129.18206931238268" y="479.0" font-size="12" fill="#493b2e" text-anchor="middle">4</text>
+<polygon points="96.27,251.00 129.18,270.00 129.18,308.00 96.27,327.00 63.36,308.00 63.36,270.00" fill="#98a775" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="96.27310396857399" cy="304.0" r="10" fill="#f2dfb9"/>
+<text x="96.27310396857399" y="308.0" font-size="12" fill="#493b2e" text-anchor="middle">8</text>
+<polygon points="129.18,308.00 162.09,327.00 162.09,365.00 129.18,384.00 96.27,365.00 96.27,327.00" fill="#7c8992" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="129.18206931238268" cy="361.0" r="10" fill="#f2dfb9"/>
+<text x="129.18206931238268" y="365.0" font-size="12" fill="#493b2e" text-anchor="middle">10</text>
+<polygon points="162.09,365.00 195.00,384.00 195.00,422.00 162.09,441.00 129.18,422.00 129.18,384.00" fill="#b6a07e" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="162.09103465619134" cy="418.0" r="10" fill="#f2dfb9"/>
+<text x="162.09103465619134" y="422.0" font-size="12" fill="#493b2e" text-anchor="middle">3</text>
+<polygon points="195.00,422.00 227.91,441.00 227.91,479.00 195.00,498.00 162.09,479.00 162.09,441.00" fill="#67876b" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="195.0" cy="475.0" r="10" fill="#f2dfb9"/>
+<text x="195.0" y="479.0" font-size="12" fill="#493b2e" text-anchor="middle">6</text>
+<polygon points="129.18,194.00 162.09,213.00 162.09,251.00 129.18,270.00 96.27,251.00 96.27,213.00" fill="#ae7957" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="129.18206931238268" cy="247.0" r="10" fill="#f2dfb9"/>
+<text x="129.18206931238268" y="251.0" font-size="12" fill="#493b2e" text-anchor="middle">11</text>
+<polygon points="162.09,251.00 195.00,270.00 195.00,308.00 162.09,327.00 129.18,308.00 129.18,270.00" fill="#c5aa67" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="162.09103465619134" cy="304.0" r="10" fill="#f2dfb9"/>
+<text x="162.09103465619134" y="308.0" font-size="12" fill="#493b2e" text-anchor="middle">4</text>
+<polygon points="195.00,308.00 227.91,327.00 227.91,365.00 195.00,384.00 162.09,365.00 162.09,327.00" fill="#98a775" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="195.0" cy="338.0" r="8" fill="#28313a"/>
+<polygon points="227.91,365.00 260.82,384.00 260.82,422.00 227.91,441.00 195.00,422.00 195.00,384.00" fill="#7c8992" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="227.90896534380866" cy="418.0" r="10" fill="#f2dfb9"/>
+<text x="227.90896534380866" y="422.0" font-size="12" fill="#493b2e" text-anchor="middle">10</text>
+<polygon points="260.82,422.00 293.73,441.00 293.73,479.00 260.82,498.00 227.91,479.00 227.91,441.00" fill="#b6a07e" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="260.8179306876173" cy="475.0" r="10" fill="#f2dfb9"/>
+<text x="260.8179306876173" y="479.0" font-size="12" fill="#493b2e" text-anchor="middle">8</text>
+<polygon points="195.00,194.00 227.91,213.00 227.91,251.00 195.00,270.00 162.09,251.00 162.09,213.00" fill="#67876b" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="195.0" cy="247.0" r="10" fill="#f2dfb9"/>
+<text x="195.0" y="251.0" font-size="12" fill="#493b2e" text-anchor="middle">3</text>
+<polygon points="227.91,251.00 260.82,270.00 260.82,308.00 227.91,327.00 195.00,308.00 195.00,270.00" fill="#ae7957" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="227.90896534380866" cy="304.0" r="10" fill="#f2dfb9"/>
+<text x="227.90896534380866" y="308.0" font-size="12" fill="#493b2e" text-anchor="middle">12</text>
+<polygon points="260.82,308.00 293.73,327.00 293.73,365.00 260.82,384.00 227.91,365.00 227.91,327.00" fill="#c5aa67" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="260.8179306876173" cy="361.0" r="10" fill="#f2dfb9"/>
+<text x="260.8179306876173" y="365.0" font-size="12" fill="#493b2e" text-anchor="middle">6</text>
+<polygon points="293.73,365.00 326.64,384.00 326.64,422.00 293.73,441.00 260.82,422.00 260.82,384.00" fill="#98a775" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="293.726896031426" cy="418.0" r="10" fill="#f2dfb9"/>
+<text x="293.726896031426" y="422.0" font-size="12" fill="#493b2e" text-anchor="middle">9</text>
+<polygon points="260.82,194.00 293.73,213.00 293.73,251.00 260.82,270.00 227.91,251.00 227.91,213.00" fill="#7c8992" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="260.8179306876173" cy="247.0" r="10" fill="#f2dfb9"/>
+<text x="260.8179306876173" y="251.0" font-size="12" fill="#493b2e" text-anchor="middle">2</text>
+<polygon points="293.73,251.00 326.64,270.00 326.64,308.00 293.73,327.00 260.82,308.00 260.82,270.00" fill="#b6a07e" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="293.726896031426" cy="304.0" r="10" fill="#f2dfb9"/>
+<text x="293.726896031426" y="308.0" font-size="12" fill="#493b2e" text-anchor="middle">5</text>
+<polygon points="326.64,308.00 359.54,327.00 359.54,365.00 326.64,384.00 293.73,365.00 293.73,327.00" fill="#67876b" stroke="#ddd0ae" stroke-width="1.2"/>
+<circle cx="326.63586137523464" cy="361.0" r="10" fill="#f2dfb9"/>
+<text x="326.63586137523464" y="365.0" font-size="12" fill="#493b2e" text-anchor="middle">11</text>
+<text x="195" y="153" font-size="12" fill="#c7dedc" text-anchor="middle">Existing terrain art + runtime coast</text>
+<rect x="324" y="522" width="48" height="48" rx="10" fill="#293b49" stroke="#536773"/>
+<text x="348.0" y="551.0" font-size="15" fill="#f5ead0" text-anchor="middle">Fit</text>
+<rect x="12" y="582" width="366" height="36" rx="9" fill="#192b37"/>
+<text x="195" y="605" font-size="13" fill="#f5ead0" text-anchor="middle">Rolled 8 · You gained +1 wheat</text>
+<rect x="12" y="624" width="366" height="72" rx="12" fill="#182431" stroke="#50616b"/>
+<circle cx="48.6" cy="641" r="7" fill="#67876b"/>
+<text x="48.6" y="668" font-size="20" fill="#f5ead0" text-anchor="middle">4</text>
+<text x="48.6" y="686" font-size="12" fill="#c6c4b7" text-anchor="middle">Wood</text>
+<circle cx="121.80000000000001" cy="641" r="7" fill="#ae7957"/>
+<text x="121.80000000000001" y="668" font-size="20" fill="#f5ead0" text-anchor="middle">1</text>
+<text x="121.80000000000001" y="686" font-size="12" fill="#c6c4b7" text-anchor="middle">Brick</text>
+<circle cx="195.0" cy="641" r="7" fill="#c5aa67"/>
+<text x="195.0" y="668" font-size="20" fill="#f5ead0" text-anchor="middle">2</text>
+<text x="195.0" y="686" font-size="12" fill="#c6c4b7" text-anchor="middle">Wheat</text>
+<circle cx="268.20000000000005" cy="641" r="7" fill="#98a775"/>
+<text x="268.20000000000005" y="668" font-size="20" fill="#f5ead0" text-anchor="middle">0</text>
+<text x="268.20000000000005" y="686" font-size="12" fill="#c6c4b7" text-anchor="middle">Wool</text>
+<circle cx="341.40000000000003" cy="641" r="7" fill="#7c8992"/>
+<text x="341.40000000000003" y="668" font-size="20" fill="#f5ead0" text-anchor="middle">3</text>
+<text x="341.40000000000003" y="686" font-size="12" fill="#c6c4b7" text-anchor="middle">Ore</text>
+<rect x="12.0" y="706" width="116.67" height="52" rx="10" fill="#293b49" stroke="#536773"/>
+<text x="70.33500000000001" y="737.0" font-size="15" fill="#f5ead0" text-anchor="middle">Build</text>
+<rect x="136.67000000000002" y="706" width="116.67" height="52" rx="10" fill="#293b49" stroke="#536773"/>
+<text x="195.00500000000002" y="737.0" font-size="15" fill="#f5ead0" text-anchor="middle">Trade</text>
+<rect x="261.34000000000003" y="706" width="116.67" height="52" rx="10" fill="#293b49" stroke="#536773"/>
+<text x="319.675" y="737.0" font-size="15" fill="#f5ead0" text-anchor="middle">Cards · 2</text>
+<rect x="12" y="770" width="366" height="52" rx="10" fill="#886b3d" stroke="#b69c6e"/>
+<text x="195.0" y="801.0" font-size="15" fill="#f5ead0" text-anchor="middle">End turn</text>
+<text x="195" y="839" font-size="9" fill="#a2b7bf" text-anchor="middle">Safe-area padding outside this content box</text>
+<rect width="390" height="844" fill="#061018" opacity=".27"/>
+<rect x="0" y="292" width="390" height="552" rx="20" fill="#162330" stroke="#8b7959"/>
+<rect x="171" y="300" width="48" height="4" rx="2" fill="#71848a"/>
+<text x="20" y="331" font-size="18" fill="#f5ead0" text-anchor="start">Trade</text>
+<rect x="326" y="300" width="48" height="48" rx="10" fill="#293b49" stroke="#536773"/>
+<text x="350.0" y="330.0" font-size="15" fill="#f5ead0" text-anchor="middle">×</text>
+<rect x="12" y="350" width="179" height="48" rx="10" fill="#886b3d" stroke="#b69c6e"/>
+<text x="101.5" y="377.0" font-size="15" fill="#f5ead0" text-anchor="middle">Players</text>
+<rect x="199" y="350" width="179" height="48" rx="10" fill="#293b49" stroke="#536773"/>
+<text x="288.5" y="377.0" font-size="15" fill="#f5ead0" text-anchor="middle">Bank</text>
+<text x="195" y="423" font-size="11" fill="#c7cfc9" text-anchor="middle">Owned: wood 4 · brick 1 · wheat 2 · wool 0 · ore 3</text>
+<rect x="12" y="438" width="366" height="108" rx="12" fill="#23333f"/>
+<text x="24" y="463" font-size="16" fill="#f5ead0" text-anchor="start">You give</text>
+<rect x="24" y="477" width="62" height="56" rx="10" fill="#886b3d" stroke="#b69c6e"/>
+<text x="55.0" y="510.0" font-size="15" fill="#f5ead0" text-anchor="middle">Wood 2</text>
+<rect x="93" y="477" width="62" height="56" rx="10" fill="#293b49" stroke="#536773"/>
+<text x="124.0" y="510.0" font-size="15" fill="#f5ead0" text-anchor="middle">Brick</text>
+<rect x="162" y="477" width="62" height="56" rx="10" fill="#293b49" stroke="#536773"/>
+<text x="193.0" y="510.0" font-size="15" fill="#f5ead0" text-anchor="middle">Wheat</text>
+<rect x="231" y="477" width="62" height="56" rx="10" fill="#293b49" stroke="#536773"/>
+<text x="262.0" y="510.0" font-size="15" fill="#f5ead0" text-anchor="middle">Wool</text>
+<rect x="300" y="477" width="62" height="56" rx="10" fill="#293b49" stroke="#536773"/>
+<text x="331.0" y="510.0" font-size="15" fill="#f5ead0" text-anchor="middle">Ore</text>
+<rect x="12" y="558" width="366" height="108" rx="12" fill="#23333f"/>
+<text x="24" y="583" font-size="16" fill="#f5ead0" text-anchor="start">You receive</text>
+<rect x="24" y="597" width="62" height="56" rx="10" fill="#293b49" stroke="#536773"/>
+<text x="55.0" y="630.0" font-size="15" fill="#f5ead0" text-anchor="middle">Wood</text>
+<rect x="93" y="597" width="62" height="56" rx="10" fill="#293b49" stroke="#536773"/>
+<text x="124.0" y="630.0" font-size="15" fill="#f5ead0" text-anchor="middle">Brick</text>
+<rect x="162" y="597" width="62" height="56" rx="10" fill="#293b49" stroke="#536773"/>
+<text x="193.0" y="630.0" font-size="15" fill="#f5ead0" text-anchor="middle">Wheat</text>
+<rect x="231" y="597" width="62" height="56" rx="10" fill="#293b49" stroke="#536773"/>
+<text x="262.0" y="630.0" font-size="15" fill="#f5ead0" text-anchor="middle">Wool</text>
+<rect x="300" y="597" width="62" height="56" rx="10" fill="#886b3d" stroke="#b69c6e"/>
+<text x="331.0" y="630.0" font-size="15" fill="#f5ead0" text-anchor="middle">Ore 1</text>
+<rect x="12" y="680" width="366" height="64" rx="10" fill="#22373d"/>
+<text x="24" y="702" font-size="15" fill="#f5ead0" text-anchor="start">Offer: 2 wood for 1 ore</text>
+<text x="24" y="727" font-size="11" fill="#c4d1cc" text-anchor="start">Mina: willing · Reza: waiting · Sara: declined</text>
+<rect x="12" y="768" width="366" height="56" rx="10" fill="#886b3d" stroke="#b69c6e"/>
+<text x="195.0" y="801.0" font-size="15" fill="#f5ead0" text-anchor="middle">Review exchange with Mina</text>
+</g>
+<text x="18" y="963" font-size="13" fill="#c0cbd0" text-anchor="start">Construction selection collapses to a small tray for board targeting. Trading can cover the lower board while quantities are edited.</text>
+<text x="18" y="985" font-size="13" fill="#c0cbd0" text-anchor="start">Example values illustrate hierarchy, not a live match. Current MVP keeps its six-point target and omits unsupported systems.</text>
+</g></svg>

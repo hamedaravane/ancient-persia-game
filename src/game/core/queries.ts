@@ -1,0 +1,40 @@
+import { getVictoryPoints } from './game';
+import { BUILD_COSTS, getPlacementError, type BuildType, type ResourceCost } from './building';
+import { RESOURCE_TYPES, type GameState, type ResourceType } from './types';
+
+export interface BuildOption {
+    type: BuildType;
+    cost: ResourceCost;
+    missing: Record<ResourceType, number>;
+    legalTargetIds: string[];
+    reason: 'wrong-phase' | 'game-finished' | 'insufficient-resources' | 'no-legal-targets' | null;
+}
+
+export function getBuildOption(state: GameState, type: BuildType): BuildOption {
+    const player = state.players[state.activePlayerIndex];
+    const cost = BUILD_COSTS[type];
+    const missing = Object.fromEntries(RESOURCE_TYPES.map((resource) => [resource, Math.max(0, cost[resource] - player.resources[resource])])) as Record<ResourceType, number>;
+    const ids = Object.keys(type === 'road' ? state.board.edges : state.board.vertices);
+    const legalTargetIds = ids.filter((id) => getPlacementError(state.board, player.id, type, id) === null);
+    const reason = state.phase === 'finished' ? 'game-finished'
+        : state.phase !== 'actions' ? 'wrong-phase'
+        : RESOURCE_TYPES.some((resource) => missing[resource] > 0) ? 'insufficient-resources'
+        : legalTargetIds.length === 0 ? 'no-legal-targets' : null;
+    return { type, cost, missing, legalTargetIds, reason };
+}
+
+export function getPlayerSummary(state: GameState, playerId: string) {
+    const player = state.players.find(({ id }) => id === playerId)!;
+    const buildings = Object.values(state.board.vertices).filter(({ building }) => building?.ownerId === playerId);
+    return {
+        score: getVictoryPoints(state, playerId),
+        resources: RESOURCE_TYPES.reduce((total, resource) => total + player.resources[resource], 0),
+        roads: Object.values(state.board.edges).filter(({ road }) => road?.ownerId === playerId).length,
+        settlements: buildings.filter(({ building }) => building?.type === 'settlement').length,
+        cities: buildings.filter(({ building }) => building?.type === 'city').length,
+    };
+}
+
+export function getProductionProbability(number: number): { outcomes: number; total: number } {
+    return { outcomes: Math.max(0, 6 - Math.abs(7 - number)), total: 36 };
+}

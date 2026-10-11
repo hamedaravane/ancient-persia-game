@@ -5,5 +5,8 @@ The modules in this directory own the game state and rules. They are plain TypeS
 - `types.ts` defines the board, player, piece, resource, phase, and result types.
 - `board.ts` generates the hexes and their shared vertices and edges.
 - `game.ts` initializes players and applies validated turn actions as state transitions.
+- `building.ts` owns construction costs and geometry/ownership validation, shared by commands and previews.
+- `production.ts` computes per-tile/per-recipient production grants shared by dice payment and presentation.
+- `queries.ts` exposes build availability, shortages, legal target IDs, public player summaries, and dice production probabilities without mutating state. `getBankTradeError` in `game.ts` is shared by bank commands and previews.
 
-Scenes may call these functions and render the returned state. Keep presentation and input behavior outside this directory.
+The local session adapter calls these functions and publishes the resulting state to the DOM HUD and Phaser board scene. Drafts and previews live outside core and never spend resources. Confirmation always revalidates through a core command. Keep presentation and input behavior outside this directory.

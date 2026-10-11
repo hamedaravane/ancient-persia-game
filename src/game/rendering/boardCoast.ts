@@ -1,6 +1,6 @@
 import type { GameObjects, Scene } from 'phaser';
 import type { Board } from '../core/types';
-import { boardToScreen } from '../ui/layout';
+import { boardToScreen, type BoardLayout } from '../ui/layout';
 
 type Point = { x: number; y: number };
 
@@ -12,7 +12,7 @@ function strokeOutline(graphics: GameObjects.Graphics, points: Point[]): void {
     graphics.strokePath();
 }
 
-function traceCoast(board: Board): Point[] {
+function traceCoast(board: Board, layout: BoardLayout): Point[] {
     const boundary = Object.values(board.edges).filter((edge) => edge.tileIds.length === 1);
     const neighbors = new Map<string, string[]>();
 
@@ -29,7 +29,7 @@ function traceCoast(board: Board): Point[] {
     let previous: string | undefined;
 
     for (let index = 0; index < boundary.length; index += 1) {
-        points.push(boardToScreen(board.vertices[current]));
+        points.push(boardToScreen(board.vertices[current], layout));
         const next = neighbors.get(current)?.find((id) => id !== previous);
 
         if (next === undefined) throw new Error('The board coast must form a closed loop.');
@@ -43,9 +43,9 @@ function traceCoast(board: Board): Point[] {
 }
 
 /** Decorative geometry only; it never receives input or changes board state. */
-export function createBoardCoast(scene: Scene, board: Board): GameObjects.Graphics {
+export function createBoardCoast(scene: Scene, board: Board, layout: BoardLayout): GameObjects.Graphics {
     const coast = scene.add.graphics();
-    const points = traceCoast(board);
+    const points = traceCoast(board, layout);
     if (points.length < 3) return coast;
 
     // Strokes straddle the perimeter. Opaque terrain backplates hide the inner

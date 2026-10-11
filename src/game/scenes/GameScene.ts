@@ -1,583 +1,263 @@
-import { Geom, GameObjects, Scene } from 'phaser';
-import {
-    buildRoad,
-    buildSettlement,
-    createGame,
-    endTurn,
-    getVictoryPoints,
-    moveRobber,
-    rollDice,
-    tradeWithBank,
-    upgradeCity,
-} from '../core/game';
-import { FA } from '../ui/messages.fa';
-import { UI_FONT_FAMILY } from '../ui/typography';
+import { GameObjects, Scene } from 'phaser';
+import type { GameState, HexTile, TerrainType } from '../core/types';
+import { BoardInput } from '../rendering/boardInput';
+import { BoardEffects } from '../rendering/boardEffects';
 import { createBoardCoast } from '../rendering/boardCoast';
-import { BOARD_LAYOUT, boardToScreen, GAME_WIDTH as WIDTH, GAME_HEIGHT as HEIGHT } from '../ui/layout';
-import {
-    RESOURCE_TYPES,
-    type BoardEdge,
-    type BoardVertex,
-    type GameState,
-    type ResourceType,
-    type TerrainType,
-} from '../core/types';
+import { boardToClient, boardToScreen, fitBoard, type BoardLayout } from '../ui/layout';
+import { number } from '../ui/components';
+import type { GameSession } from '../ui/session';
+import { UI_FONT_FAMILY } from '../ui/typography';
+import type { Motion } from '../ui/motion';
+import type { MatchTransition } from '../ui/transitions';
+import { ART, assetUrl } from '../assets';
 
-const HEX_SIZE = BOARD_LAYOUT.hexRadius;
-const MENU_BACKGROUND_KEY = 'main-menu-background';
-const GAME_BACKGROUND_KEY = 'game-background';
-const RESOURCE_SHEET_KEY = 'resource-icons';
-const MENU_BACKGROUND_PATH = `${import.meta.env.BASE_URL}assets/backgrounds/main-menu.png`;
-const GAME_BACKGROUND_PATH = `${import.meta.env.BASE_URL}assets/backgrounds/game.png`;
-const RESOURCE_SHEET_PATH = `${import.meta.env.BASE_URL}assets/resources/resources.png`;
-const TERRAIN_KEYS: Record<TerrainType, string> = {
-    forest: 'terrain-forest',
-    mesa: 'terrain-mesa',
-    wheat: 'terrain-wheat',
-    pasture: 'terrain-pasture',
-    mountain: 'terrain-mountain',
-    desert: 'terrain-desert',
-};
+const TERRAIN_COLORS: Record<TerrainType, number> = { forest: 0x3f6149, mesa: 0x94543a, wheat: 0xb58b3d, pasture: 0x617d5d, mountain: 0x59626c, desert: 0xb78f62 };
 
-const RESOURCE_FRAMES: Record<ResourceType, { x: number; y: number; width: number; height: number }> = {
-    wood: { x: 44, y: 164, width: 476, height: 404 },
-    brick: { x: 544, y: 164, width: 440, height: 404 },
-    wheat: { x: 984, y: 88, width: 428, height: 492 },
-    wool: { x: 244, y: 608, width: 484, height: 392 },
-    stone: { x: 768, y: 584, width: 496, height: 420 },
-};
-
-const TERRAIN_COLORS: Record<TerrainType, number> = {
-    forest: 0x3f6149,
-    mesa: 0x94543a,
-    wheat: 0xb58b3d,
-    pasture: 0x617d5d,
-    mountain: 0x59626c,
-    desert: 0xb78f62,
-};
-
-type InteractionMode = 'none' | 'road' | 'settlement' | 'city' | 'trade-give' | 'trade-receive';
-
+/** Phaser presents state and previews; all eligibility and commands belong to core/session. */
 export class GameScene extends Scene {
-    private menuBackground!: GameObjects.Image;
-    private gameBackground!: GameObjects.Image;
-    private gameEnvironment!: GameObjects.Container;
+    private boardObjects!: GameObjects.Container;
     private coast: GameObjects.Graphics | null = null;
-    private ui!: GameObjects.Container;
-    private gameState: GameState | null = null;
-    private mode: InteractionMode = 'none';
-    private tradeGive: ResourceType | null = null;
-    private notice = '';
+    private layout: BoardLayout = fitBoard(390, 468);
+    private renderedState: GameState | null = null;
+    private renderedPlacement: unknown;
+    private inputAdapter: BoardInput;
+    private unsubscribe: () => void;
+    private effects: BoardEffects;
+    private pieces = new Map<string, GameObjects.Container>();
+    private robberMarker: GameObjects.Container | null = null;
+    private viewListeners = new Set<() => void>();
 
-    constructor() {
-        super('GameScene');
-    }
+    constructor(private session: GameSession, private motion: Motion, private onReady: (scene: GameScene) => void) { super('GameScene'); }
 
     preload(): void {
-        this.load.image(MENU_BACKGROUND_KEY, MENU_BACKGROUND_PATH);
-        this.load.image(GAME_BACKGROUND_KEY, GAME_BACKGROUND_PATH);
-        this.load.image(RESOURCE_SHEET_KEY, RESOURCE_SHEET_PATH);
-        for (const [terrain, key] of Object.entries(TERRAIN_KEYS)) {
-            this.load.image(key, `${import.meta.env.BASE_URL}assets/board/terrains/${terrain}.png`);
-        }
+        for (const terrain of Object.keys(TERRAIN_COLORS)) this.load.image(`terrain-${terrain}`, `${import.meta.env.BASE_URL}assets/board/terrains/${terrain}.png`);
+        for (const name of ['robber', 'number', 'spark', 'dust'] as const) this.load.image(`art-${name}`, assetUrl(ART[name].file));
     }
-
     create(): void {
-        this.menuBackground = this.add.image(WIDTH / 2, HEIGHT / 2, MENU_BACKGROUND_KEY).setAlpha(0.3);
-        this.gameBackground = this.add.image(WIDTH / 2, HEIGHT / 2, GAME_BACKGROUND_KEY);
-        const shade = this.add.graphics();
-
-        // Fade the sea gently behind UI while keeping the island area luminous.
-        for (let y = 0; y < HEIGHT; y += 4) {
-            const alpha = y < 128 ? ((128 - y) / 128) * 0.14
-                : y > 496 ? ((y - 496) / (HEIGHT - 496)) * 0.42 : 0;
-            if (alpha > 0) shade.fillStyle(0x101a26, alpha).fillRect(0, y, WIDTH, 4);
+        for (const name of ['robber', 'number', 'spark', 'dust'] as const) {
+            const key = `art-${name}`;
+            if (!this.textures.exists(key)) continue;
+            const texture = this.textures.get(key);
+            const [x, y, width, height] = ART[name].frame;
+            if (!texture.has('crop')) texture.add('crop', 0, x, y, width, height);
         }
-
-        this.gameEnvironment = this.add.container(0, 0, [this.gameBackground, shade]);
-        this.ui = this.add.container(0, 0);
-        this.fitBackgrounds();
-
-        const resourceTexture = this.textures.get(RESOURCE_SHEET_KEY);
-
-        for (const [resource, frame] of Object.entries(RESOURCE_FRAMES)) {
-            resourceTexture.add(resource, 0, frame.x, frame.y, frame.width, frame.height);
-        }
-
-        this.scale.on('resize', this.fitBackgrounds, this);
-        this.events.once('shutdown', () => this.scale.off('resize', this.fitBackgrounds, this));
-        this.render();
-    }
-
-    private fitBackgrounds(): void {
-        for (const background of [this.menuBackground, this.gameBackground]) {
-            const scale = Math.max(WIDTH / background.width, HEIGHT / background.height);
-            background.setScale(scale).setPosition(WIDTH / 2, HEIGHT / 2);
-        }
-    }
-
-    private render(): void {
-        this.ui.removeAll(true);
-        this.menuBackground.setVisible(this.gameState === null);
-        this.gameEnvironment.setVisible(this.gameState !== null);
-
-        if (this.gameState === null) {
-            this.renderSetup();
-            return;
-        }
-
-        this.renderHeader();
-        this.renderBoard();
-        this.renderResources();
-        this.renderActions();
-
-        if (this.gameState.phase === 'finished') {
-            this.renderWinner();
-        }
-    }
-
-    private renderSetup(): void {
-        this.addPanel(16, 247, 358, 350, 0.94);
-        this.addText(WIDTH / 2, 301, FA.title, 28, '#f5e8c7');
-        this.addText(WIDTH / 2, 346, FA.subtitle, 16, '#c9c4b4');
-        this.addText(WIDTH / 2, 407, FA.choosePlayers, 17, '#f5e8c7');
-
-        this.addButton(FA.threePlayers, 36, 448, 148, 58, () => this.startGame(3), 0x466b58);
-        this.addButton(FA.fourPlayers, 206, 448, 148, 58, () => this.startGame(4), 0x78553d);
-        this.addText(WIDTH / 2, 543, FA.handover, 12, '#c9c4b4');
-        this.addText(WIDTH / 2, 624, FA.title, 14, '#e3d2a8');
-    }
-
-    private startGame(playerCount: number): void {
-        const names = Array.from({ length: playerCount }, (_, index) => `${FA.player} ${this.toPersianNumber(index + 1)}`);
-        this.gameState = createGame(names);
-        this.coast?.destroy();
-        this.coast = createBoardCoast(this, this.gameState.board);
-        this.gameEnvironment.add(this.coast);
-        this.mode = 'none';
-        this.tradeGive = null;
-        this.notice = FA.startNote;
-        this.render();
-    }
-
-    private renderHeader(): void {
-        const state = this.gameState!;
-        const player = state.players[state.activePlayerIndex];
-        const points = getVictoryPoints(state, player.id);
-        const lastRoll = state.lastRoll ? `${this.toPersianNumber(state.lastRoll[0])} + ${this.toPersianNumber(state.lastRoll[1])}` : '—';
-
-        this.addPanel(16, 12, 358, 108, 0.94);
-        this.addButton(
-            state.phase === 'roll' ? FA.roll : `${FA.rollTitle} ${lastRoll}`,
-            28,
-            32,
-            106,
-            54,
-            () => this.onRoll(),
-            0x9a7138,
-            state.phase === 'roll',
-            13,
-        );
-
-        this.addCircle(349, 41, 8, player.color);
-        this.addText(331, 38, player.name, 18, '#fff4dc', 1, 0.5, true);
-        this.addText(350, 65, `${FA.score} ${this.toPersianNumber(points)} از ${this.toPersianNumber(state.victoryTarget)}`, 12, '#d9d2c0', 1, 0.5, true);
-
-        const gap = 348 / state.players.length;
-
-        state.players.forEach((scorePlayer, index) => {
-            const x = 22 + gap * index + gap / 2;
-            const score = getVictoryPoints(state, scorePlayer.id);
-            this.addCircle(x - 22, 98, 5, scorePlayer.color);
-            this.addText(x - 12, 98, `${scorePlayer.name.replace(`${FA.player} `, '')}  ${this.toPersianNumber(score)}`, 11, '#f1e6cb', 0, 0.5);
+        this.boardObjects = this.add.container();
+        this.effects = new BoardEffects(this, this.motion);
+        this.inputAdapter = new BoardInput(this, () => !!this.session.state && !this.session.sheet, (x, y) => this.selectAt(x, y), () => this.constrainView());
+        this.unsubscribe = this.session.subscribe(() => this.render());
+        this.scale.on('resize', this.resizeBoard, this);
+        this.events.once('shutdown', () => {
+            this.unsubscribe();
+            this.inputAdapter.destroy();
+            this.effects.destroy();
+            this.viewListeners.clear();
+            this.scale.off('resize', this.resizeBoard, this);
         });
+        this.resizeBoard();
+        this.onReady(this);
+    }
+    private resizeBoard(): void {
+        this.layout = fitBoard(this.scale.width, this.scale.height);
+        this.resetView();
+        this.render(true);
+    }
+    zoomBy(factor: number): void {
+        this.cameras.main.setZoom(Math.max(1, Math.min(2.5, this.cameras.main.zoom * factor)));
+        this.constrainView();
+    }
+    resetView(): void { this.cameras.main.setZoom(1).setScroll(0, 0); this.viewChanged(); }
+    private constrainView(): void {
+        const camera = this.cameras.main;
+        const maxX = this.scale.width * (1 - 1 / camera.zoom) / 2;
+        const maxY = this.scale.height * (1 - 1 / camera.zoom) / 2;
+        camera.setScroll(Math.max(-maxX, Math.min(maxX, camera.scrollX)), Math.max(-maxY, Math.min(maxY, camera.scrollY)));
+        this.viewChanged();
+    }
+    private viewChanged(): void { this.effects?.clear(); this.viewListeners.forEach((listener) => listener()); }
+    subscribeView(listener: () => void): () => void { this.viewListeners.add(listener); return () => this.viewListeners.delete(listener); }
+    clearEffects(): void { this.effects.clear(); }
 
-        this.addText(350, 13, `${FA.turn} ${this.toPersianNumber(state.turn)}`, 11, '#c9c4b4', 1, 0);
+    /** Client coordinates bridge the camera-transformed board and the DOM hand. */
+    tileAnchor(tileId: string): { x: number; y: number } | null {
+        const tile = this.session.state?.board.tiles.find(({ id }) => id === tileId);
+        if (!tile) return null;
+        return boardToClient(tile, this.layout, this.cameras.main, this.game.canvas.getBoundingClientRect());
     }
 
-    private renderBoard(): void {
-        const state = this.gameState!;
-
-        for (const tile of state.board.tiles) {
-            this.renderTile(tile);
+    playTransition(transition: MatchTransition): void {
+        const { action, before, after } = transition;
+        if (action.kind === 'roll') {
+            const roll = after.lastRoll!;
+            const total = roll[0] + roll[1];
+            for (const tile of after.board.tiles) if (tile.number === total) this.effects.pulse(this.toScreen(tile), this.layout.hexRadius * 0.8, tile.robber ? 0xce977b : 0xffdda0, 200);
+        } else if (action.kind === 'build') {
+            if (action.type === 'road') {
+                const edge = after.board.edges[action.targetId];
+                this.effects.road(this.toScreen(after.board.vertices[edge.vertexIds[0]]), this.toScreen(after.board.vertices[edge.vertexIds[1]]), 0xffdda0);
+            } else {
+                const piece = this.pieces.get(action.targetId);
+                if (piece) this.effects.piece(piece);
+                this.effects.pulse(this.toScreen(after.board.vertices[action.targetId]), 15, 0xffdda0);
+            }
+        } else if (action.kind === 'robber' && this.robberMarker) {
+            const from = before.board.tiles.find(({ robber }) => robber)!;
+            const to = after.board.tiles.find(({ robber }) => robber)!;
+            const start = this.toScreen(from), end = this.toScreen(to);
+            const offset = this.layout.hexRadius * 0.53;
+            this.effects.robber(this.robberMarker, { x: start.x, y: start.y - offset }, { x: end.x, y: end.y - offset });
+            this.effects.pulse(end, this.layout.hexRadius * 0.75, 0xce977b, 250);
         }
+    }
+    private toScreen(point: { x: number; y: number }) { return boardToScreen(point, this.layout); }
 
-        const edgeGraphics = this.add.graphics();
-
+    private render(force = false): void {
+        const state = this.session.state;
+        if (!force && state === this.renderedState && this.session.placement === this.renderedPlacement) return;
+        this.effects.clear();
+        this.pieces.clear();
+        this.robberMarker = null;
+        const previousBoard = this.renderedState?.board;
+        this.renderedState = state;
+        this.renderedPlacement = this.session.placement;
+        this.boardObjects.removeAll(true);
+        if (!state) { this.coast?.destroy(); this.coast = null; return; }
+        if (force || state.board !== previousBoard || !this.coast) {
+            this.coast?.destroy();
+            this.coast = createBoardCoast(this, state.board, this.layout).setDepth(-1);
+        }
+        for (const tile of state.board.tiles) this.renderTile(tile);
+        const lines = this.add.graphics();
+        const roadLabels: { x: number; y: number; text: string }[] = [];
+        const targets = new Set(this.session.targets);
+        const placement = this.session.placement;
         for (const edge of Object.values(state.board.edges)) {
-            const first = this.toScreen(state.board.vertices[edge.vertexIds[0]]);
-            const second = this.toScreen(state.board.vertices[edge.vertexIds[1]]);
-            const owner = edge.road ? state.players.find(({ id }) => id === edge.road!.ownerId) : undefined;
-
-            const emptyEdgeColor = this.mode === 'road' ? 0xd6bb7f : 0x231f1b;
-            const emptyEdgeWidth = this.mode === 'road' ? 3 : 2;
-            const emptyEdgeAlpha = this.mode === 'road' ? 0.8 : 0.52;
-            edgeGraphics.lineStyle(
-                edge.road ? 7 : emptyEdgeWidth,
-                owner?.color ?? emptyEdgeColor,
-                edge.road ? 1 : emptyEdgeAlpha,
-            );
-            edgeGraphics.beginPath();
-            edgeGraphics.moveTo(first.x, first.y);
-            edgeGraphics.lineTo(second.x, second.y);
-            edgeGraphics.strokePath();
-
-            if (state.phase === 'actions' && this.mode === 'road' && edge.road === null) {
-                const hitArea = this.segmentHitArea(first.x, first.y, second.x, second.y, 12);
-                const hit = this.add.graphics().setInteractive(hitArea, Geom.Polygon.Contains);
-                hit.on('pointerdown', () => this.onEdge(edge));
-                this.ui.add(hit);
+            const a = this.toScreen(state.board.vertices[edge.vertexIds[0]]), b = this.toScreen(state.board.vertices[edge.vertexIds[1]]);
+            const owner = state.players.find(({ id }) => id === edge.road?.ownerId);
+            const eligible = placement?.kind === 'road' && targets.has(edge.id);
+            const selected = eligible && placement.targetId === edge.id;
+            if (selected) this.line(lines, a, b, 13, 0xffefb0, 0.8);
+            this.line(lines, a, b, owner || selected ? 7 : eligible ? 5 : 2,
+                owner?.color ?? (selected ? state.players[state.activePlayerIndex].color : eligible ? 0xf5d283 : 0x231f1b),
+                owner ? 1 : selected ? 0.7 : eligible ? 1 : 0.5);
+            if (owner) {
+                // Paired with player number to keep ownership readable beyond color.
+                roadLabels.push({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, text: number(state.players.indexOf(owner) + 1) });
             }
         }
-
-        this.ui.add(edgeGraphics);
-
+        this.boardObjects.add(lines);
+        for (const label of roadLabels) this.text(label.x, label.y, label.text, 10, '#16202a');
         for (const vertex of Object.values(state.board.vertices)) {
-            this.renderVertex(vertex);
+            const p = this.toScreen(vertex);
+            const eligible = (placement?.kind === 'settlement' || placement?.kind === 'city') && targets.has(vertex.id);
+            const selected = eligible && placement?.targetId === vertex.id;
+            const owner = state.players.find(({ id }) => id === vertex.building?.ownerId);
+            if (eligible) this.circle(p.x, p.y, selected ? 16 : 12, 0xf5d283, selected ? 0.8 : 0.5, 0xffefc3);
+            if (owner || selected) {
+                const marker = this.add.graphics();
+                marker.fillStyle(owner?.color ?? state.players[state.activePlayerIndex].color, selected ? 0.65 : 1).lineStyle(2, 0x18232c);
+                const city = vertex.building?.type === 'city' || (selected && placement?.kind === 'city');
+                if (city) { marker.fillRoundedRect(-10, -10, 20, 20, 3); marker.strokeRoundedRect(-10, -10, 20, 20, 3); }
+                else { marker.fillTriangle(0, -11, -10, 8, 10, 8); marker.strokeTriangle(0, -11, -10, 8, 10, 8); }
+                const piece = this.add.container(p.x, p.y, [marker]);
+                this.boardObjects.add(piece);
+                this.pieces.set(vertex.id, piece);
+                if (owner) piece.add(this.text(0, city ? 0 : 2, number(state.players.indexOf(owner) + 1), 10, '#16202a'));
+            }
         }
     }
-
-    private renderTile(tile: GameState['board']['tiles'][number]): void {
-        const { x: centerX, y: centerY } = boardToScreen(tile);
-        const points = Array.from({ length: 6 }, (_, index) => {
-            const angle = ((-90 + index * 60) * Math.PI) / 180;
-            return {
-                x: Math.cos(angle) * HEX_SIZE,
-                y: Math.sin(angle) * HEX_SIZE,
-            };
-        });
-        const tileGraphics = this.add.graphics({ x: centerX, y: centerY });
-
-        tileGraphics.fillStyle(TERRAIN_COLORS[tile.terrain], 1);
-        tileGraphics.lineStyle(2, 0xe4d4ae, 0.95);
-        tileGraphics.beginPath();
-        tileGraphics.moveTo(points[0].x, points[0].y);
-        for (const point of points.slice(1)) {
-            tileGraphics.lineTo(point.x, point.y);
-        }
-        tileGraphics.closePath();
-        tileGraphics.fillPath();
-        tileGraphics.strokePath();
-        this.ui.add(tileGraphics);
-
-        // The point-up hex fills the source canvas vertically; preserve its aspect
-        // ratio and clip stray export pixels to the same geometry as the board.
-        const terrain = this.add.image(centerX, centerY, TERRAIN_KEYS[tile.terrain]);
-        terrain.setScale((HEX_SIZE * 2) / terrain.height);
-        const maskShape = this.add.graphics({ x: centerX, y: centerY });
-        maskShape.fillStyle(0xffffff);
-        maskShape.beginPath();
-        maskShape.moveTo(points[0].x, points[0].y);
-        for (const point of points.slice(1)) {
-            maskShape.lineTo(point.x, point.y);
-        }
-        maskShape.closePath();
-        maskShape.fillPath();
+    private line(graphics: GameObjects.Graphics, a: { x: number; y: number }, b: { x: number; y: number }, width: number, color: number, alpha = 1): void {
+        graphics.lineStyle(width, color, alpha).beginPath().moveTo(a.x, a.y).lineTo(b.x, b.y).strokePath();
+    }
+    private renderTile(tile: HexTile): void {
+        const { x, y } = this.toScreen(tile);
+        const radius = this.layout.hexRadius;
+        const points = Array.from({ length: 6 }, (_, i) => { const angle = (-90 + i * 60) * Math.PI / 180; return { x: Math.cos(angle) * radius, y: Math.sin(angle) * radius }; });
+        const polygon = (graphics: GameObjects.Graphics) => {
+            graphics.beginPath().moveTo(points[0].x, points[0].y);
+            for (const p of points.slice(1)) graphics.lineTo(p.x, p.y);
+            return graphics.closePath();
+        };
+        const backplate = this.add.graphics({ x, y }).fillStyle(TERRAIN_COLORS[tile.terrain]).lineStyle(2, 0xe4d4ae);
+        polygon(backplate).fillPath().strokePath();
+        this.boardObjects.add(backplate);
+        const terrain = this.add.image(x, y, `terrain-${tile.terrain}`);
+        terrain.setScale(radius * 2 / terrain.height);
+        const maskShape = this.add.graphics({ x, y }).fillStyle(0xffffff);
+        polygon(maskShape).fillPath();
         maskShape.setVisible(false);
         const mask = maskShape.createGeometryMask();
-        terrain.setMask(mask);
-        terrain.once('destroy', () => mask.destroy());
-        this.ui.add([terrain, maskShape]);
-
+        terrain.setMask(mask).once('destroy', () => mask.destroy());
+        this.boardObjects.add([terrain, maskShape]);
+        const roll = this.session.state!.lastRoll;
+        if (roll && roll[0] + roll[1] === tile.number && !tile.robber) {
+            const highlight = this.add.graphics({ x, y }).lineStyle(3, 0xffebaf, 0.85);
+            polygon(highlight).strokePath();
+            this.boardObjects.add(highlight);
+        }
         if (tile.number !== null) {
-            this.addCircle(centerX, centerY + 19, 12, 0xf0dfb7, 1, 0x392f25);
-            this.addText(centerX, centerY + 19, this.toPersianNumber(tile.number), 14, tile.number === 6 || tile.number === 8 ? '#a33d2e' : '#332a22');
-        } else {
-            const label = this.addText(centerX, centerY + 19, FA.desert, 11, '#2f261d');
-            label.setBackgroundColor('#f0dfb7').setPadding(4, 2);
+            if (this.textures.exists('art-number')) {
+                const token = this.add.image(x, y + radius * 0.48, 'art-number', 'crop');
+                token.setScale(26 / token.width);
+                this.boardObjects.add(token);
+            } else this.circle(x, y + radius * 0.48, 12, 0xf0dfb7, 1, 0x392f25);
+            this.text(x, y + radius * 0.48, number(tile.number), 14, tile.number === 6 || tile.number === 8 ? '#a33d2e' : '#332a22');
+        } else this.text(x, y + radius * 0.48, 'بیابان', 11, '#2f261d').setBackgroundColor('#f0dfb7').setPadding(3, 1);
+        const preview = this.session.placement?.kind === 'robber' && this.session.placement.targetId === tile.id;
+        if (this.session.placement?.kind === 'robber' && !tile.robber) {
+            const rim = this.add.graphics({ x, y }).lineStyle(preview ? 4 : 2, 0xffd77b, preview ? 1 : 0.65);
+            polygon(rim).strokePath();
+            this.boardObjects.add(rim);
         }
-
-        if (tile.robber) {
-            this.addCircle(centerX, centerY - 30, 9, 0x2a1d1c, 1, 0xf0d9ac);
-            this.addText(centerX, centerY - 30, 'ر', 10, '#f0d9ac');
-        }
-
-        if (this.gameState?.phase === 'robber') {
-            const interactiveTile = this.add.graphics({ x: centerX, y: centerY });
-            interactiveTile.setInteractive(new Geom.Polygon(points), Geom.Polygon.Contains);
-            interactiveTile.on('pointerdown', () => this.onRobberTile(tile.id));
-            this.ui.add(interactiveTile);
-        }
-    }
-
-    private renderVertex(vertex: BoardVertex): void {
-        const point = this.toScreen(vertex);
-
-        if (vertex.building) {
-            const owner = this.gameState!.players.find(({ id }) => id === vertex.building!.ownerId)!;
-            const marker = this.add.graphics();
-            marker.fillStyle(owner.color, 1);
-            marker.lineStyle(2, 0x271f18, 1);
-
-            if (vertex.building.type === 'city') {
-                marker.fillRoundedRect(point.x - 11, point.y - 11, 22, 22, 5);
-                marker.strokeRoundedRect(point.x - 11, point.y - 11, 22, 22, 5);
-                marker.fillStyle(0xf3e2bf, 1);
-                marker.fillRect(point.x - 3, point.y - 4, 6, 11);
+        if (tile.robber || preview) {
+            const marker = this.add.container(x, y - radius * 0.53).setAlpha(preview ? 0.55 : 1);
+            this.boardObjects.add(marker);
+            if (this.textures.exists('art-robber')) {
+                const shadow = this.add.ellipse(0, 15, 15, 5, 0x151b20, 0.5);
+                const robber = this.add.image(0, 0, 'art-robber', 'crop');
+                robber.setScale(Math.min(32, radius * 0.85) / robber.height);
+                marker.add([shadow, robber]);
             } else {
-                marker.fillCircle(point.x, point.y, 10);
-                marker.strokeCircle(point.x, point.y, 10);
+                marker.add(this.add.circle(0, 0, 10, 0x2a1d1c).setStrokeStyle(2, 0xf0d9ac));
+                marker.add(this.text(0, 0, 'ر', 12, '#f0d9ac'));
             }
-
-            this.ui.add(marker);
-        }
-
-        const canChoose = this.gameState?.phase === 'actions'
-            && (this.mode === 'settlement' || (this.mode === 'city' && vertex.building?.ownerId === this.gameState.players[this.gameState.activePlayerIndex].id));
-
-        if (canChoose) {
-            const marker = this.add.circle(point.x, point.y, 19, vertex.building ? 0xe7c26c : 0xeadfbf, 0.4)
-                .setStrokeStyle(2, 0x221d17, 0.9)
-                .setInteractive(new Geom.Circle(0, 0, 22), Geom.Circle.Contains);
-            marker.on('pointerdown', () => this.onVertex(vertex));
-            this.ui.add(marker);
+            if (tile.robber) this.robberMarker = marker;
         }
     }
-
-    private renderResources(): void {
-        const player = this.gameState!.players[this.gameState!.activePlayerIndex];
-        this.addPanel(13, 500, 364, 88, 0.96);
-
-        RESOURCE_TYPES.forEach((resource, index) => {
-            const centerX = 49 + index * 73;
-            const icon = this.add.image(centerX, 530, RESOURCE_SHEET_KEY, resource).setDisplaySize(27, 27);
-            this.ui.add(icon);
-            this.addText(centerX, 558, this.toPersianNumber(player.resources[resource]), 14, '#fff1d7');
-            this.addText(centerX, 576, FA.resources[resource], 10, '#d7c9ab');
-
-            if (this.mode === 'trade-give' || this.mode === 'trade-receive') {
-                const hit = this.add.rectangle(centerX, 542, 65, 80, 0xffffff, 0.001)
-                    .setInteractive();
-                hit.on('pointerdown', () => this.onTradeResource(resource));
-                this.ui.add(hit);
-            }
-        });
-    }
-
-    private renderActions(): void {
-        const state = this.gameState!;
-        const active = state.phase === 'actions';
-        const modeHint = this.getModeHint();
-
-        this.addText(WIDTH / 2, 608, this.notice || modeHint, 12, this.notice ? '#f2d89b' : '#e9dfc9');
-        this.addButton(FA.buildRoad, 16, 624, 174, 56, () => this.selectMode('road'), 0x364e45, active, 14);
-        this.addButton(FA.buildSettlement, 200, 624, 174, 56, () => this.selectMode('settlement'), 0x65523b, active, 14);
-        this.addButton(FA.upgradeCity, 16, 686, 174, 56, () => this.selectMode('city'), 0x63513e, active, 14);
-        this.addButton(FA.bankTrade, 200, 686, 174, 56, () => this.selectMode('trade-give'), 0x3f5265, active, 13);
-        this.addButton(FA.endTurn, 16, 747, 358, 58, () => this.onEndTurn(), 0x8b5839, active, 16);
-    }
-
-    private getModeHint(): string {
-        if (this.gameState?.phase === 'roll') {
-            return FA.normalRoll;
-        }
-        if (this.gameState?.phase === 'robber') {
-            return FA.chooseRobberTile;
-        }
-        if (this.mode === 'road') {
-            return FA.chooseRoadEdge;
-        }
-        if (this.mode === 'settlement') {
-            return FA.chooseSettlementVertex;
-        }
-        if (this.mode === 'city') {
-            return FA.chooseCity;
-        }
-        if (this.mode === 'trade-give') {
-            return FA.chooseTradeGive;
-        }
-        if (this.mode === 'trade-receive') {
-            return `${FA.chooseTradeReceive} ${this.tradeGive ? FA.resources[this.tradeGive] : ''}`;
-        }
-
-        return FA.buildHint;
-    }
-
-    private selectMode(mode: InteractionMode): void {
-        this.mode = mode;
-        this.tradeGive = null;
-        this.notice = '';
-        this.render();
-    }
-
-    private onRoll(): void {
-        if (!this.gameState) {
-            return;
-        }
-
-        const result = rollDice(this.gameState);
-        this.applyResult(result, result.ok && result.state.phase === 'robber'
-            ? FA.seven
-            : `${FA.rolled}: ${result.ok ? this.toPersianNumber(result.state.lastRoll![0] + result.state.lastRoll![1]) : ''}`);
-    }
-
-    private onRobberTile(tileId: string): void {
-        if (this.gameState) {
-            this.applyResult(moveRobber(this.gameState, tileId), FA.robberMoved);
-        }
-    }
-
-    private onEdge(edge: BoardEdge): void {
-        if (this.gameState) {
-            this.applyResult(buildRoad(this.gameState, edge.id), FA.roadBuilt);
-        }
-    }
-
-    private onVertex(vertex: BoardVertex): void {
-        if (!this.gameState) {
-            return;
-        }
-
-        if (this.mode === 'settlement') {
-            this.applyResult(buildSettlement(this.gameState, vertex.id), FA.settlementBuilt);
-        } else if (this.mode === 'city') {
-            this.applyResult(upgradeCity(this.gameState, vertex.id), FA.cityBuilt);
-        }
-    }
-
-    private onTradeResource(resource: ResourceType): void {
-        if (!this.gameState) {
-            return;
-        }
-
-        if (this.mode === 'trade-give') {
-            this.tradeGive = resource;
-            this.mode = 'trade-receive';
-            this.notice = '';
-            this.render();
-            return;
-        }
-
-        if (this.mode === 'trade-receive' && this.tradeGive) {
-            this.applyResult(tradeWithBank(this.gameState, this.tradeGive, resource), FA.tradeCompleted);
-        }
-    }
-
-    private onEndTurn(): void {
-        if (this.gameState) {
-            this.mode = 'none';
-            this.tradeGive = null;
-            this.applyResult(endTurn(this.gameState), FA.nextTurn);
-        }
-    }
-
-    private applyResult(result: ReturnType<typeof rollDice>, successNotice: string): void {
-        if (!result.ok) {
-            this.notice = FA.errors[result.reason];
-        } else {
-            this.gameState = result.state;
-            this.notice = successNotice;
-            this.mode = 'none';
-            this.tradeGive = null;
-        }
-
-        this.render();
-
-    }
-
-    private renderWinner(): void {
-        const winner = this.gameState!.players.find(({ id }) => id === this.gameState!.winnerId)!;
-        const overlay = this.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, 0x11161e, 0.78);
-        this.ui.add(overlay);
-        this.addPanel(32, 312, 326, 220, 1);
-        this.addText(WIDTH / 2, 357, FA.winnerTitle, 22, '#f5e8c7');
-        this.addCircle(WIDTH / 2, 405, 9, winner.color);
-        this.addText(WIDTH / 2, 440, `${winner.name} ${FA.winnerSuffix}`, 19, '#fff4dc');
-        this.addText(WIDTH / 2, 476, `${FA.score} ${this.toPersianNumber(getVictoryPoints(this.gameState!, winner.id))}`, 15, '#d9d2c0');
-        this.addButton(FA.newGame, 96, 564, 198, 54, () => {
-            this.gameState = null;
-            this.notice = '';
-            this.render();
-        }, 0x8b5839, true, 16);
-    }
-
-    private addPanel(x: number, y: number, width: number, height: number, alpha = 0.9): GameObjects.Graphics {
-        const panel = this.add.graphics();
-        panel.fillStyle(0x141a23, alpha);
-        panel.fillRoundedRect(x, y, width, height, 18);
-        panel.lineStyle(1, 0xe1c99b, 0.24);
-        panel.strokeRoundedRect(x, y, width, height, 18);
-        this.ui.add(panel);
-        return panel;
-    }
-
-    private addText(
-        x: number,
-        y: number,
-        value: string,
-        fontSize: number,
-        color: string,
-        originX = 0.5,
-        originY = 0.5,
-        rightToLeft = true,
-    ): GameObjects.Text {
-        const text = this.add.text(x, y, value, {
-            fontFamily: UI_FONT_FAMILY,
-            fontSize: `${fontSize}px`,
-            color,
-            align: rightToLeft ? 'right' : 'center',
-            rtl: rightToLeft,
-        }).setOrigin(originX, originY);
-        this.ui.add(text);
+    private text(x: number, y: number, value: string, size: number, color: string): GameObjects.Text {
+        const text = this.add.text(x, y, value, { fontFamily: UI_FONT_FAMILY, fontSize: `${size}px`, color, rtl: true }).setOrigin(0.5);
+        this.boardObjects.add(text);
         return text;
     }
-
-    private addButton(
-        label: string,
-        x: number,
-        y: number,
-        width: number,
-        height: number,
-        onClick: () => void,
-        color: number,
-        enabled = true,
-        fontSize = 15,
-    ): void {
-        const button = this.add.graphics();
-        button.fillStyle(enabled ? color : 0x41434a, enabled ? 0.98 : 0.78);
-        button.fillRoundedRect(x, y, width, height, 15);
-        button.lineStyle(1, 0xf4dfb2, enabled ? 0.38 : 0.16);
-        button.strokeRoundedRect(x, y, width, height, 15);
-        this.ui.add(button);
-
-        this.addText(x + width / 2, y + height / 2, label, fontSize, enabled ? '#fff4df' : '#aaa89f');
-
-        if (enabled) {
-            button.setInteractive(new Geom.Rectangle(x, y, width, height), Geom.Rectangle.Contains);
-            button.on('pointerdown', onClick);
+    private circle(x: number, y: number, radius: number, color: number, alpha = 1, stroke = 0x271f18): void {
+        this.boardObjects.add(this.add.circle(x, y, radius, color, alpha).setStrokeStyle(2, stroke));
+    }
+    private selectAt(x: number, y: number): void {
+        const state = this.session.state;
+        if (!state || this.session.sheet) return;
+        const placement = this.session.placement;
+        if (placement?.kind === 'road') {
+            let nearest: string | null = null, best = Infinity;
+            for (const id of this.session.targets) {
+                const edge = state.board.edges[id];
+                const a = this.toScreen(state.board.vertices[edge.vertexIds[0]]), b = this.toScreen(state.board.vertices[edge.vertexIds[1]]);
+                const dx = b.x - a.x, dy = b.y - a.y;
+                const t = Math.max(0, Math.min(1, ((x - a.x) * dx + (y - a.y) * dy) / (dx * dx + dy * dy)));
+                const distance = Math.hypot(x - a.x - t * dx, y - a.y - t * dy);
+                if (distance < best) { nearest = id; best = distance; }
+            }
+            if (nearest && best * this.cameras.main.zoom <= 28) this.session.preview(nearest);
+        } else if (placement?.kind === 'settlement' || placement?.kind === 'city') {
+            const nearest = this.session.targets.map((id) => { const p = this.toScreen(state.board.vertices[id]); return { id, distance: Math.hypot(x - p.x, y - p.y) }; }).sort((a, b) => a.distance - b.distance)[0];
+            if (nearest && nearest.distance * this.cameras.main.zoom <= 28) this.session.preview(nearest.id);
+        } else {
+            const tile = state.board.tiles.find((tile) => {
+                const p = this.toScreen(tile), dx = Math.abs(x - p.x) / this.layout.hexRadius, dy = Math.abs(y - p.y) / this.layout.hexRadius;
+                return dx <= Math.sqrt(3) / 2 && dy <= 1 && dy + dx / Math.sqrt(3) <= 1;
+            });
+            if (tile) {
+                if (placement?.kind === 'robber') this.session.preview(tile.id);
+                else this.session.openSheet({ kind: 'tile', id: tile.id });
+            }
         }
-    }
-
-    private addCircle(x: number, y: number, radius: number, color: number, alpha = 1, strokeColor?: number): void {
-        const circle = this.add.graphics();
-        circle.fillStyle(color, alpha);
-        circle.fillCircle(x, y, radius);
-        if (strokeColor !== undefined) {
-            circle.lineStyle(1, strokeColor, 1);
-            circle.strokeCircle(x, y, radius);
-        }
-        this.ui.add(circle);
-    }
-
-    private toScreen(vertex: Pick<BoardVertex, 'x' | 'y'>): { x: number; y: number } {
-        return boardToScreen(vertex);
-    }
-
-    private segmentHitArea(x1: number, y1: number, x2: number, y2: number, halfWidth: number): Geom.Polygon {
-        const dx = x2 - x1;
-        const dy = y2 - y1;
-        const length = Math.hypot(dx, dy) || 1;
-        const offsetX = (dy / length) * halfWidth;
-        const offsetY = (-dx / length) * halfWidth;
-        return new Geom.Polygon([
-            { x: x1 + offsetX, y: y1 + offsetY },
-            { x: x2 + offsetX, y: y2 + offsetY },
-            { x: x2 - offsetX, y: y2 - offsetY },
-            { x: x1 - offsetX, y: y1 - offsetY },
-        ]);
-    }
-
-    private toPersianNumber(value: number): string {
-        return String(value).replace(/[0-9]/g, (digit) => '۰۱۲۳۴۵۶۷۸۹'[Number(digit)]);
     }
 }

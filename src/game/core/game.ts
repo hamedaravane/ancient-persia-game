@@ -1,3 +1,6 @@
+import { getProduction } from './production';
+import { canAfford, CITY_COST, ROAD_COST, SETTLEMENT_COST, getPlacementError } from './building';
+export { CITY_COST, ROAD_COST, SETTLEMENT_COST } from './building';
 import { createBoard } from './board';
 import {
     RESOURCE_TYPES,
@@ -13,27 +16,6 @@ import {
 } from './types';
 
 export const BANK_TRADE_RATIO = 4;
-export const CITY_COST: Readonly<Record<ResourceType, number>> = {
-    wood: 0,
-    brick: 0,
-    wheat: 2,
-    wool: 0,
-    stone: 3,
-};
-export const ROAD_COST: Readonly<Record<ResourceType, number>> = {
-    wood: 1,
-    brick: 1,
-    wheat: 0,
-    wool: 0,
-    stone: 0,
-};
-export const SETTLEMENT_COST: Readonly<Record<ResourceType, number>> = {
-    wood: 1,
-    brick: 1,
-    wheat: 1,
-    wool: 1,
-    stone: 0,
-};
 export const VICTORY_TARGET = 6;
 
 const PLAYER_COLORS = [0x5cb7b5, 0xd97745, 0xd5b452, 0x9d7ac8];
@@ -52,10 +34,6 @@ function success(state: GameState): ActionResult {
 
 function currentPlayer(state: GameState): Player {
     return state.players[state.activePlayerIndex];
-}
-
-function canAfford(player: Player, cost: Readonly<Record<ResourceType, number>>): boolean {
-    return RESOURCE_TYPES.every((resource) => player.resources[resource] >= cost[resource]);
 }
 
 function pay(player: Player, cost: Readonly<Record<ResourceType, number>>): Player {
@@ -196,28 +174,10 @@ export function rollDice(state: GameState, random: RandomSource = Math.random): 
 
     const gains = new Map<string, Player['resources']>();
 
-    for (const tile of state.board.tiles) {
-        if (tile.number !== total || tile.robber || tile.resource === null) {
-            continue;
-        }
-
-        for (const vertexId of tile.vertexIds) {
-            const building = state.board.vertices[vertexId].building;
-
-            if (!building) {
-                continue;
-            }
-
-            const player = state.players.find(({ id }) => id === building.ownerId);
-
-            if (!player) {
-                continue;
-            }
-
-            const resources = gains.get(player.id) ?? emptyResources();
-            resources[tile.resource] += building.type === 'city' ? 2 : 1;
-            gains.set(player.id, resources);
-        }
+    for (const grant of getProduction(state, total)) {
+        const resources = gains.get(grant.playerId) ?? emptyResources();
+        resources[grant.resource] += grant.amount;
+        gains.set(grant.playerId, resources);
     }
 
     const players = state.players.map((player) => {
@@ -275,31 +235,9 @@ export function buildRoad(state: GameState, edgeId: string): ActionResult {
         return failure(state, state.phase === 'finished' ? 'game-finished' : 'wrong-phase');
     }
 
+    const placementError = getPlacementError(state.board, player.id, 'road', edgeId);
+    if (placementError) return failure(state, placementError);
     const edge = state.board.edges[edgeId];
-
-    if (!edge) {
-        return failure(state, 'missing-target');
-    }
-
-    if (edge.road) {
-        return failure(state, 'occupied');
-    }
-
-    const connectsToNetwork = edge.vertexIds.some((vertexId) => {
-        const vertex = state.board.vertices[vertexId];
-
-        if (vertex.building) {
-            return vertex.building.ownerId === player.id;
-        }
-
-        return vertex.edgeIds.some((connectedEdgeId) => (
-            connectedEdgeId !== edgeId && state.board.edges[connectedEdgeId].road?.ownerId === player.id
-        ));
-    });
-
-    if (!connectsToNetwork) {
-        return failure(state, 'not-connected');
-    }
 
     if (!canAfford(player, ROAD_COST)) {
         return failure(state, 'insufficient-resources');
@@ -317,23 +255,9 @@ export function buildSettlement(state: GameState, vertexId: string): ActionResul
         return failure(state, state.phase === 'finished' ? 'game-finished' : 'wrong-phase');
     }
 
+    const placementError = getPlacementError(state.board, player.id, 'settlement', vertexId);
+    if (placementError) return failure(state, placementError);
     const vertex = state.board.vertices[vertexId];
-
-    if (!vertex) {
-        return failure(state, 'missing-target');
-    }
-
-    if (vertex.building) {
-        return failure(state, 'occupied');
-    }
-
-    if (vertex.neighborIds.some((neighborId) => state.board.vertices[neighborId].building !== null)) {
-        return failure(state, 'too-close');
-    }
-
-    if (!vertex.edgeIds.some((edgeId) => state.board.edges[edgeId].road?.ownerId === player.id)) {
-        return failure(state, 'not-connected');
-    }
 
     if (!canAfford(player, SETTLEMENT_COST)) {
         return failure(state, 'insufficient-resources');
@@ -354,11 +278,9 @@ export function upgradeCity(state: GameState, vertexId: string): ActionResult {
         return failure(state, state.phase === 'finished' ? 'game-finished' : 'wrong-phase');
     }
 
+    const placementError = getPlacementError(state.board, player.id, 'city', vertexId);
+    if (placementError) return failure(state, placementError);
     const vertex = state.board.vertices[vertexId];
-
-    if (!vertex?.building || vertex.building.ownerId !== player.id || vertex.building.type !== 'settlement') {
-        return failure(state, 'missing-target');
-    }
 
     if (!canAfford(player, CITY_COST)) {
         return failure(state, 'insufficient-resources');
@@ -383,13 +305,8 @@ export function tradeWithBank(
         return failure(state, state.phase === 'finished' ? 'game-finished' : 'wrong-phase');
     }
 
-    if (give === receive) {
-        return failure(state, 'same-resource-trade');
-    }
-
-    if (player.resources[give] < BANK_TRADE_RATIO) {
-        return failure(state, 'insufficient-resources');
-    }
+    const error = getBankTradeError(state, give, receive);
+    if (error) return failure(state, error);
 
     const resources = { ...player.resources };
     resources[give] -= BANK_TRADE_RATIO;
@@ -410,4 +327,12 @@ export function endTurn(state: GameState): ActionResult {
 
 export function getPlayerById(state: GameState, playerId: string): Player | undefined {
     return state.players.find(({ id }) => id === playerId);
+}
+
+/** Shared by bank commands and read-only exchange previews. */
+export function getBankTradeError(state: GameState, give: ResourceType, receive: ResourceType): RuleErrorCode | null {
+    if (state.phase === 'finished' || state.winnerId !== null) return 'game-finished';
+    if (state.phase !== 'actions') return 'wrong-phase';
+    if (give === receive) return 'same-resource-trade';
+    return state.players[state.activePlayerIndex].resources[give] < BANK_TRADE_RATIO ? 'insufficient-resources' : null;
 }

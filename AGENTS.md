@@ -18,7 +18,7 @@ For visual or interface work, also read:
 
 ## Architecture
 
-- Phaser is the presentation and input layer.
+- Phaser presents the board and handles board input. The DOM/CSS HUD owns responsive controls and modal sheets; both consume the local session adapter and core state.
 - Put deterministic rules, game state, and rule calculations in `src/game/core/` as plain TypeScript. Keep Phaser imports out of core modules.
 - Scenes and game objects read state and send player actions to core APIs. Do not put rule calculations in scenes, sprites, or animation callbacks.
 - Game state is authoritative. Animation displays state changes and never creates or reverses them.

@@ -8,7 +8,7 @@ Ancient Persia is a mobile-first Persian-language local multiplayer strategy boa
 
 The game is playable locally for three or four people sharing one device. Players take turns, roll dice, collect resources, build roads and settlements, upgrade settlements, trade with the bank, move the robber after a seven, and race to six victory points.
 
-The board and rule state live in Phaser-independent TypeScript under `src/game/core/`. Phaser scenes display that state and forward input to core actions. No online services, accounts, bots, chat, or persistence are included.
+The board and rule state live in Phaser-independent TypeScript under `src/game/core/`. A local session adapter publishes confirmed state to the Phaser board and DOM/CSS HUD. Controls use responsive layouts and focused bottom sheets; placement and bank exchanges require confirmation. No online services, accounts, bots, chat, or persistence are included.
 
 ## Match outline
 
@@ -22,7 +22,7 @@ The board and rule state live in Phaser-independent TypeScript under `src/game/c
 ## Platform
 
 - Web, designed for mobile portrait first
-- 390 × 844 reference canvas, scaled to fit the device
-- Phaser 4 presentation and input
+- 390 × 844 reference layout, responsive to the available safe area
+- Phaser 4 board presentation and targeting, DOM/CSS controls and modal sheets
 - TypeScript game state and rules
 - Persian right-to-left interface text kept in runtime strings for localization

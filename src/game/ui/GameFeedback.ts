@@ -11,7 +11,7 @@ export class GameFeedback {
     private layer = document.createElement('div');
     private animation: AnimationGroup;
     private unsubscribe: () => void;
-    private unsubscribeView: () => void;
+    private unsubscribeLayout: () => void;
     private lastId: number;
     private lastState: GameState | null;
     private lastSheet: Sheet | null;
@@ -34,7 +34,7 @@ export class GameFeedback {
         this.lastReceive = session.receive;
         // Registered after HUD and board rendering, so all destination nodes are current.
         this.unsubscribe = session.subscribe(() => this.update());
-        this.unsubscribeView = board.subscribeView(() => this.clear());
+        this.unsubscribeLayout = board.subscribeLayout(() => this.clear());
     }
     private clear(): void { this.animation.clear(); this.layer.replaceChildren(); this.board.clearEffects(); }
     private query(selector: string): HTMLElement | null { return this.parent.querySelector<HTMLElement>(selector); }
@@ -153,5 +153,5 @@ export class GameFeedback {
             { transform: `translate(${dx}px, ${dy}px) scale(0.5)`, opacity: 0 },
         ], { duration: MOTION.flight, delay: 220 + index * 35, easing: MOTION.ease }, () => flight.remove());
     }
-    destroy(): void { this.unsubscribe(); this.unsubscribeView(); this.animation.destroy(); this.board.clearEffects(); this.layer.remove(); }
+    destroy(): void { this.unsubscribe(); this.unsubscribeLayout(); this.animation.destroy(); this.board.clearEffects(); this.layer.remove(); }
 }

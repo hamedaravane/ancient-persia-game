@@ -11,7 +11,7 @@ export function StartGame(parent: HTMLElement): Game {
     const hud = new GameHud(parent, session, motion);
     let feedback: GameFeedback | null = null;
     const scene = new GameScene(session, motion, (readyScene) => {
-        hud.connectBoard(readyScene);
+        hud.boardReady();
         feedback = new GameFeedback(parent, session, readyScene, motion);
     });
     const game = new Game({

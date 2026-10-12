@@ -13,10 +13,7 @@ public/assets/
   effects/
   fonts/
   pieces/
-    city/
-    road/
     robber/
-    settlement/
   resources/
   ui/emblems/
   ui/illustrations/
@@ -56,9 +53,9 @@ Use a stable asset key in code and build the URL from `import.meta.env.BASE_URL`
 - `board/terrains/`: desert, forest, mesa, mountain, pasture, and wheat illustrations, loaded by `GameScene` with stable `terrain-` keys and displayed on their corresponding board hexes.
 - `dice/dice.png`: dice artwork; frame layout has not been documented.
 - `dice/faces.png`: supplied six-face stone dice sheet, used for the two confirmed dice in the match bar. Its front faces are ordered 1–3 across the top and 4–6 across the bottom. The source is **RGB with a baked checkerboard**, not transparent. Explicit crops and an inset silhouette clip hide the background in DOM rendering; this also omits the baked shadow and slightly trims the silhouette. A real transparent re-export is the highest-priority art cleanup. The original pixels remain unchanged.
-- `pieces/`: city, road, and settlement illustrations.
-- `pieces/robber/robber.png`: supplied traveler miniature, replacing the board's letter marker, including translucent destination previews and the existing movement effect. The crop removes generous source padding; a runtime contact shadow separates it from terrain. It displays about 32 pixels high at maximum fitted board size, above the number token.
-- `board/tokens/number.png`: supplied stone medallion, used behind runtime Persian tile numbers at approximately 26 pixels across. The desert keeps its runtime label. The illustrated frame is detailed at source size; its center is intentionally kept clear for digits.
+- Settlements, cities, and roads use reusable Phaser Graphics components rather than runtime images. Their original paintings are preserved under `art/reference/pieces/`, outside the runtime tree. See [PIECE_RENDERING.md](PIECE_RENDERING.md) for dimensions, material layers, visual states, API, and the `?demo=pieces` gallery.
+- `pieces/robber/robber.png`: supplied traveler miniature, replacing the board's letter marker, including translucent destination previews and the existing movement effect. The crop removes generous source padding; a runtime contact shadow separates it from terrain. It displays about 38.4 pixels high at maximum fitted board size, a 20% enlargement. The miniature, shadow, and fallback scale together; its center sits 0.45 hex radii above tile center, using the same offset during movement.
+- `board/tokens/number.png`: supplied stone medallion, used behind runtime Persian tile numbers at 28.6 pixels across with 15.4-pixel digits, both enlarged by 10%. The fallback circle is enlarged proportionally. The desert has no board label or number token; its name remains available in tile details. The illustrated frame is detailed at source size; its center is intentionally kept clear for digits.
 - `ui/ornaments/ornaments.png`: supplied corner, divider, and rosette sheet. Explicit source frames supply menu corners/crest/divider and small sheet-heading ornaments; there are no baked labels or separate player-color images.
 - `ui/emblems/victory.png`: supplied griffin/rosette medallion, shown at 112 pixels wide in the results sheet with runtime winner/score text below it.
 - `ui/illustrations/bank.png`: supplied trade scale, used as a small bank-action illustration and a 64-pixel trade-sheet illustration. Compact layouts omit the latter illustration to prioritize the exchange controls. The illustrated props do not introduce currencies or alter resource rules.
@@ -75,13 +72,13 @@ Use a stable asset key in code and build the URL from `import.meta.env.BASE_URL`
 | Wool | `244, 608, 484, 392` |
 | Stone | `768, 584, 496, 420` |
 
-The MVP maps forest to wood, mesa to brick, wheat to wheat, pasture to wool, and mountain to stone. The six terrain sources are 1254 × 1254 RGBA PNGs with transparent backgrounds and point-up hex compositions. They load directly at their original resolution, scale proportionally to the full tile height, and remain centered on the board geometry. A geometry mask clips stray pixels outside each exact hex boundary; a colored backplate covers minor transparent edge gaps. Masks are destroyed with their tile images on each board redraw. Number text and the desert label remain runtime overlays. Roads and player-colored buildings render above the terrain with Phaser Graphics; ownership colors remain runtime data. The supplied robber and number-token back render as cropped images.
+The MVP maps forest to wood, mesa to brick, wheat to wheat, pasture to wool, and mountain to stone. The six terrain sources are 1254 × 1254 RGBA PNGs with transparent backgrounds and point-up hex compositions. They load directly at their original resolution, scale proportionally to the full tile height, and remain centered on the board geometry. A geometry mask clips stray pixels outside each exact hex boundary; a colored backplate covers minor transparent edge gaps. Masks are destroyed with their tile images on each board redraw. Number text remains a runtime overlay; the desert is unlabelled on the board. Roads and player-colored buildings render above the terrain with Phaser Graphics; ownership colors remain runtime data. The supplied robber and number-token back render as cropped images.
 
 No runtime background removal or intermediate downsampling is applied. Keep transparency and the shared hex alignment when replacing the artwork. The originals remain individual PNGs; no terrain atlas is required by the current loader.
 
-The ocean and its coast are presentation only. CSS switches between menu and match backgrounds; the transparent Phaser canvas shows only the board over the match ocean. Coast geometry is recreated when board state or viewport measurements change, and stays below the terrain. A ResizeObserver explicitly resizes the canvas with `Scale.NONE`; only the island/camera scale, while DOM controls retain CSS-pixel touch dimensions.
+The ocean and its coast are presentation only. CSS switches between menu and match backgrounds; the transparent Phaser canvas shows only the board over the match ocean. Coast geometry is recreated when board state or viewport measurements change, and stays below the terrain. A ResizeObserver explicitly resizes the canvas with `Scale.NONE`; the island automatically fits the available width and height with a 32-pixel ocean margin for the coast and future port markers. There is no interactive zoom or panning, and DOM controls retain CSS-pixel touch dimensions.
 
-The art is retained from the existing project. Recheck resource crop rectangles against the source atlas if that image changes. The older dice sheet and building paintings remain available; the latter still need suitable ownership masks and board-scale silhouettes before replacing the ownership markers.
+The art is retained from the existing project. Recheck resource crop rectangles against the source atlas if that image changes. The older dice sheet remains available. The original settlement/city/road paintings are reference art under `art/reference/pieces/`; the user's chosen replacement is original procedural Graphics geometry, so bitmap ownership masks are not required.
 
 ## Supplied polish assets: frames and review
 

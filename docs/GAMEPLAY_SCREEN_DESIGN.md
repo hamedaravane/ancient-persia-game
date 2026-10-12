@@ -4,7 +4,7 @@ Status: approved design, researched 2026-10-11. The current-rule layout and work
 
 ## Implementation status
 
-Implemented: responsive DOM/CSS HUD and safe-area sizing, compact-height layout, active-player resource hand, public player summaries, core-derived construction costs/shortages/legal targets, board previews and explicit confirmation, reviewed 4:1 bank trades, contextual primary action, tile inspection, pinch/button zoom and fit, keyboard target/inspection selectors, modal focus handling, local event history, help, and final score breakdown. Phaser draws the original terrain, coastline, and runtime ownership markers inside the measured board viewport. A 56-pixel toolbar clearance within the board region keeps zoom and selection controls off the island. The six-point target, unlimited supplies, automatic setup, and simplified robber are unchanged.
+Implemented: responsive DOM/CSS HUD and safe-area sizing, compact-height layout, active-player resource hand, public player summaries, core-derived construction costs/shortages/legal targets, board previews and explicit confirmation, reviewed 4:1 bank trades, contextual primary action, tile inspection, automatic island fitting without zoom/pan, keyboard target/inspection selectors, modal focus handling, local event history, help, and final score breakdown. Phaser draws the original terrain, coastline, and runtime ownership markers inside the measured board viewport. The canvas uses the whole board region during ordinary play; placement adds a separate 56-pixel destination-selector row. A 32-pixel ocean margin keeps the coast visible and reserves space for future port markers. This later user decision supersedes the original zoom controls in the wireframe snapshot. The six-point target, unlimited supplies, automatic setup, and simplified robber are unchanged.
 
 Deferred until explicitly selected: cards and their deck/rules, player trading, finite piece/bank inventories, ports, awards, manual setup, discard/theft, privacy handover, sound, online services, and timers. No placeholder controls imply support for these systems. See [UI_SYSTEM.md](UI_SYSTEM.md) for implemented component responsibilities and interaction details. The wireframes remain schematic design references, including conditionally illustrated future systems.
 
@@ -102,13 +102,13 @@ Use the safe content area, not the device's raw physical screen dimensions, for 
 | Primary action | 764–828 | 64 | A large phase-dependent control |
 | Bottom spacing | 828–844 | 16 | Breathing room within the safe area |
 
-Fixed UI occupies 376 pixels; the board receives the rest. At a safe height of 763, the board region is 387 pixels. This fits the current 304-pixel land height and 16-pixel coastal shelf on each side. On shorter screens, reduce board scale or compact spacing before reducing text/controls. The bottom workspaces scroll when needed; the normal board view does not become a long scrolling page.
+Fixed UI occupies 376 pixels; the board receives the rest. At a safe height of 763, the board region is 387 pixels. This fits approximately 301 pixels of land height with the required 32-pixel ocean margin on each side. On shorter screens, reduce board scale or compact spacing before reducing text/controls. The bottom workspaces scroll when needed; the normal board view does not become a long scrolling page.
 
-At 390 pixels wide, keep the default hex radius near 38 and center the island in the measured board viewport. Its approximate land bounds are 329 × 304 pixels. Preserve aspect ratio and coast clearance. Recompute placement from the viewport rather than retaining a hard-coded y coordinate from the current screen.
+At 390 pixels wide, use a hex radius near 37.6 when height permits and center the island in the measured board viewport. Its approximate land bounds are 326 × 301 pixels. Preserve aspect ratio and the 32-pixel ocean margin. Recompute placement from the viewport rather than retaining a hard-coded y coordinate from the current screen.
 
 The four player chips get approximately 85 pixels each with 12-pixel outer margins and 8-pixel gaps. Keep them simple: a short name or initial, ownership marker, score, and resource total. Put development totals and award detail in the tapped player sheet if additional badges would crowd the chips. The viewer's score may include a clearly labeled private total when hidden scoring is implemented; opponents see only public points.
 
-At narrower widths, shorten displayed names, reduce decorative spacing, and scale only the board. Maintain about 48-pixel HUD touch targets. Board edges/intersections are closer together than that; use nearest-valid-target selection, a visible preview, and confirmation. Provide pinch zoom plus an explicit recenter control; zoom is an aid rather than a requirement for reading the ordinary board. Do not simply give every neighboring vertex a large overlapping hit circle.
+At narrower widths, shorten displayed names, reduce decorative spacing, and scale only the board. Maintain about 48-pixel HUD touch targets. Board edges/intersections are closer together than that; use nearest-valid-target selection, a visible preview, and confirmation. Fit the full board automatically to the available width and height, with no pinch zoom or panning. Keep an ocean margin for the coast and future port markers. Do not simply give every neighboring vertex a large overlapping hit circle.
 
 For a compact-height preset, reduce the player strip from 64 to 56 pixels, hand from 80 to 72, context line from 40 to 36, dock and primary rows from 64 to 56 each, and bottom spacing from 16 to 8. Keep their actual buttons at least 48 pixels high. This saves 44 pixels without reducing text sizes. Sheet content can scroll independently.
 
@@ -229,7 +229,7 @@ End-of-match results explain points and awards and provide supported rematch/lea
 
 ## Implementation direction
 
-Keep Phaser responsible for board art, camera, animation, and board targeting; keep rules in pure TypeScript. I recommend a DOM/CSS HUD for the hand, buttons, sheets, forms, and chat. It will give us real text wrapping, RTL layout, scrolling, keyboard handling, accessibility semantics, and touch dimensions independent of board zoom. This presentation split is implemented for the current-rule interface.
+Keep Phaser responsible for board art, camera, animation, and board targeting; keep rules in pure TypeScript. I recommend a DOM/CSS HUD for the hand, buttons, sheets, forms, and chat. It will give us real text wrapping, RTL layout, scrolling, keyboard handling, accessibility semantics, and touch dimensions independent of fitted board scale. This presentation split is implemented for the current-rule interface.
 
 Use a measured board viewport between the upper player strip and lower HUD. The board renderer and input transform consume the same viewport measurements. Continue to use the existing assets and derive the coast from the same geometry. Background, board, and overlays must remain aligned through resizing.
 
@@ -240,7 +240,7 @@ Expose typed presentation data for viewer identity, active identity, phase, cost
 ## Suggested delivery order
 
 1. **Current-rule UI:** reusable responsive shell, persistent five-resource hand, compact player/turn summaries, event line, Build sheet with real costs/reasons, Bank trade review, contextual primary action, and clear placement preview/confirmation. Preserve six-point victory, unlimited supplies, automatic setup, and simplified robber behavior.
-2. **Interaction polish:** board inspection/zoom, history, help, messaging, safe areas, focus, reduced motion, and local handover privacy if selected.
+2. **Interaction polish:** board inspection and automatic fitting, history, help, messaging, safe areas, focus, reduced motion, and local handover privacy if selected.
 3. **Approved rule additions:** implement each selected finite-supply, development, harbor, player-trade, award, discard/theft, or setup system in core and document its rules alongside its UI.
 4. **Online play:** authenticated viewer projection, server authority, negotiation lifecycle, pending/failed commands, reconnection, and selected timer/disconnect policies.
 

@@ -18,7 +18,9 @@ import {
 export const BANK_TRADE_RATIO = 4;
 export const VICTORY_TARGET = 6;
 
-const PLAYER_COLORS = [0x5cb7b5, 0xd97745, 0xd5b452, 0x9d7ac8];
+// Saturated ownership hues stand apart from the green/gold/stone terrain art.
+// These are session defaults; piece renderers accept any runtime RGB color.
+export const PLAYER_COLORS = [0x438bff, 0xff526e, 0x26d4e8, 0xc16bff] as const;
 
 function emptyResources(): Player['resources'] {
     return { wood: 0, brick: 0, wheat: 0, wool: 0, stone: 0 };

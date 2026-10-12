@@ -8,4 +8,9 @@ if (!parent) {
     throw new Error('Game container #game-container was not found.');
 }
 
-void loadUiFont().then(() => StartGame(parent));
+void loadUiFont().then(async () => {
+    if (new URLSearchParams(window.location.search).get('demo') === 'pieces') {
+        const { startPiecesDemo } = await import('./game/demo/piecesDemo');
+        startPiecesDemo(parent);
+    } else StartGame(parent);
+});

@@ -28,13 +28,13 @@ No dice value is fabricated for the animation. A city grant is labeled with its 
 
 - `core/production.ts` computes the pure production ledger used both to pay resources in `rollDice` and to describe a confirmed roll. Presentation does not recalculate production rules.
 - The local session publishes a monotonically identified `MatchTransition` only after a successful core command. UI drafts, modal changes, rejected actions, resizing, and animation completion do not publish a new match transition. Only the latest transition is retained, so snapshots do not accumulate in history.
-- `ui/GameFeedback.ts` consumes each transition once, after HUD and board rendering. Its pointer-transparent DOM layer bridges the canvas and HUD using camera-aware client coordinates. Offscreen sources are omitted rather than flying from unrelated positions. Hand totals and player summaries remain authoritative throughout.
+- `ui/GameFeedback.ts` consumes each transition once, after HUD and board rendering. Its pointer-transparent DOM layer bridges the canvas and HUD using fitted-board client coordinates. Offscreen sources are omitted rather than flying from unrelated positions. Hand totals and player summaries remain authoritative throughout.
 - `rendering/boardEffects.ts` owns bounded Phaser tweens. Canceling an effect restores the committed piece pose. No completion callback pays, builds, moves a robber in state, or changes a turn.
 - `ui/motion.ts` shares the live system preference and owns cancelable Web Animation groups. Bottom sheets own a separate group so a gameplay interruption cannot cancel a newly opened sheet's entrance.
-- New commands, sheet opening, camera changes, resize, leaving the match, document visibility changes, preference changes, and destruction clean up obsolete effects. Returning from a sheet does not replay payouts. Dismissing a sheet releases its modal/focus state immediately.
+- New commands, sheet opening, board layout changes, resize, leaving the match, document visibility changes, preference changes, and destruction clean up obsolete effects. Returning from a sheet does not replay payouts. Dismissing a sheet releases its modal/focus state immediately.
 - Unchanged HUD regions retain their nodes, avoiding animation restarts and unnecessary DOM replacement during drafts or inspection. Feedback nodes are decorative and excluded from accessibility announcements; existing text, counts, phase guidance, and live notices carry the information.
 - The supplied polish art now adds a small dust puff behind confirmed building markers, a road-placement sparkle, and a victory-medallion glint inside the modal. These share the existing finite animation groups, interruption cleanup, and reduced-motion policy. Dice use inspected final-face crops and never fabricate a roll for their wiggle animation.
-- No continuous ocean/parallax animation, screen shake, full-screen flashes, new dependencies, or animation-driven input locks are added. Explicit zoom/pan remains under player control, including with reduced motion.
+- No continuous ocean/parallax animation, screen shake, full-screen flashes, new dependencies, or animation-driven input locks are added. The island fits automatically without zoom/pan. Canvas resize or placement-row changes clear travel effects so resource flights never use stale positions.
 
 ## Verification
 

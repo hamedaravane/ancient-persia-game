@@ -2,6 +2,8 @@
 
 Prepared 2026-10-12 from the current implementation and a visual inspection of the existing terrain, resource, building, road, and dice artwork. This is a proposed production plan, not a change to gameplay rules or an implemented asset pipeline.
 
+**Later implementation decision:** the user chose original orthographic Phaser Graphics components for settlements, cities, and roads, with color-only board ownership and no number plates. Their bitmap/mask production proposals below are superseded by [PIECE_RENDERING.md](PIECE_RENDERING.md); the preserved original paintings now live under `art/reference/pieces/`. The current saturated ownership palette is documented in [UI_SYSTEM.md](UI_SYSTEM.md). Other asset categories remain applicable.
+
 ## 1. Direction and production priorities
 
 Build a coherent miniature Persian world: warm carved stone, restrained gold, lapis/navy surfaces, clear silhouettes, and light from the upper left. Board objects should feel like small crafted playing pieces; the interface should feel related to their materials without competing with the landscapes. Use the existing paintings as the visual reference.
@@ -33,9 +35,9 @@ Historical ornament should follow [ART_DIRECTION.md](ART_DIRECTION.md). For a sp
 
 ### Scale constraints
 
-The reference is 390 × 844 **CSS pixels**, with a maximum shell width of 480. On the reference layout the board viewport is 468 pixels high, including 56 pixels reserved for board tools; the canvas receives the remaining 412. Compact layouts reduce fixed UI rows. Actual board size comes from the available canvas, not from a fixed background image.
+The reference is 390 × 844 **CSS pixels**, with a maximum shell width of 480. On the reference layout the board viewport and canvas are 468 pixels high during ordinary play. Placement temporarily reserves 56 pixels for its destination selector. Compact layouts reduce fixed UI rows. Actual board size comes from the available canvas, not from a fixed background image.
 
-`fitBoard()` caps hex radius at 38. At that radius a point-up hex is approximately 66 × 76 pixels, an edge is 38 pixels long, and the land footprint is approximately 329 × 304 pixels. Camera zoom reaches 2.5×. Art must work at the unzoomed size first, while retaining enough resolution for zoom.
+`fitBoard()` fits the entire radius-two island to the measured canvas with a 32-pixel ocean margin on every side, reserving space for the coast and future compact port markers. There is no fixed radius cap, zoom, or panning. At a 390 × 468 canvas, hex radius is about 37.6, a point-up hex is 65 × 75 pixels, and the land footprint is 326 × 301. Art must remain readable at the fitted mobile size.
 
 | Element | Current footprint | Proposed art footprint at normal board/UI scale |
 | --- | --- | --- |
@@ -75,7 +77,7 @@ One roof or cloth band may carry player color. Give that color area enough visua
 
 ### City
 
-Use a larger stepped mass and a clear columned facade or central raised hall. Differentiate the city by silhouette and structure before detail: it must remain distinct from a settlement in grayscale and at normal zoom. Preserve the existing city's central entrance/column identity, but omit most surrounding compound structures in the board version. Do not make every structure look equally palatial.
+Use a larger stepped mass and a clear columned facade or central raised hall. Differentiate the city by silhouette and structure before detail: it must remain distinct from a settlement in grayscale and at fitted board size. Preserve the existing city's central entrance/column identity, but omit most surrounding compound structures in the board version. Do not make every structure look equally palatial.
 
 ### Roads
 
@@ -91,7 +93,7 @@ Use the same frame for every layer. Aim for roughly 80% meaningful object covera
 
 For roads, use matching 128 × 128 transparent frames per view and record two logical endpoint coordinates in each frame. Logical edge length can be 100 source pixels; paint the body between those endpoints with suitable junction gaps. Scale by endpoint distance, not the enclosing square. Supply aligned body/mask/shadow layers as for buildings.
 
-The renderer will place the building ground anchor at the vertex, keep a compact ownership plate/number readable, and layer buildings over roads. It may need depth ordering for taller art. Keep the owner number on a plain plate or reserved readable region, not over intricate stonework. Preserve the current non-color ownership cue for all four colors: teal `#5cb7b5`, terracotta `#d97745`, gold `#d5b452`, and purple `#9d7ac8`.
+The renderer places the building ground anchor at the vertex and layers buildings over roads. Ownership uses an unobstructed colored inset without a number plate; HUD badges carry player numbers. Keep neutral stone and outlines independent from the runtime ownership color. See [UI_SYSTEM.md](UI_SYSTEM.md) for the current palette.
 
 ### States and motion
 
@@ -146,7 +148,6 @@ Replace mixed text symbols and generic silhouettes with a coherent small vector 
 | Confirm / cancel | Check and close | Confirmation/dismissal where helpful |
 | More/help | Ellipsis and simple help symbol | Current top-bar help entry; no new menu required |
 | History | Short stacked list/scroll silhouette | Current context/history action |
-| Zoom in / zoom out / fit | Magnifier ± or clear ±; fit corners around a hex/island | Current board tools |
 | Score | Compact rosette/seal/star-like merit emblem | Player detail and result totals where space permits |
 | Robber / blocked | Bandit silhouette; separate blocked/slash mark | Tile status/help if needed |
 
@@ -178,7 +179,7 @@ The desert currently has a small Persian label. It can retain that runtime label
 
 Create one reusable badge frame resembling a small stone-and-metal seal, with a clean center for runtime player number and an ownership-colored inset/rim. Keep the strip version around 16–18 CSS pixels; use a more detailed 40–48-pixel version in player details if needed. Suggested exports are simple SVGs sharing a viewBox, or aligned 144 × 144 PNG frame/mask layers for a 48-pixel maximum use.
 
-Keep the four current colors, runtime player numbers, names, scores, and resource totals. Active-turn emphasis should be a static clear border/underline with a brief transition; no permanently spinning badge or flashing halo. A badge should not enlarge the 64/56-pixel player-strip row or force names offscreen.
+Use the session's runtime ownership colors, player numbers, names, scores, and resource totals in HUD badges. Active-turn emphasis should be a static clear border/underline with a brief transition; no permanently spinning badge or flashing halo. A badge should not enlarge the 64/56-pixel player-strip row or force names offscreen.
 
 A set of four distinct glyphs is optional after the basic frame works. If commissioned, use clearly distinguishable simple forms such as rosette, mountain, leaf, and column, and keep them available to any player color. These are identity aids, not different civilizations with implied rules. At 16 pixels, the number is more important than an intricate emblem. Do not commission four character portraits for these small chips.
 
@@ -208,9 +209,9 @@ The bank illustration should communicate an exchange counter, not a coastal harb
 
 Current rings, road traces, piece pops, robber slides, and resource flights already exist. Keep them. If painted textures improve the style, supply only a few reusable transparent textures: `effects/spark.png` (64 × 64), `effects/dust.png` (128 × 128), and optionally `effects/glint.png` (64 × 64). Use near-white/neutral textures for runtime tint; dust should be soft warm-neutral with transparent edges.
 
-Use a few particles on confirmed construction and a short glint on victory/resource arrival. Keep dust behind the piece, not over its owner number or tile token. A gold glint is decorative and must not be mistaken for another resource. Do not bake ownership color, resource type, numbers, or full-screen flashes into effect sheets.
+Use a few particles on confirmed construction and a short glint on victory/resource arrival. Keep dust behind the piece, clear of its ownership inset and the tile token. A gold glint is decorative and must not be mistaken for another resource. Do not bake ownership color, resource type, numbers, or full-screen flashes into effect sheets.
 
-A spritesheet is unnecessary unless the effect visibly deforms. If one is commissioned, use equal untrimmed frames with a declared frame size/count, order, frame rate, duration, pivot, and non-looping playback. The code must cancel it when a sheet opens, the camera changes, a new command arrives, motion preference changes, or the scene is destroyed. Reduced motion keeps stable cues and resource deltas. No animation creates or delays the game-state transition.
+A spritesheet is unnecessary unless the effect visibly deforms. If one is commissioned, use equal untrimmed frames with a declared frame size/count, order, frame rate, duration, pivot, and non-looping playback. The code must cancel it when a sheet opens, the board layout changes, a new command arrives, motion preference changes, or the scene is destroyed. Reduced motion keeps stable cues and resource deltas. No animation creates or delays the game-state transition.
 
 ### Resource artwork
 
@@ -261,7 +262,7 @@ For new layered source art, use a proposed non-runtime location such as `art/sou
 - RGBA PNG for painted cutouts; optimized SVG for simple glyphs/ornaments. Preserve genuine transparency. No JPEG cutouts, checkerboard backgrounds, white mattes, or opaque backgrounds disguised as transparent.
 - Use sRGB and clean antialiased edges. Inspect for pale, red, or magenta fringes against both navy and warm terrain; alpha bounds alone do not prove clean edges. Keep shadows separate when supplied.
 - Every related layer must use identical dimensions, alignment, and crop. Do not auto-trim layers independently. Record canvas size, visible bounds, normalized ground pivot, nominal display size, mask convention, and road endpoints when applicable.
-- Supply one design master per object and one runtime set, not copies per player color or device density. Proposed 128-pixel pieces cover their small normal use and zoom; enlarge only if a real proof shows a need.
+- Supply one design master per object and one runtime set, not copies per player color or device density. Proposed 128-pixel pieces cover their fitted mobile use; enlarge only if a real proof shows a need.
 - For atlases, deliver machine-readable JSON frame rectangles, original sizes, trim offsets, pivots, and animation order. Do not rely on guessed grids. Use at least 2–4 source pixels of separation/edge extrusion as appropriate to the packer, and validate texture sampling. Disable atlas rotation until the chosen Phaser/CSS loaders explicitly support it.
 - SVGs should have explicit viewBoxes, predictable stroke bounds, and no embedded text, external font dependency, scripts, or linked raster files. Decorative graphics remain separate from accessible labels.
 - For nine-slice sources, mark slice boundaries, display border widths, minimum size, and stretch/repeat behavior in the handoff. Corners cannot contain text that would need mirroring or localization.
@@ -291,8 +292,8 @@ Do not commission development-card fronts/backs, finite-inventory trays, port bu
 
 ### Acceptance criteria for each batch
 
-- Recognizable at normal zoom and real CSS size, not just on a large source canvas; clean enough at 2.5× board zoom.
-- Settlement and city remain distinct in grayscale. All four owners remain distinguishable through number and color; gold ownership is not lost against sandstone.
+- Recognizable at fitted mobile board size, not just on a large source canvas; verify the smallest supported canvas as there is no zoom control.
+- Settlement and city remain distinct in grayscale. Board ownership colors stand apart from terrain, with neutral borders preserving piece boundaries. Player numbers remain in HUD badges.
 - Tile numbers, road junctions, and valid-target cues remain clear; the robber does not hide the number token.
 - Body, mask, and shadow stay aligned during scale/move/upgrade. Road endpoints fit geometry without visible gaps or giant pillars.
 - Control frames stretch without warping ornament, text stays runtime RTL, and touch/focus behavior remains intact.

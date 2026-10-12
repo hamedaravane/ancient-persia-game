@@ -1,0 +1,11 @@
+.piece-demo { height: 100dvh; overflow: auto; background: #142330; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+.piece-demo-content { width: min(100%, 480px); margin-inline: auto; }
+.piece-demo header { padding: 20px 16px 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
+.piece-demo h1 { width: 100%; font-size: 23px; color: #f3d69e; }
+.piece-demo p { width: 100%; font-size: 13px; color: #bbcbce; }
+.piece-demo label { display: inline-flex; align-items: center; gap: 12px; font-size: 14px; }
+.piece-demo input { width: 48px; height: 48px; padding: 4px; border: 1px solid #e3bd76; border-radius: 8px; background: #203342; cursor: pointer; }
+.piece-demo a { margin-inline-start: auto; padding: 12px; color: #f3d69e; font-size: 14px; }
+.piece-demo input:focus-visible, .piece-demo a:focus-visible { outline: 3px solid #ffe4a4; outline-offset: 2px; }
+.piece-demo-canvas { width: 100%; height: 1100px; }
+.piece-demo-canvas canvas { display: block; }

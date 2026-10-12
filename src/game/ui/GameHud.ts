@@ -8,12 +8,9 @@ import { BUILD_LABELS, PHASE_LABELS, costRow, sheetContent } from './sheets';
 import { GameSession } from './session';
 import type { Motion } from './motion';
 
-export interface BoardControls { zoomBy(factor: number): void; resetView(): void }
-
 export class GameHud {
     readonly boardViewport: HTMLElement;
     private sheet: BottomSheet;
-    private controls: BoardControls | null = null;
     private unsubscribe: () => void;
     private lastNotice = '';
     private sizeObserver: ResizeObserver;
@@ -25,7 +22,7 @@ export class GameHud {
         parent.innerHTML = `<section class="main-menu" aria-label="آغاز بازی"><div class="menu-panel">${artSprite('corner', 42, 'panel-corner panel-corner--start')}${artSprite('corner', 42, 'panel-corner panel-corner--end')}${artSprite('rosette', 44, 'menu-emblem')}<p class="eyebrow">سرزمین فرصت‌ها</p><h1>${FA.title}</h1><p>${FA.subtitle}</p>${artSprite('divider', 120, 'menu-divider')}<h2>${FA.choosePlayers}</h2><div class="menu-choices">${button(FA.threePlayers, 'start:3', { className: 'button button--primary' })}${button(FA.fourPlayers, 'start:4')}</div><p class="footnote">${FA.handover}</p></div></section>
             <section class="match-screen" aria-label="صفحه بازی" hidden>
                 <header class="match-bar"></header><nav class="player-strip" aria-label="بازیکنان"></nav>
-                <div class="board-viewport"><div class="board-canvas" aria-hidden="true"></div><p class="board-loading">در حال آماده‌سازی جزیره…</p><div class="board-tools">${button('+', 'zoom:in', { className: 'icon-button', label: 'بزرگ‌نمایی صفحه' })}${button('−', 'zoom:out', { className: 'icon-button', label: 'کوچک‌نمایی صفحه' })}${button('⌖', 'zoom:fit', { className: 'icon-button', label: 'نمایش کامل جزیره' })}</div><div class="board-selection"></div></div>
+                <div class="board-viewport"><div class="board-canvas" aria-hidden="true"></div><p class="board-loading">در حال آماده‌سازی جزیره…</p><div class="board-selection"></div></div>
                 <div class="context-line"></div><section class="resource-hand" aria-label="منابع بازیکن فعال"></section><nav class="action-dock" aria-label="ابزارهای نوبت"></nav><div class="primary-row"></div><div class="bottom-space"></div>
             </section><div class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>`;
         this.boardViewport = parent.querySelector('.board-canvas')!;
@@ -41,7 +38,7 @@ export class GameHud {
         this.render();
     }
 
-    connectBoard(controls: BoardControls): void { this.controls = controls; this.part('.board-loading').hidden = true; }
+    boardReady(): void { this.part('.board-loading').hidden = true; }
     private part(selector: string): HTMLElement { return this.parent.querySelector(selector)!; }
     private updatePart(selector: string, markup: string): void {
         if (this.markup.get(selector) === markup) return;
@@ -76,6 +73,7 @@ export class GameHud {
             : state.phase === 'roll' ? FA.roll : state.phase === 'finished' ? 'نتیجه بازی' : FA.endTurn;
         this.updatePart('.primary-row', button(primaryLabel, 'primary', { className: `button button--primary${state.phase === 'actions' && !placement ? ' button--end-turn' : ''}`, disabled: !!placement && !placement.targetId }));
         const targets = this.session.targets;
+        this.part('.board-selection').classList.toggle('is-placing', !!placement);
         this.updatePart('.board-selection', placement ? `<label class="target-picker"><span class="sr-only">انتخاب محل از فهرست</span><select data-action="target" aria-label="انتخاب محل از فهرست"><option value="">انتخاب محل (${number(targets.length)})</option>${targets.map((id, i) => `<option value="${escape(id)}"${id === placement.targetId ? ' selected' : ''}>${placement.kind === 'robber' ? this.tileLabel(id) : `محل ${number(i + 1)}`}</option>`).join('')}</select></label>` : `<label class="sr-only"><span>بررسی خانه</span><select data-action="inspect"><option value="">بررسی خانه</option>${state.board.tiles.map((tile) => `<option value="${escape(tile.id)}">${this.tileLabel(tile.id)}</option>`).join('')}</select></label>`);
         if (focusAction && !this.session.sheet) [...this.parent.querySelectorAll<HTMLElement>('[data-action]')].find((el) => el.dataset.action === focusAction && !el.closest('dialog'))?.focus({ preventScroll: true });
         if (this.session.notice !== this.lastNotice) { this.part('[role="status"]').textContent = this.session.notice; this.lastNotice = this.session.notice; }
@@ -105,7 +103,6 @@ export class GameHud {
         }
         if (action === 'cancel-placement') this.session.cancelPlacement();
         if (action === 'new-game') this.session.returnToMenu();
-        if (action === 'zoom') { if (value === 'fit') this.controls?.resetView(); else this.controls?.zoomBy(value === 'in' ? 1.25 : 0.8); }
     };
     private onChange = (event: Event): void => {
         const target = event.target as HTMLSelectElement;

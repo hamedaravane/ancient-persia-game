@@ -76,7 +76,7 @@ export const FA: {
     buildRoad: 'ساخت راه',
     buildSettlement: 'ساخت آبادی',
     upgradeCity: 'ارتقا به شهر',
-    bankTrade: 'تجارت بانک ۴:۱',
+    bankTrade: 'بانک و بندرها',
     endTurn: 'پایان نوبت',
     resources: {
         wood: 'چوب',
@@ -94,6 +94,7 @@ export const FA: {
         'not-connected': 'این ساخت‌وساز به شبکه راه‌های شما وصل نیست.',
         'insufficient-resources': 'منابع کافی ندارید.',
         'same-resource-trade': 'برای مبادله باید منبع دیگری انتخاب کنید.',
+        'invalid-trade-ratio': 'این نرخ برای منبع انتخاب‌شده در دسترس شما نیست.',
         'same-robber-tile': 'راهزن باید به خانه دیگری برود.',
         'game-finished': 'بازی به پایان رسیده است.',
     },

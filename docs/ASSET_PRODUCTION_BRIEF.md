@@ -10,17 +10,17 @@ Build a coherent miniature Persian world: warm carved stone, restrained gold, la
 
 The largest opportunities are the objects and controls seen on every turn. More scenery would have less immediate value than recognizable buildings, a characterful robber, readable dice, and a consistent interface kit.
 
-| Priority | Production category | Reason |
-| --- | --- | --- |
-| First | Settlement, city, and road board pieces derived from existing art | These are still geometric markers/lines despite being central to play. |
-| First | Robber miniature and small robber icon | The current robber is a circle with a Persian letter. |
-| First | Button/panel design kit and functional icon set | These establish consistent identity across almost every interaction. |
-| Next | Six readable dice faces and a number-token back | Repeated tabletop objects become tangible and recognizable. |
-| Next | Player badge frame and a compact score emblem | Make turn ownership and progression feel intentional. |
-| Next | Victory emblem and menu brand emblem | Give the beginning and end of a match a memorable identity. |
-| Later | A few reusable effect textures and contextual illustrations | Add polish once the recurring objects work at mobile scale. |
-| Retain | Terrain, ocean, palace, and five resource illustrations | Existing art already supplies the landscape and resource identity. |
-| Defer | Development cards, ports, trading characters, awards, online assets | Their systems are not part of the current MVP. |
+| Priority | Production category                                               | Reason                                                                 |
+| -------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| First    | Settlement, city, and road board pieces derived from existing art | These are still geometric markers/lines despite being central to play. |
+| First    | Robber miniature and small robber icon                            | The current robber is a circle with a Persian letter.                  |
+| First    | Button/panel design kit and functional icon set                   | These establish consistent identity across almost every interaction.   |
+| Next     | Six readable dice faces and a number-token back                   | Repeated tabletop objects become tangible and recognizable.            |
+| Next     | Player badge frame and a compact score emblem                     | Make turn ownership and progression feel intentional.                  |
+| Next     | Victory emblem and menu brand emblem                              | Give the beginning and end of a match a memorable identity.            |
+| Later    | A few reusable effect textures and contextual illustrations       | Add polish once the recurring objects work at mobile scale.            |
+| Retain   | Terrain, ocean, palace, and five resource illustrations           | Existing art already supplies the landscape and resource identity.     |
+| Defer    | Development cards, trading characters, awards, online assets      | Their systems are not part of the current MVP.                         |
 
 Historical ornament should follow [ART_DIRECTION.md](ART_DIRECTION.md). For a specific architectural reference, the Met's [Achaemenid bull capital](https://www.metmuseum.org/art/collection/search/324025) supports a stylized paired-animal/column vocabulary. The British Museum's [Achaemenid luxury guide](https://www.britishmuseum.org/sites/default/files/2023-04/Luxury_and_power_large_print_guide.pdf) discusses rosette ornament on Persian vessels. Our proposed use of these references in button corners and emblems is a contemporary game-design interpretation, not a reconstruction of an ancient interface. Avoid automatically treating every ancient Near Eastern motif as Persian or combining unrelated periods.
 
@@ -37,33 +37,33 @@ Historical ornament should follow [ART_DIRECTION.md](ART_DIRECTION.md). For a sp
 
 The reference is 390 × 844 **CSS pixels**, with a maximum shell width of 480. On the reference layout the board viewport and canvas are 468 pixels high during ordinary play. Placement temporarily reserves 56 pixels for its destination selector. Compact layouts reduce fixed UI rows. Actual board size comes from the available canvas, not from a fixed background image.
 
-`fitBoard()` fits the entire radius-two island to the measured canvas with a 32-pixel ocean margin on every side, reserving space for the coast and future compact port markers. There is no fixed radius cap, zoom, or panning. At a 390 × 468 canvas, hex radius is about 37.6, a point-up hex is 65 × 75 pixels, and the land footprint is 326 × 301. Art must remain readable at the fitted mobile size.
+`fitBoard()` fits the entire radius-two island to the measured canvas with a 40-pixel ocean margin on every side, reserving space for the coast and procedural port markers. There is no fixed radius cap, zoom, or panning. At a 390 × 468 canvas, hex radius is about 35.8, a point-up hex is 62 × 72 pixels, and the land footprint is 310 × 286. Art must remain readable at the fitted mobile size.
 
-| Element | Current footprint | Proposed art footprint at normal board/UI scale |
-| --- | --- | --- |
-| Settlement | Triangle, 20 × 19 board pixels | Visible body about 20–22 wide × 22–26 high |
-| City | Rounded square, 20 × 20 | Visible body about 24–26 wide × 26–30 high |
-| Road | 7-pixel stroke along a 38-pixel edge | Body about 26–30 long × 7–9 wide, excluding small shadow |
-| Robber | 20-pixel circle | Visible body about 18–22 wide × 26–28 high |
-| Number token | 24-pixel circle with 14-pixel text | Retain approximately 24-pixel diameter |
-| Resource icon | Maximum 32-pixel dimension; smaller in compact costs | Retain current footprint |
-| Functional icon | Mixed text symbols/CSS silhouettes | Usually 20–24 CSS pixels inside existing controls |
-| Main touch control | 48-pixel minimum button height | Keep 48; ornament fits inside it |
-| Player ownership badge | 16-pixel circle, 48 in details | Keep compact badge near 16–18; larger version in details |
+| Element                | Current footprint                                    | Proposed art footprint at normal board/UI scale          |
+| ---------------------- | ---------------------------------------------------- | -------------------------------------------------------- |
+| Settlement             | Triangle, 20 × 19 board pixels                       | Visible body about 20–22 wide × 22–26 high               |
+| City                   | Rounded square, 20 × 20                              | Visible body about 24–26 wide × 26–30 high               |
+| Road                   | 7-pixel stroke along a 38-pixel edge                 | Body about 26–30 long × 7–9 wide, excluding small shadow |
+| Robber                 | 20-pixel circle                                      | Visible body about 18–22 wide × 26–28 high               |
+| Number token           | 24-pixel circle with 14-pixel text                   | Retain approximately 24-pixel diameter                   |
+| Resource icon          | Maximum 32-pixel dimension; smaller in compact costs | Retain current footprint                                 |
+| Functional icon        | Mixed text symbols/CSS silhouettes                   | Usually 20–24 CSS pixels inside existing controls        |
+| Main touch control     | 48-pixel minimum button height                       | Keep 48; ornament fits inside it                         |
+| Player ownership badge | 16-pixel circle, 48 in details                       | Keep compact badge near 16–18; larger version in details |
 
 New footprints are starting targets for a size proof, not approved layout changes. There is little room to enlarge a building without obscuring a neighboring tile, road junction, or number. A 128-pixel export is a texture size, not permission to display it 128 pixels wide.
 
 ### Existing artwork audit
 
-| Existing file | Inspection | Production action |
-| --- | --- | --- |
-| `pieces/settlement/settlement.png`, 1254 × 1254 RGBA | Detailed multi-building compound, trees, jars, bright magenta roofs/bands | Preserve as a source reference and possible larger construction illustration. Make a simpler board-scale derivative and explicit recoloring mask. |
-| `pieces/city/city.png`, 1312 × 1199 RGBA | Monumental central building, columns, stairway, surrounding structures; magenta color areas | Preserve. Derive a distinct, compact city silhouette rather than shrinking the entire compound to 24 pixels. |
-| `pieces/road/road.png`, 1536 × 1024 RGBA | Raised diagonal stone span, large end pillars, magenta center, broad surrounding glow | Preserve as a style reference. Its pillars/glow and fixed perspective do not fit narrow shared board edges; derive a restrained paving segment. |
-| `dice/dice.png`, 1254 × 1254 RGBA | Many dice poses packed into one sheet, warm body and navy pips | Preserve. Select usable faces only after documenting bounds/value/orientation; otherwise derive six clean final faces from this style. There is no documented animation order. |
-| `resources/resources.png`, 1448 × 1086 RGBA | Five distinct, cohesive painted objects | Reuse. Existing crops are documented in [ASSET_GUIDE.md](ASSET_GUIDE.md). |
-| Six terrain PNGs, each 1254 × 1254 RGBA | Detailed point-up hex paintings | Retain geometry, crop, alignment, and paintings. |
-| Palace and ocean backgrounds | Correctly separated menu/match uses | Retain. No additional gameplay wallpaper is needed. |
+| Existing file                                        | Inspection                                                                                  | Production action                                                                                                                                                              |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `pieces/settlement/settlement.png`, 1254 × 1254 RGBA | Detailed multi-building compound, trees, jars, bright magenta roofs/bands                   | Preserve as a source reference and possible larger construction illustration. Make a simpler board-scale derivative and explicit recoloring mask.                              |
+| `pieces/city/city.png`, 1312 × 1199 RGBA             | Monumental central building, columns, stairway, surrounding structures; magenta color areas | Preserve. Derive a distinct, compact city silhouette rather than shrinking the entire compound to 24 pixels.                                                                   |
+| `pieces/road/road.png`, 1536 × 1024 RGBA             | Raised diagonal stone span, large end pillars, magenta center, broad surrounding glow       | Preserve as a style reference. Its pillars/glow and fixed perspective do not fit narrow shared board edges; derive a restrained paving segment.                                |
+| `dice/dice.png`, 1254 × 1254 RGBA                    | Many dice poses packed into one sheet, warm body and navy pips                              | Preserve. Select usable faces only after documenting bounds/value/orientation; otherwise derive six clean final faces from this style. There is no documented animation order. |
+| `resources/resources.png`, 1448 × 1086 RGBA          | Five distinct, cohesive painted objects                                                     | Reuse. Existing crops are documented in [ASSET_GUIDE.md](ASSET_GUIDE.md).                                                                                                      |
+| Six terrain PNGs, each 1254 × 1254 RGBA              | Detailed point-up hex paintings                                                             | Retain geometry, crop, alignment, and paintings.                                                                                                                               |
+| Palace and ocean backgrounds                         | Correctly separated menu/match uses                                                         | Retain. No additional gameplay wallpaper is needed.                                                                                                                            |
 
 The magenta areas are visible in the building/road files, but there is no ownership-mask contract in the loader. Do not assume that a chroma-key operation will produce clean color masks. Fine roof shading and gold details need deliberate separation by the artist.
 
@@ -138,18 +138,18 @@ Retain ivory-on-navy and dark-on-gold text contrast. Meaningful outlines, select
 
 Replace mixed text symbols and generic silhouettes with a coherent small vector set. Use a 24 × 24 viewBox, approximately 2-unit strokes where stroked, optical centering, and broadly consistent weight. At 20–24 CSS pixels, thin detailed relief drawings will disappear. Prefer a single monochrome shape or two restrained tones over miniature paintings for basic controls.
 
-| Icon | Visual brief | Existing/future placement |
-| --- | --- | --- |
-| Build | Small stepped building/columned facade | Current build dock |
-| Bank trade | Two clear exchange arrows; optional simple counter/scale hint | Current bank dock; do not imply a port or player negotiation |
-| Road / settlement / city | Distinct simplified silhouettes matching new pieces | Current construction list and player statistics |
-| Dice | Two simple dice silhouettes | Roll action, if room; final results use readable faces |
-| End turn | Handover/advance cue | Primary action; keep runtime label |
-| Confirm / cancel | Check and close | Confirmation/dismissal where helpful |
-| More/help | Ellipsis and simple help symbol | Current top-bar help entry; no new menu required |
-| History | Short stacked list/scroll silhouette | Current context/history action |
-| Score | Compact rosette/seal/star-like merit emblem | Player detail and result totals where space permits |
-| Robber / blocked | Bandit silhouette; separate blocked/slash mark | Tile status/help if needed |
+| Icon                     | Visual brief                                                  | Existing/future placement                                    |
+| ------------------------ | ------------------------------------------------------------- | ------------------------------------------------------------ |
+| Build                    | Small stepped building/columned facade                        | Current build dock                                           |
+| Bank trade               | Two clear exchange arrows; optional simple counter/scale hint | Current bank dock; do not imply a port or player negotiation |
+| Road / settlement / city | Distinct simplified silhouettes matching new pieces           | Current construction list and player statistics              |
+| Dice                     | Two simple dice silhouettes                                   | Roll action, if room; final results use readable faces       |
+| End turn                 | Handover/advance cue                                          | Primary action; keep runtime label                           |
+| Confirm / cancel         | Check and close                                               | Confirmation/dismissal where helpful                         |
+| More/help                | Ellipsis and simple help symbol                               | Current top-bar help entry; no new menu required             |
+| History                  | Short stacked list/scroll silhouette                          | Current context/history action                               |
+| Score                    | Compact rosette/seal/star-like merit emblem                   | Player detail and result totals where space permits          |
+| Robber / blocked         | Bandit silhouette; separate blocked/slash mark                | Tile status/help if needed                                   |
 
 Allow roughly 16–18 glyphs, sharing shapes where possible. Create a glyph only for a real use; confirm and cancel may remain text if their addition crowds the action. Do not invent settings, audio controls, chat, reconnection, shop, or friends buttons just because an icon exists.
 
@@ -288,7 +288,7 @@ Show all four ownership colors, a road junction with a building, two adjacent ro
 2. Finish six dice faces, token back, ownership badge, and victory/menu emblems.
 3. Add optional particle textures, contextual illustrations, and sound only if the first two batches reveal a useful gap.
 
-Do not commission development-card fronts/backs, finite-inventory trays, port buildings, player-trade panels, longest-road/army awards, online avatars, currency shops, or reconnection UI until their corresponding systems are adopted. Current gameplay has unlimited pieces, local shared-device play, bank-only trading, no cards, and no robber theft/discard. Asset production must follow those decisions.
+Do not commission development-card fronts/backs, finite-inventory trays, player-trade panels, longest-road/army awards, online avatars, currency shops, or reconnection UI until their corresponding systems are adopted. Current gameplay has unlimited pieces, local shared-device play, bank/port trading, no cards, and no robber theft/discard. Ports now use procedural stone-islet markers and the existing resource icons; no new port bitmap commission is needed. Asset production must follow those decisions.
 
 ### Acceptance criteria for each batch
 

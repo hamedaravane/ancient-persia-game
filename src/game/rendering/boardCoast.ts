@@ -16,7 +16,9 @@ function traceCoast(board: Board, layout: BoardLayout): Point[] {
     const boundary = Object.values(board.edges).filter((edge) => edge.tileIds.length === 1);
     const neighbors = new Map<string, string[]>();
 
-    for (const { vertexIds: [first, second] } of boundary) {
+    for (const {
+        vertexIds: [first, second],
+    } of boundary) {
         neighbors.set(first, [...(neighbors.get(first) ?? []), second]);
         neighbors.set(second, [...(neighbors.get(second) ?? []), first]);
     }
@@ -43,14 +45,24 @@ function traceCoast(board: Board, layout: BoardLayout): Point[] {
 }
 
 /** Decorative geometry only; it never receives input or changes board state. */
-export function createBoardCoast(scene: Scene, board: Board, layout: BoardLayout): GameObjects.Graphics {
+export function createBoardCoast(
+    scene: Scene,
+    board: Board,
+    layout: BoardLayout,
+): GameObjects.Graphics {
     const coast = scene.add.graphics();
     const points = traceCoast(board, layout);
     if (points.length < 3) return coast;
 
     // Strokes straddle the perimeter. Opaque terrain backplates hide the inner
     // half, leaving a shallow shelf that fades up to 16 pixels into the sea.
-    for (const [width, alpha] of [[32, 0.06], [26, 0.08], [20, 0.12], [14, 0.16], [9, 0.22]]) {
+    for (const [width, alpha] of [
+        [32, 0.06],
+        [26, 0.08],
+        [20, 0.12],
+        [14, 0.16],
+        [9, 0.22],
+    ]) {
         coast.lineStyle(width, 0x8bc4be, alpha);
         strokeOutline(coast, points);
     }

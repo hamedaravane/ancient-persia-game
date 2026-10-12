@@ -1,12 +1,26 @@
 import type { Board, BoardEdge, BoardVertex, HexTile, RandomSource, TerrainType } from './types';
+import { createPorts } from './ports';
 
 const BOARD_RADIUS = 2;
 const TERRAIN_BAG: TerrainType[] = [
-    'forest', 'forest', 'forest', 'forest',
-    'mesa', 'mesa', 'mesa',
-    'wheat', 'wheat', 'wheat', 'wheat',
-    'pasture', 'pasture', 'pasture', 'pasture',
-    'mountain', 'mountain', 'mountain',
+    'forest',
+    'forest',
+    'forest',
+    'forest',
+    'mesa',
+    'mesa',
+    'mesa',
+    'wheat',
+    'wheat',
+    'wheat',
+    'wheat',
+    'pasture',
+    'pasture',
+    'pasture',
+    'pasture',
+    'mountain',
+    'mountain',
+    'mountain',
     'desert',
 ];
 const NUMBER_BAG = [2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 12];
@@ -127,7 +141,8 @@ export function createBoard(random: RandomSource = Math.random): Board {
         vertices[secondId].neighborIds.push(firstId);
     }
 
-    return { tiles, vertices, edges };
+    const board: Board = { tiles, vertices, edges, ports: [] };
+    return { ...board, ports: createPorts(board, random) };
 }
 
 export function getRobberTile(board: Board): HexTile {

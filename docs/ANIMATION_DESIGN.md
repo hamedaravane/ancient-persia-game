@@ -10,17 +10,17 @@ Researched 2026-10-11; implementation completed 2026-10-12. Motion presents conf
 
 ## Implemented feedback
 
-| Event | Visual feedback | Approximate duration |
-| --- | --- | --- |
-| Button press | Small press response; selected trade choice or target confirmation pulses | 100–160 ms |
-| Open a sheet | Short upward entrance and fade; native modal semantics apply immediately | 220 ms |
-| Start match / change turn | Fade into the match, active-player emphasis, hand refresh | 220–400 ms |
-| Roll dice | Brief rotation/settle of the confirmed readout; producing tile rings | 360–520 ms |
-| Receive production | One atlas icon per tile/recipient grant flies to the active hand's matching resource or another player's public resource total; ownership border and quantity label distinguish recipients | 620 ms travel, lightly staggered; normally about 1 second overall |
-| Change resources | Exact totals update immediately; gained/spent delta badges and count emphasis accompany production, construction, and bank exchange | 400 ms emphasis; 1.1 s badge |
-| Confirm building | Road highlight traces the edge; settlement/city marker settles into place with a local ring | 400–520 ms |
-| Move robber | The marker glides from its old tile to its already-confirmed destination | 400 ms |
-| Victory | Restrained emphasis on the winner in the existing results sheet | 500 ms |
+| Event                     | Visual feedback                                                                                                                                                                            | Approximate duration                                              |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------- |
+| Button press              | Small press response; selected trade choice or target confirmation pulses                                                                                                                  | 100–160 ms                                                        |
+| Open a sheet              | Short upward entrance and fade; native modal semantics apply immediately                                                                                                                   | 220 ms                                                            |
+| Start match / change turn | Fade into the match, active-player emphasis, hand refresh                                                                                                                                  | 220–400 ms                                                        |
+| Roll dice                 | Brief rotation/settle of the confirmed readout; producing tile rings                                                                                                                       | 360–520 ms                                                        |
+| Receive production        | One atlas icon per tile/recipient grant flies to the active hand's matching resource or another player's public resource total; ownership border and quantity label distinguish recipients | 620 ms travel, lightly staggered; normally about 1 second overall |
+| Change resources          | Exact totals update immediately; gained/spent delta badges and count emphasis accompany production, construction, and bank exchange                                                        | 400 ms emphasis; 1.1 s badge                                      |
+| Confirm building          | Road highlight traces the edge; settlement/city marker settles into place with a local ring                                                                                                | 400–520 ms                                                        |
+| Move robber               | The marker glides from its old tile to its already-confirmed destination                                                                                                                   | 400 ms                                                            |
+| Victory                   | Restrained emphasis on the winner in the existing results sheet                                                                                                                            | 500 ms                                                            |
 
 No dice value is fabricated for the animation. A city grant is labeled with its true quantity. Tile/recipient grants aggregate multiple producing buildings belonging to the same owner. Blocked tiles may show a muted ring but never send resources. A seven produces no normal resource flights. Starting grants appear in the initial hand rather than replaying a dice-production sequence.
 

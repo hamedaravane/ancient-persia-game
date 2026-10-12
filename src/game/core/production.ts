@@ -8,7 +8,10 @@ export interface ProductionGrant {
 }
 
 /** The same production ledger drives payment and its presentation. No state is changed. */
-export function getProduction(state: Pick<GameState, 'board' | 'players'>, total: number): ProductionGrant[] {
+export function getProduction(
+    state: Pick<GameState, 'board' | 'players'>,
+    total: number,
+): ProductionGrant[] {
     if (total === 7) return [];
     const players = new Set(state.players.map(({ id }) => id));
     const grants: ProductionGrant[] = [];
@@ -18,9 +21,13 @@ export function getProduction(state: Pick<GameState, 'board' | 'players'>, total
         for (const vertexId of tile.vertexIds) {
             const building = state.board.vertices[vertexId].building;
             if (!building || !players.has(building.ownerId)) continue;
-            amounts.set(building.ownerId, (amounts.get(building.ownerId) ?? 0) + (building.type === 'city' ? 2 : 1));
+            amounts.set(
+                building.ownerId,
+                (amounts.get(building.ownerId) ?? 0) + (building.type === 'city' ? 2 : 1),
+            );
         }
-        for (const [playerId, amount] of amounts) grants.push({ tileId: tile.id, playerId, resource: tile.resource, amount });
+        for (const [playerId, amount] of amounts)
+            grants.push({ tileId: tile.id, playerId, resource: tile.resource, amount });
     }
     return grants;
 }

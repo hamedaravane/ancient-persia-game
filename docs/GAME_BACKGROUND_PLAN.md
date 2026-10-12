@@ -1,6 +1,6 @@
 # Gameplay background production plan
 
-Status: implemented using the user-supplied ocean asset, retained unchanged as `backgrounds/game.png` (853 × 1844). The board now uses center (195, 312) and hex radius 38. A persistent decorative coast follows its outer edges, while the ocean fits the logical canvas proportionally. The existing `backgrounds/main-menu.png` remains exclusive to the main menu. The production brief below records the design and original target dimensions; the delivered image's aspect ratio is already almost identical to the canvas, so no preprocessing was needed.
+Status: implemented using the user-supplied ocean asset, retained unchanged as `backgrounds/game.png` (853 × 1844). The current responsive board centers in the measured viewport and fits with a 40-pixel ocean margin for the coast and procedural port islets. At 390 × 468 its hex radius is about 35.8. A persistent decorative coast follows its outer edges, while the ocean covers the portrait shell proportionally. The existing `backgrounds/main-menu.png` remains exclusive to the main menu. The production brief below records the design and original target dimensions; the delivered image's aspect ratio is already almost identical to the canvas, so no preprocessing was needed.
 
 ## Visual decision
 
@@ -20,19 +20,19 @@ The generated image contains only the sea. This makes exact alignment a responsi
 
 The board is a radius-two arrangement of 19 point-up regular hexes. Its silhouette has stepped hex edges; it is not one oversized regular hexagon. The terrain assignment shuffles each match. The surrounding sea and coast must work next to every terrain type, including desert and mountain.
 
-All layout measurements below are logical pixels in the fixed 390 × 844 Phaser canvas, before display scaling. Hex radius is the center-to-corner distance, half the full tile height.
+The historical proposal below uses logical pixels in the former fixed 390 × 844 Phaser canvas. Current responsive measurements are in [UI_SYSTEM.md](UI_SYSTEM.md); this table is retained as the original background-art brief. Hex radius is the center-to-corner distance, half the full tile height.
 
-| Measurement | Existing | Proposed |
-| --- | --- | --- |
-| Canvas | 390 × 844 | 390 × 844 |
-| Board center | (195, 322) | (195, 312) |
-| Hex radius | 40 | 38 |
-| Individual tile bounds | 69.28 × 80 | 65.82 × 76 |
-| Whole land bounds | 346.41 × 320 | 329.09 × 304 |
-| Land horizontal extent | 21.79–368.21 | 30.46–359.54 |
-| Land vertical extent | 162–482 | 160–464 |
-| Minimum side water before coast | 21.79 | 30.46 |
-| Gap below land to resources panel | 18 | 36 |
+| Measurement                       | Existing     | Proposed     |
+| --------------------------------- | ------------ | ------------ |
+| Canvas                            | 390 × 844    | 390 × 844    |
+| Board center                      | (195, 322)   | (195, 312)   |
+| Hex radius                        | 40           | 38           |
+| Individual tile bounds            | 69.28 × 80   | 65.82 × 76   |
+| Whole land bounds                 | 346.41 × 320 | 329.09 × 304 |
+| Land horizontal extent            | 21.79–368.21 | 30.46–359.54 |
+| Land vertical extent              | 162–482      | 160–464      |
+| Minimum side water before coast   | 21.79        | 30.46        |
+| Gap below land to resources panel | 18           | 36           |
 
 The width is `5 * sqrt(3) * radius`; the height is `8 * radius`. Tile centers and edge/vertex positions continue to use the board's existing normalized coordinates.
 

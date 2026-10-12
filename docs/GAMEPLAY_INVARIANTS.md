@@ -9,7 +9,10 @@ These invariants are enforced by the pure TypeScript rules in `src/game/core/` a
 - A new settlement is empty, is connected to the active player's road, and has no building on a neighboring vertex.
 - A new road is empty and extends the active player's network. An opponent building interrupts network continuation through its vertex.
 - A player pays the full required cost before a road, settlement, or city upgrade is applied.
-- A trade gives four units of one resource and receives one unit of a different resource.
+- Every board has nine distinct coastal ports: four general and five different specialists. Port access edges do not share endpoints.
+- Only a building at one of a port's two coastal endpoints grants its owner access; roads alone never do. Building upgrades preserve access.
+- A trade pays exactly the validated 4:1 bank, 3:1 general-port, or matching-payment-resource 2:1 specialist rate and receives one unit of a different resource. Ownership and rates derive from authoritative board state; discounts never stack.
+- Newly built ports can be used immediately in the action phase. The land robber does not change port rates or access.
 - Only the active player can take an action during the action phase.
 - Only the active player can roll while the game is waiting for the roll.
 - A seven suspends production until the robber is moved to a different tile.

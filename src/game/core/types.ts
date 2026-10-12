@@ -45,10 +45,21 @@ export interface BoardEdge {
     road: Road | null;
 }
 
+export interface Port {
+    id: string;
+    /** A coastal edge; its two endpoints are the only access intersections. */
+    edgeId: string;
+    /** null is a general 3:1 port; a resource denotes its specialist 2:1 port. */
+    resource: ResourceType | null;
+}
+
+export type TradeRatio = 2 | 3 | 4;
+
 export interface Board {
     tiles: HexTile[];
     vertices: Record<string, BoardVertex>;
     edges: Record<string, BoardEdge>;
+    ports: Port[];
 }
 
 export interface Player {
@@ -72,8 +83,7 @@ export interface GameState {
 export type RandomSource = () => number;
 
 export type ActionResult =
-    | { ok: true; state: GameState }
-    | { ok: false; state: GameState; reason: RuleErrorCode };
+    { ok: true; state: GameState } | { ok: false; state: GameState; reason: RuleErrorCode };
 
 export type RuleErrorCode =
     | 'wrong-phase'
@@ -84,5 +94,6 @@ export type RuleErrorCode =
     | 'not-connected'
     | 'insufficient-resources'
     | 'same-resource-trade'
+    | 'invalid-trade-ratio'
     | 'same-robber-tile'
     | 'game-finished';

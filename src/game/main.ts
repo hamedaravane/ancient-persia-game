@@ -27,10 +27,17 @@ export function StartGame(parent: HTMLElement): Game {
     });
     // Grid/safe-area changes can resize the board without a window resize.
     const observer = new ResizeObserver(([entry]) => {
-        const width = Math.floor(entry.contentRect.width), height = Math.floor(entry.contentRect.height);
-        if (width > 0 && height > 0 && (game.scale.width !== width || game.scale.height !== height)) game.scale.resize(width, height);
+        const width = Math.floor(entry.contentRect.width),
+            height = Math.floor(entry.contentRect.height);
+        if (width > 0 && height > 0 && (game.scale.width !== width || game.scale.height !== height))
+            game.scale.resize(width, height);
     });
     observer.observe(hud.boardViewport);
-    game.events.once('destroy', () => { observer.disconnect(); feedback?.destroy(); hud.destroy(); motion.destroy(); });
+    game.events.once('destroy', () => {
+        observer.disconnect();
+        feedback?.destroy();
+        hud.destroy();
+        motion.destroy();
+    });
     return game;
 }

@@ -1,13 +1,21 @@
 import type { Scene } from 'phaser';
 
-interface Touch { startX: number; startY: number; moved: boolean }
+interface Touch {
+    startX: number;
+    startY: number;
+    moved: boolean;
+}
 
 /** One input surface chooses the nearest target; neighboring hit areas never overlap. */
 export class BoardInput {
     private touches = new Map<number, Touch>();
     private canvas: HTMLCanvasElement;
 
-    constructor(private scene: Scene, private enabled: () => boolean, private tap: (x: number, y: number) => void) {
+    constructor(
+        private scene: Scene,
+        private enabled: () => boolean,
+        private tap: (x: number, y: number) => void,
+    ) {
         this.canvas = scene.game.canvas;
         this.canvas.addEventListener('pointerdown', this.down);
         this.canvas.addEventListener('pointermove', this.move);
@@ -17,7 +25,10 @@ export class BoardInput {
     }
     private point(event: PointerEvent): { x: number; y: number } {
         const rect = this.canvas.getBoundingClientRect();
-        return { x: (event.clientX - rect.left) * this.scene.scale.width / rect.width, y: (event.clientY - rect.top) * this.scene.scale.height / rect.height };
+        return {
+            x: ((event.clientX - rect.left) * this.scene.scale.width) / rect.width,
+            y: ((event.clientY - rect.top) * this.scene.scale.height) / rect.height,
+        };
     }
     private down = (event: PointerEvent): void => {
         if (!this.enabled() || event.button > 0) return;
@@ -25,7 +36,9 @@ export class BoardInput {
         this.canvas.setPointerCapture(event.pointerId);
         this.touches.set(event.pointerId, { startX: x, startY: y, moved: false });
         if (this.touches.size > 1) {
-            this.touches.forEach((touch) => { touch.moved = true; });
+            this.touches.forEach((touch) => {
+                touch.moved = true;
+            });
         }
     };
     private move = (event: PointerEvent): void => {
@@ -39,10 +52,13 @@ export class BoardInput {
         this.touches.delete(event.pointerId);
         if (touch && !touch.moved && this.enabled()) {
             const point = this.point(event);
-            if (Math.hypot(point.x - touch.startX, point.y - touch.startY) <= 8) this.tap(point.x, point.y);
+            if (Math.hypot(point.x - touch.startX, point.y - touch.startY) <= 8)
+                this.tap(point.x, point.y);
         }
     };
-    private cancel = (event: PointerEvent): void => { this.touches.delete(event.pointerId); };
+    private cancel = (event: PointerEvent): void => {
+        this.touches.delete(event.pointerId);
+    };
     destroy(): void {
         this.canvas.removeEventListener('pointerdown', this.down);
         this.canvas.removeEventListener('pointermove', this.move);

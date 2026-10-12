@@ -62,21 +62,21 @@ Use a stable asset key in code and build the URL from `import.meta.env.BASE_URL`
 - `effects/dust.png`: short construction puff behind the building marker within its container.
 - `effects/spark.png`: restrained road-placement sparkle over the confirmed edge.
 - `effects/glint.png`: short glint over the victory medallion in the dialog's top layer.
-- `resources/resources.png`: five transparent resource illustrations. Source frame rectangles are documented below. `src/styles/global.css` scales each crop proportionally into a maximum 32-pixel icon; the hand, costs, bank selectors, and animated production flights reuse those CSS classes without extra image files.
+- `resources/resources.png`: five transparent resource illustrations. Source frame rectangles are documented below. `src/styles/global.css` scales each crop proportionally into a maximum 32-pixel icon; the hand, costs, bank selectors, and animated production flights reuse those CSS classes without extra image files. Phaser also loads this same sheet and adds resource frames from `RESOURCE_FRAMES` in `assets.ts` for port markers; frame crops match the existing DOM resource icons.
 
 | Resource | Source rectangle (`x`, `y`, `width`, `height`) |
-| --- | --- |
-| Wood | `44, 164, 476, 404` |
-| Brick | `544, 164, 440, 404` |
-| Wheat | `984, 88, 428, 492` |
-| Wool | `244, 608, 484, 392` |
-| Stone | `768, 584, 496, 420` |
+| -------- | ---------------------------------------------- |
+| Wood     | `44, 164, 476, 404`                            |
+| Brick    | `544, 164, 440, 404`                           |
+| Wheat    | `984, 88, 428, 492`                            |
+| Wool     | `244, 608, 484, 392`                           |
+| Stone    | `768, 584, 496, 420`                           |
 
 The MVP maps forest to wood, mesa to brick, wheat to wheat, pasture to wool, and mountain to stone. The six terrain sources are 1254 × 1254 RGBA PNGs with transparent backgrounds and point-up hex compositions. They load directly at their original resolution, scale proportionally to the full tile height, and remain centered on the board geometry. A geometry mask clips stray pixels outside each exact hex boundary; a colored backplate covers minor transparent edge gaps. Masks are destroyed with their tile images on each board redraw. Number text remains a runtime overlay; the desert is unlabelled on the board. Roads and player-colored buildings render above the terrain with Phaser Graphics; ownership colors remain runtime data. The supplied robber and number-token back render as cropped images.
 
 No runtime background removal or intermediate downsampling is applied. Keep transparency and the shared hex alignment when replacing the artwork. The originals remain individual PNGs; no terrain atlas is required by the current loader.
 
-The ocean and its coast are presentation only. CSS switches between menu and match backgrounds; the transparent Phaser canvas shows only the board over the match ocean. Coast geometry is recreated when board state or viewport measurements change, and stays below the terrain. A ResizeObserver explicitly resizes the canvas with `Scale.NONE`; the island automatically fits the available width and height with a 32-pixel ocean margin for the coast and future port markers. There is no interactive zoom or panning, and DOM controls retain CSS-pixel touch dimensions.
+The ocean and its coast are presentation only. CSS switches between menu and match backgrounds; the transparent Phaser canvas shows only the board over the match ocean. Coast geometry is recreated when board state or viewport measurements change, and stays below the terrain. A ResizeObserver explicitly resizes the canvas with `Scale.NONE`; the island automatically fits the available width and height with a 40-pixel ocean margin for the coast and port markers. There is no interactive zoom or panning, and DOM controls retain CSS-pixel touch dimensions.
 
 The art is retained from the existing project. Recheck resource crop rectangles against the source atlas if that image changes. The older dice sheet remains available. The original settlement/city/road paintings are reference art under `art/reference/pieces/`; the user's chosen replacement is original procedural Graphics geometry, so bitmap ownership masks are not required.
 
@@ -84,20 +84,24 @@ The art is retained from the existing project. Recheck resource crop rectangles 
 
 All nine new PNGs have been renamed/moved without re-encoding. Source rectangles and original dimensions are defined once in `src/game/assets.ts`; Phaser adds named texture frames, while DOM components generate proportional CSS background crops from the same registry. Asset URLs use `import.meta.env.BASE_URL`. These are presentation frames, not animation grids or rule data.
 
-| Art key | Source rectangle (`x`, `y`, `width`, `height`) |
-| --- | --- |
-| Robber | `380, 60, 610, 1130` |
-| Number token | `95, 75, 1065, 1075` |
-| Corner ornament | `35, 390, 380, 400` |
-| Divider ornament | `385, 575, 485, 110` |
-| Rosette ornament | `930, 480, 310, 310` |
-| Victory emblem | `40, 50, 1175, 1135` |
-| Bank illustration | `15, 80, 1225, 1095` |
-| Dust | `125, 210, 1010, 850` |
-| Spark / glint | Full source images, respectively `1283 × 1226` / `1278 × 1230` |
-| Dice 1 / 2 / 3 | `96, 80, 344, 346` / `590, 80, 344, 346` / `1084, 80, 344, 346` |
-| Dice 4 / 5 / 6 | Same x coordinates, with `y = 542` |
+| Art key           | Source rectangle (`x`, `y`, `width`, `height`)                  |
+| ----------------- | --------------------------------------------------------------- |
+| Robber            | `380, 60, 610, 1130`                                            |
+| Number token      | `95, 75, 1065, 1075`                                            |
+| Corner ornament   | `35, 390, 380, 400`                                             |
+| Divider ornament  | `385, 575, 485, 110`                                            |
+| Rosette ornament  | `930, 480, 310, 310`                                            |
+| Victory emblem    | `40, 50, 1175, 1135`                                            |
+| Bank illustration | `15, 80, 1225, 1095`                                            |
+| Dust              | `125, 210, 1010, 850`                                           |
+| Spark / glint     | Full source images, respectively `1283 × 1226` / `1278 × 1230`  |
+| Dice 1 / 2 / 3    | `96, 80, 344, 346` / `590, 80, 344, 346` / `1084, 80, 344, 346` |
+| Dice 4 / 5 / 6    | Same x coordinates, with `y = 542`                              |
 
 The new illustrations share warm stone, gold, and navy materials. Some fine details disappear at mobile scale, especially the robber's face and the token's relief; their silhouettes and clear number center carry their function. Several PNGs contain faint alpha specks outside the main subject, so full-image alpha bounds are not a reliable intended crop. Frames avoid most excess padding while preserving the supplied work. Soft/uneven effect edges are used at low opacity in small finite effects.
 
 Future optimization can produce smaller transparent runtime exports from preserved masters; this integration deliberately keeps original pixels and introduces no new per-color copies. The large new source images still increase download/decoded-texture cost. Actual-size visual review on the user's device remains necessary, particularly for the dice silhouette clipping and token-number readability.
+
+## Ports
+
+`src/game/rendering/ports.ts` draws nine small stone trading islets with Phaser Graphics, runtime ratio text, and resource emblems cropped from the existing resource atlas. No port PNGs or per-player asset copies are needed. Marker bodies are 32 pixels across, with a 38-pixel water halo and two links to the associated coastal edge endpoints. An arbitrary runtime ownership color accents the inset border. See [PORTS.md](PORTS.md) for geometry, access rules, and interaction.

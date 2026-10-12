@@ -2,6 +2,8 @@ import { getProduction } from './production';
 import { canAfford, CITY_COST, ROAD_COST, SETTLEMENT_COST, getPlacementError } from './building';
 export { CITY_COST, ROAD_COST, SETTLEMENT_COST } from './building';
 import { createBoard } from './board';
+import { getBankTradeRates, getBankTradeRatio } from './ports';
+export { BANK_TRADE_RATIO } from './ports';
 import {
     RESOURCE_TYPES,
     type ActionResult,
@@ -13,9 +15,9 @@ import {
     type RandomSource,
     type ResourceType,
     type RuleErrorCode,
+    type TradeRatio,
 } from './types';
 
-export const BANK_TRADE_RATIO = 4;
 export const VICTORY_TARGET = 6;
 
 // Saturated ownership hues stand apart from the green/gold/stone terrain art.
@@ -63,14 +65,18 @@ function closestExistingDistance(vertex: BoardVertex, occupiedVertices: BoardVer
         return vertex.x * vertex.x + vertex.y * vertex.y;
     }
 
-    return Math.min(...occupiedVertices.map((other) => (vertex.x - other.x) ** 2 + (vertex.y - other.y) ** 2));
+    return Math.min(
+        ...occupiedVertices.map((other) => (vertex.x - other.x) ** 2 + (vertex.y - other.y) ** 2),
+    );
 }
 
 function placeStartingPieces(board: Board, players: Player[]): { board: Board; players: Player[] } {
     const vertices = Object.fromEntries(
         Object.entries(board.vertices).map(([id, vertex]) => [id, { ...vertex }]),
     );
-    const edges = Object.fromEntries(Object.entries(board.edges).map(([id, edge]) => [id, { ...edge }]));
+    const edges = Object.fromEntries(
+        Object.entries(board.edges).map(([id, edge]) => [id, { ...edge }]),
+    );
     const tiles = board.tiles;
     const occupied: BoardVertex[] = [];
     const startingOrder = [...players, ...[...players].reverse()];
@@ -82,8 +88,13 @@ function placeStartingPieces(board: Board, players: Player[]): { board: Board; p
     for (const player of startingOrder) {
         const candidates = Object.values(vertices)
             .filter((vertex) => vertex.building === null)
-            .filter((vertex) => vertex.neighborIds.every((neighborId) => vertices[neighborId].building === null))
-            .sort((a, b) => closestExistingDistance(b, occupied) - closestExistingDistance(a, occupied));
+            .filter((vertex) =>
+                vertex.neighborIds.every((neighborId) => vertices[neighborId].building === null),
+            )
+            .sort(
+                (a, b) =>
+                    closestExistingDistance(b, occupied) - closestExistingDistance(a, occupied),
+            );
         const settlementVertex = candidates[0];
 
         if (!settlementVertex) {
@@ -93,7 +104,9 @@ function placeStartingPieces(board: Board, players: Player[]): { board: Board; p
         settlementVertex.building = { type: 'settlement', ownerId: player.id };
         occupied.push(settlementVertex);
 
-        const startingEdge = settlementVertex.edgeIds.map((edgeId) => edges[edgeId]).find(({ road }) => road === null);
+        const startingEdge = settlementVertex.edgeIds
+            .map((edgeId) => edges[edgeId])
+            .find(({ road }) => road === null);
 
         if (!startingEdge) {
             throw new Error('Board setup could not place a starting road.');
@@ -269,7 +282,10 @@ export function buildSettlement(state: GameState, vertexId: string): ActionResul
         ...vertex,
         building: { type: 'settlement', ownerId: player.id },
     };
-    const board = { ...state.board, vertices: { ...state.board.vertices, [vertexId]: updatedVertex } };
+    const board = {
+        ...state.board,
+        vertices: { ...state.board.vertices, [vertexId]: updatedVertex },
+    };
     return success(gameWithPlayerAndBoard(state, pay(player, SETTLEMENT_COST), board));
 }
 
@@ -292,7 +308,10 @@ export function upgradeCity(state: GameState, vertexId: string): ActionResult {
         ...vertex,
         building: { type: 'city', ownerId: player.id },
     };
-    const board = { ...state.board, vertices: { ...state.board.vertices, [vertexId]: updatedVertex } };
+    const board = {
+        ...state.board,
+        vertices: { ...state.board.vertices, [vertexId]: updatedVertex },
+    };
     return success(gameWithPlayerAndBoard(state, pay(player, CITY_COST), board));
 }
 
@@ -300,6 +319,11 @@ export function tradeWithBank(
     state: GameState,
     give: ResourceType,
     receive: ResourceType,
+    ratio: TradeRatio = getBankTradeRatio(
+        state.board,
+        state.players[state.activePlayerIndex].id,
+        give,
+    ),
 ): ActionResult {
     const player = currentActionsPlayer(state);
 
@@ -307,11 +331,11 @@ export function tradeWithBank(
         return failure(state, state.phase === 'finished' ? 'game-finished' : 'wrong-phase');
     }
 
-    const error = getBankTradeError(state, give, receive);
+    const error = getBankTradeError(state, give, receive, ratio);
     if (error) return failure(state, error);
 
     const resources = { ...player.resources };
-    resources[give] -= BANK_TRADE_RATIO;
+    resources[give] -= ratio;
     resources[receive] += 1;
     return success(updateCurrentPlayer(state, { ...player, resources }));
 }
@@ -332,9 +356,21 @@ export function getPlayerById(state: GameState, playerId: string): Player | unde
 }
 
 /** Shared by bank commands and read-only exchange previews. */
-export function getBankTradeError(state: GameState, give: ResourceType, receive: ResourceType): RuleErrorCode | null {
+export function getBankTradeError(
+    state: GameState,
+    give: ResourceType,
+    receive: ResourceType,
+    ratio: TradeRatio = getBankTradeRatio(
+        state.board,
+        state.players[state.activePlayerIndex].id,
+        give,
+    ),
+): RuleErrorCode | null {
     if (state.phase === 'finished' || state.winnerId !== null) return 'game-finished';
     if (state.phase !== 'actions') return 'wrong-phase';
     if (give === receive) return 'same-resource-trade';
-    return state.players[state.activePlayerIndex].resources[give] < BANK_TRADE_RATIO ? 'insufficient-resources' : null;
+    const player = state.players[state.activePlayerIndex];
+    if (!getBankTradeRates(state.board, player.id, give).includes(ratio))
+        return 'invalid-trade-ratio';
+    return player.resources[give] < ratio ? 'insufficient-resources' : null;
 }

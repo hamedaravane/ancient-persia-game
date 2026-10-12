@@ -4,9 +4,9 @@ Status: approved design, researched 2026-10-11. The current-rule layout and work
 
 ## Implementation status
 
-Implemented: responsive DOM/CSS HUD and safe-area sizing, compact-height layout, active-player resource hand, public player summaries, core-derived construction costs/shortages/legal targets, board previews and explicit confirmation, reviewed 4:1 bank trades, contextual primary action, tile inspection, automatic island fitting without zoom/pan, keyboard target/inspection selectors, modal focus handling, local event history, help, and final score breakdown. Phaser draws the original terrain, coastline, and runtime ownership markers inside the measured board viewport. The canvas uses the whole board region during ordinary play; placement adds a separate 56-pixel destination-selector row. A 32-pixel ocean margin keeps the coast visible and reserves space for future port markers. This later user decision supersedes the original zoom controls in the wireframe snapshot. The six-point target, unlimited supplies, automatic setup, and simplified robber are unchanged.
+Implemented: responsive DOM/CSS HUD and safe-area sizing, compact-height layout, active-player resource hand, public player summaries, core-derived construction costs/shortages/legal targets, board previews and explicit confirmation, reviewed bank/port trades at core-derived 4:1/3:1/2:1 rates, contextual primary action, tile inspection, automatic island fitting without zoom/pan, keyboard target/inspection selectors, modal focus handling, local event history, help, and final score breakdown. Phaser draws the original terrain, coastline, and runtime ownership markers inside the measured board viewport. The canvas uses the whole board region during ordinary play; placement adds a separate 56-pixel destination-selector row. A 40-pixel ocean margin fits the coast and nine procedural port-islet markers. This later user decision supersedes the original zoom controls in the wireframe snapshot. The six-point target, unlimited supplies, automatic setup, and simplified robber are unchanged.
 
-Deferred until explicitly selected: cards and their deck/rules, player trading, finite piece/bank inventories, ports, awards, manual setup, discard/theft, privacy handover, sound, online services, and timers. No placeholder controls imply support for these systems. See [UI_SYSTEM.md](UI_SYSTEM.md) for implemented component responsibilities and interaction details. The wireframes remain schematic design references, including conditionally illustrated future systems.
+Deferred until explicitly selected: cards and their deck/rules, player trading, finite piece/bank inventories, awards, manual setup, discard/theft, privacy handover, sound, online services, and timers. No placeholder controls imply support for these systems. See [UI_SYSTEM.md](UI_SYSTEM.md) for implemented component responsibilities and interaction details. The wireframes remain schematic design references, including conditionally illustrated future systems.
 
 ## Recommendation
 
@@ -16,18 +16,18 @@ This is a proposed structure for base-game-style play, not a commitment to every
 
 ## Research and what it supports
 
-| Primary source | Finding | Design implication |
-| --- | --- | --- |
-| [Official 2025 CATAN base rulebook](https://www.catan.com/sites/default/files/2025-03/CN3081%20CATAN%E2%80%93The%20Game%20Rulebook%20secure%20%281%29.pdf), downloaded and read directly | Production precedes actions; trades/builds can repeat in either order; a seven interrupts ordinary play | Model screen states explicitly. Trading and building should remain available together after required resolutions |
-| [Official archived rules and almanac](https://www.catan.com/sites/default/files/2021-06/catan_base_rules_2020_200707.pdf) | Explains costs, placement, production, and development effects | Costs, legal locations, and card effects need dedicated readable surfaces |
-| [Official 25th-anniversary almanac](https://www.catan.com/sites/default/files/2021-07/catan-25th-rules_eng-200313.pdf) | Explains physical piece supplies and returning a settlement after upgrading | Show remaining inventory with each build option if finite supplies are adopted |
-| [Official base-game FAQ](https://www.catan.com/faq/basegame) | Clarifies pre-roll development play, hidden resource types, public hand size, trading, and victory exceptions | Separate public summaries from private information; Cards can remain usable before rolling when allowed |
-| [Colonist portrait rationale, June 2025](https://blog.colonist.io/why-colonist-is-going-portrait-on-mobile/) | The developer chose portrait for easier one-handed use and focused iteration | Portrait is a credible primary format. Their reported speed gains are internal observations, not a proven benefit for this game |
-| [Colonist trade redesign, August 2023](https://blog.colonist.io/improving-the-colonist-trade-system/) | Reports confusion about giving/receiving, bank access, rates, and offer responses | Use labeled give/receive areas, distinct player/bank destinations, and visible response states |
-| [CATAN Universe official media](https://catanuniverse.com/en/media/) | The published wide-screen sample has a large board, extensive player banners, side tools, and a trade area | Study its coverage of game information, then redesign its spatial arrangement for portrait. The inspected 2020 media image includes expansion elements and does not establish the current mobile interface |
-| [Apple layout guidance](https://developer.apple.com/design/human-interface-guidelines/layout) and [design tips](https://developer.apple.com/design/tips/) | Prioritizes essential information, grouping, safe areas, and sufficiently large targets | Give the board room; move secondary detail into panels; keep controls distinct from scenery |
-| [Android minimum target guidance](https://developer.android.com/develop/ui/compose/accessibility/api-defaults#minimum-touch-target-sizes) | Recommends 48 dp interactive targets | Target at least 48 CSS pixels for ordinary web HUD controls, adapting rather than scaling them down |
-| [Material bottom-sheet guidance](https://m1.material.io/components/bottom-sheets.html) | Describes bottom-anchored supplementary surfaces and distinguishes modal from persistent behavior | Use deliberate expanded/compact workspaces; do not stack several sheets or leave hidden controls interactive |
+| Primary source                                                                                                                                                                           | Finding                                                                                                       | Design implication                                                                                                                                                                                         |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Official 2025 CATAN base rulebook](https://www.catan.com/sites/default/files/2025-03/CN3081%20CATAN%E2%80%93The%20Game%20Rulebook%20secure%20%281%29.pdf), downloaded and read directly | Production precedes actions; trades/builds can repeat in either order; a seven interrupts ordinary play       | Model screen states explicitly. Trading and building should remain available together after required resolutions                                                                                           |
+| [Official archived rules and almanac](https://www.catan.com/sites/default/files/2021-06/catan_base_rules_2020_200707.pdf)                                                                | Explains costs, placement, production, and development effects                                                | Costs, legal locations, and card effects need dedicated readable surfaces                                                                                                                                  |
+| [Official 25th-anniversary almanac](https://www.catan.com/sites/default/files/2021-07/catan-25th-rules_eng-200313.pdf)                                                                   | Explains physical piece supplies and returning a settlement after upgrading                                   | Show remaining inventory with each build option if finite supplies are adopted                                                                                                                             |
+| [Official base-game FAQ](https://www.catan.com/faq/basegame)                                                                                                                             | Clarifies pre-roll development play, hidden resource types, public hand size, trading, and victory exceptions | Separate public summaries from private information; Cards can remain usable before rolling when allowed                                                                                                    |
+| [Colonist portrait rationale, June 2025](https://blog.colonist.io/why-colonist-is-going-portrait-on-mobile/)                                                                             | The developer chose portrait for easier one-handed use and focused iteration                                  | Portrait is a credible primary format. Their reported speed gains are internal observations, not a proven benefit for this game                                                                            |
+| [Colonist trade redesign, August 2023](https://blog.colonist.io/improving-the-colonist-trade-system/)                                                                                    | Reports confusion about giving/receiving, bank access, rates, and offer responses                             | Use labeled give/receive areas, distinct player/bank destinations, and visible response states                                                                                                             |
+| [CATAN Universe official media](https://catanuniverse.com/en/media/)                                                                                                                     | The published wide-screen sample has a large board, extensive player banners, side tools, and a trade area    | Study its coverage of game information, then redesign its spatial arrangement for portrait. The inspected 2020 media image includes expansion elements and does not establish the current mobile interface |
+| [Apple layout guidance](https://developer.apple.com/design/human-interface-guidelines/layout) and [design tips](https://developer.apple.com/design/tips/)                                | Prioritizes essential information, grouping, safe areas, and sufficiently large targets                       | Give the board room; move secondary detail into panels; keep controls distinct from scenery                                                                                                                |
+| [Android minimum target guidance](https://developer.android.com/develop/ui/compose/accessibility/api-defaults#minimum-touch-target-sizes)                                                | Recommends 48 dp interactive targets                                                                          | Target at least 48 CSS pixels for ordinary web HUD controls, adapting rather than scaling them down                                                                                                        |
+| [Material bottom-sheet guidance](https://m1.material.io/components/bottom-sheets.html)                                                                                                   | Describes bottom-anchored supplementary surfaces and distinguishes modal from persistent behavior             | Use deliberate expanded/compact workspaces; do not stack several sheets or leave hidden controls interactive                                                                                               |
 
 Research used documentation and published reference images, not a live app usability study. All layout measurements and workflow choices below are our recommendations, not claims that another game uses this exact arrangement.
 
@@ -43,25 +43,25 @@ For reference, the base game supplies 19 cards per resource and 25 development c
 
 ### Current product and future surfaces
 
-| System | Current implementation | Proposed access |
-| --- | --- | --- |
-| Board, roads, settlements, cities, robber | Present | Main board, with contextual inspection and targeting |
-| Five resource types | Present; current core calls the mountain resource `stone` | Permanent hand strip; stable ordering everywhere |
-| Score and target | Public building-derived points; target six | Player strip and score breakdown; read the target from game state |
-| Dice and turn ownership | Present | Compact top summary; rolling uses the lower primary action |
-| Construction costs | Costs, shortages, and availability exposed in the Build sheet | One-tap Build sheet with cost and availability per row |
-| Remaining pieces | No supply limits | Show built totals in player details for now; no invented remaining counts |
-| Bank trading | Four-for-one, one resource type each way | Trade sheet showing the applicable rate and both sides before confirming |
-| Player trades and counters | Absent | Future Players trade workspace and incoming-offer notice |
-| Ports and improved rates | Absent | Future board markers plus per-resource rates in Bank trading |
-| Development cards | Absent | Future Cards dock entry, private hand, purchase and effect workflows |
-| Discarding and robber theft | Absent; seven only requires relocation | Future forced-resolution panels and victim selection |
-| Longest road/route and largest army | Absent | Future award markers and score breakdown |
-| Finite bank and development deck | Absent | Future availability and shortage feedback; exact supply visibility needs a decision |
-| Starting placement | Automatic | Future guided settlement/road selection if interactive setup is adopted |
-| Connectivity, reconnection, account identity | Absent | Future online status and recovery states |
-| Event history and help | Local history and help sheets implemented | Context line and top menu |
-| Chat and sound preferences | Absent | Future communication/settings surfaces |
+| System                                       | Current implementation                                        | Proposed access                                                                     |
+| -------------------------------------------- | ------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Board, roads, settlements, cities, robber    | Present                                                       | Main board, with contextual inspection and targeting                                |
+| Five resource types                          | Present; current core calls the mountain resource `stone`     | Permanent hand strip; stable ordering everywhere                                    |
+| Score and target                             | Public building-derived points; target six                    | Player strip and score breakdown; read the target from game state                   |
+| Dice and turn ownership                      | Present                                                       | Compact top summary; rolling uses the lower primary action                          |
+| Construction costs                           | Costs, shortages, and availability exposed in the Build sheet | One-tap Build sheet with cost and availability per row                              |
+| Remaining pieces                             | No supply limits                                              | Show built totals in player details for now; no invented remaining counts           |
+| Bank trading                                 | Four-for-one, one resource type each way                      | Trade sheet showing the applicable rate and both sides before confirming            |
+| Player trades and counters                   | Absent                                                        | Future Players trade workspace and incoming-offer notice                            |
+| Ports and improved rates                     | Absent                                                        | Future board markers plus per-resource rates in Bank trading                        |
+| Development cards                            | Absent                                                        | Future Cards dock entry, private hand, purchase and effect workflows                |
+| Discarding and robber theft                  | Absent; seven only requires relocation                        | Future forced-resolution panels and victim selection                                |
+| Longest road/route and largest army          | Absent                                                        | Future award markers and score breakdown                                            |
+| Finite bank and development deck             | Absent                                                        | Future availability and shortage feedback; exact supply visibility needs a decision |
+| Starting placement                           | Automatic                                                     | Future guided settlement/road selection if interactive setup is adopted             |
+| Connectivity, reconnection, account identity | Absent                                                        | Future online status and recovery states                                            |
+| Event history and help                       | Local history and help sheets implemented                     | Context line and top menu                                                           |
+| Chat and sound preferences                   | Absent                                                        | Future communication/settings surfaces                                              |
 
 Do not show inactive placeholder systems as if they work. For the current MVP, the dock has Build and Trade. Cards and Players trading appear when their rules are implemented.
 
@@ -91,24 +91,24 @@ See [the three-state wireframe](design/gameplay-screen-wireframes.svg). It illus
 
 Use the safe content area, not the device's raw physical screen dimensions, for these measurements. The reference below assumes a 390 × 844 CSS-pixel safe content area. Real safe-area insets and browser chrome reduce available height. Background art may extend beyond it; controls may not.
 
-| Region | Reference y range | Height | Purpose |
-| --- | --- | --- | --- |
-| Match bar | 0–48 | 48 | Turn/phase, last roll, online status, overflow |
-| Player strip | 48–112 | 64 | Four compact player summaries |
-| Board viewport | 112–580 | 468, flexible | Island, coast, targeting and inspection |
-| Event/context line | 580–620 | 40 | Latest meaningful event or incoming trade notice; tap for history |
-| Private hand | 620–700 | 80 | Five resource icons, counts, short labels |
-| Action dock | 700–764 | 64 | Build / Trade / Cards, with concise labels |
-| Primary action | 764–828 | 64 | A large phase-dependent control |
-| Bottom spacing | 828–844 | 16 | Breathing room within the safe area |
+| Region             | Reference y range | Height        | Purpose                                                           |
+| ------------------ | ----------------- | ------------- | ----------------------------------------------------------------- |
+| Match bar          | 0–48              | 48            | Turn/phase, last roll, online status, overflow                    |
+| Player strip       | 48–112            | 64            | Four compact player summaries                                     |
+| Board viewport     | 112–580           | 468, flexible | Island, coast, targeting and inspection                           |
+| Event/context line | 580–620           | 40            | Latest meaningful event or incoming trade notice; tap for history |
+| Private hand       | 620–700           | 80            | Five resource icons, counts, short labels                         |
+| Action dock        | 700–764           | 64            | Build / Trade / Cards, with concise labels                        |
+| Primary action     | 764–828           | 64            | A large phase-dependent control                                   |
+| Bottom spacing     | 828–844           | 16            | Breathing room within the safe area                               |
 
-Fixed UI occupies 376 pixels; the board receives the rest. At a safe height of 763, the board region is 387 pixels. This fits approximately 301 pixels of land height with the required 32-pixel ocean margin on each side. On shorter screens, reduce board scale or compact spacing before reducing text/controls. The bottom workspaces scroll when needed; the normal board view does not become a long scrolling page.
+Fixed UI occupies 376 pixels; the board receives the rest. At a safe height of 763, the board region is 387 pixels. This fits approximately 286 pixels of land height with the required 40-pixel ocean margin on each side. On shorter screens, reduce board scale or compact spacing before reducing text/controls. The bottom workspaces scroll when needed; the normal board view does not become a long scrolling page.
 
-At 390 pixels wide, use a hex radius near 37.6 when height permits and center the island in the measured board viewport. Its approximate land bounds are 326 × 301 pixels. Preserve aspect ratio and the 32-pixel ocean margin. Recompute placement from the viewport rather than retaining a hard-coded y coordinate from the current screen.
+At 390 pixels wide, use a hex radius near 35.8 when height permits and center the island in the measured board viewport. Its approximate land bounds are 310 × 286 pixels. Preserve aspect ratio and the 40-pixel ocean margin. Recompute placement from the viewport rather than retaining a hard-coded y coordinate from the current screen.
 
 The four player chips get approximately 85 pixels each with 12-pixel outer margins and 8-pixel gaps. Keep them simple: a short name or initial, ownership marker, score, and resource total. Put development totals and award detail in the tapped player sheet if additional badges would crowd the chips. The viewer's score may include a clearly labeled private total when hidden scoring is implemented; opponents see only public points.
 
-At narrower widths, shorten displayed names, reduce decorative spacing, and scale only the board. Maintain about 48-pixel HUD touch targets. Board edges/intersections are closer together than that; use nearest-valid-target selection, a visible preview, and confirmation. Fit the full board automatically to the available width and height, with no pinch zoom or panning. Keep an ocean margin for the coast and future port markers. Do not simply give every neighboring vertex a large overlapping hit circle.
+At narrower widths, shorten displayed names, reduce decorative spacing, and scale only the board. Maintain about 48-pixel HUD touch targets. Board edges/intersections are closer together than that; use nearest-valid-target selection, a visible preview, and confirmation. Fit the full board automatically to the available width and height, with no pinch zoom or panning. Keep an ocean margin for the coast and port markers. Do not simply give every neighboring vertex a large overlapping hit circle.
 
 For a compact-height preset, reduce the player strip from 64 to 56 pixels, hand from 80 to 72, context line from 40 to 36, dock and primary rows from 64 to 56 each, and bottom spacing from 16 to 8. Keep their actual buttons at least 48 pixels high. This saves 44 pixels without reducing text sizes. Sheet content can scroll independently.
 
@@ -118,12 +118,12 @@ Outside placement mode, tapping a tile opens a small inspector with its resource
 
 Open Build with one tap. List Road, Settlement, City, and, when supported, Buy Development Card. Each row has a recognizable icon, label, full resource cost, availability, and inventory information. Use resource icons with counts rather than a sentence the user must decode.
 
-| Option | Existing/common cost | What to communicate |
-| --- | --- | --- |
-| Road | 1 wood + 1 brick | Availability of a connected empty edge |
-| Settlement | 1 wood + 1 brick + 1 wheat + 1 wool | Network connection and distance restrictions |
-| City | 2 wheat + 3 mountain resource | Upgrades an owned settlement; adds one point relative to that settlement |
-| Development purchase, future | 1 wheat + 1 wool + 1 mountain resource | Draws a card; deck availability |
+| Option                       | Existing/common cost                   | What to communicate                                                      |
+| ---------------------------- | -------------------------------------- | ------------------------------------------------------------------------ |
+| Road                         | 1 wood + 1 brick                       | Availability of a connected empty edge                                   |
+| Settlement                   | 1 wood + 1 brick + 1 wheat + 1 wool    | Network connection and distance restrictions                             |
+| City                         | 2 wheat + 3 mountain resource          | Upgrades an owned settlement; adds one point relative to that settlement |
+| Development purchase, future | 1 wheat + 1 wool + 1 mountain resource | Draws a card; deck availability                                          |
 
 Existing construction costs come from `GAME_RULES.md`; the future development cost matches the [official archived base rules](https://www.catan.com/sites/default/files/2021-06/catan_base_rules_2020_200707.pdf). Display terminology can call the current `stone` resource «سنگ معدن» if chosen; changing its core identifier is unnecessary.
 
@@ -142,7 +142,7 @@ Use a modal bottom sheet that can expand to most of the safe height. Its header 
 ### Bank
 
 - This is the current MVP's only trade destination. When player trading exists, give Bank and Players distinct labeled controls.
-- Selecting the offered resource shows its applicable rate next to that resource. In the MVP it is always 4:1. If port rules are adopted, derive 3:1/2:1 eligibility from the authoritative game state.
+- Selecting the offered resource shows its applicable rate next to that resource. Default to the best available 4:1 bank, 3:1 general-port, or matching-resource 2:1 specialist rate from authoritative state. Port details and a collapsible directory explain coastal access.
 - Preview the exact payment and receipt, such as four wood for one ore. Show owned counts, any shortage, and the resulting counts before confirmation.
 - Confirm exchanges atomically. Show pending feedback and disable duplicate submission until success/failure arrives.
 - Bank supply shortages and unavailable rates get specific explanations when those systems exist. Merely drawing a port should never grant an unimplemented trade advantage.
@@ -166,34 +166,34 @@ Cards belong in a private sheet, accessible through the dock with an owned-count
 
 The reference effects imply different interfaces:
 
-| Reference card | Proposed interaction |
-| --- | --- |
-| Knight | Review effect, collapse sheet, choose robber destination, then eligible victim if theft is enabled |
-| Road Building | Guided first and second road placement, with a clear progress indicator and handling for piece/legal-location limits |
-| Invention / Year of Plenty | Select two available resources, including the same resource twice where allowed, then review |
-| Monopoly | Select a resource type and review the effect before playing; reveal only the resulting transfers allowed by the information policy |
-| Victory Point | Private score contribution; reveal according to the selected victory rules rather than an ordinary Play button |
+| Reference card             | Proposed interaction                                                                                                               |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Knight                     | Review effect, collapse sheet, choose robber destination, then eligible victim if theft is enabled                                 |
+| Road Building              | Guided first and second road placement, with a clear progress indicator and handling for piece/legal-location limits               |
+| Invention / Year of Plenty | Select two available resources, including the same resource twice where allowed, then review                                       |
+| Monopoly                   | Select a resource type and review the effect before playing; reveal only the resulting transfers allowed by the information policy |
+| Victory Point              | Private score contribution; reveal according to the selected victory rules rather than an ordinary Play button                     |
 
 These effects are described in the [archived base rules](https://www.catan.com/sites/default/files/2021-06/catan_base_rules_2020_200707.pdf) and [2025 rulebook](https://www.catan.com/sites/default/files/2025-03/CN3081%20CATAN%E2%80%93The%20Game%20Rulebook%20secure%20%281%29.pdf). Our card names, Persian theming, deck makeup, and enabled effects still require product decisions before implementation.
 
 ## Phase and interruption behavior
 
-| State | Board behavior | Lower primary action / workspace |
-| --- | --- | --- |
-| Initial placement, if adopted | Highlight valid settlement/road candidates in sequence | Confirm current placement, with setup progress |
-| Your pre-roll | Inspect freely; show whose turn it is | Roll; Cards can expose permitted pre-roll actions |
-| Production resolution | Highlight producing tiles and blocked tiles distinctly | Update counts from state; brief, skippable feedback |
-| Your action phase | Inspect and enter build modes | End Turn, with Build/Trade/Cards access |
-| Build targeting | Show valid candidates and a selected preview | Confirm Build / Cancel |
-| Another player's turn | Your hand remains visible; board inspection stays available | Waiting for player; offer response available when eligible |
-| Discard after seven, if adopted | Ordinary building/trading blocked | Select exactly the required resource count and confirm |
-| Waiting for other discards | Preserve board and completion status | Waiting indicator; do not expose discarded types to opponents unless policy allows it |
-| Robber relocation | Highlight valid destinations | Confirm destination |
-| Victim choice, if theft adopted | Mark eligible adjacent opponents | Select opponent; random card chosen by rules/server |
-| Card effect resolution | Follow that effect's targeting sequence | Effect-specific confirmation and progress |
-| Command pending | Preserve preview; block duplicate submission | Pending status; no false success animation |
-| Disconnected/reconnecting | Show last confirmed state with an explicit connection notice | Stop submitting moves; reconnect and resynchronize |
-| Finished | Keep the final board available behind results | Result breakdown, rematch/leave as supported |
+| State                           | Board behavior                                               | Lower primary action / workspace                                                      |
+| ------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------- |
+| Initial placement, if adopted   | Highlight valid settlement/road candidates in sequence       | Confirm current placement, with setup progress                                        |
+| Your pre-roll                   | Inspect freely; show whose turn it is                        | Roll; Cards can expose permitted pre-roll actions                                     |
+| Production resolution           | Highlight producing tiles and blocked tiles distinctly       | Update counts from state; brief, skippable feedback                                   |
+| Your action phase               | Inspect and enter build modes                                | End Turn, with Build/Trade/Cards access                                               |
+| Build targeting                 | Show valid candidates and a selected preview                 | Confirm Build / Cancel                                                                |
+| Another player's turn           | Your hand remains visible; board inspection stays available  | Waiting for player; offer response available when eligible                            |
+| Discard after seven, if adopted | Ordinary building/trading blocked                            | Select exactly the required resource count and confirm                                |
+| Waiting for other discards      | Preserve board and completion status                         | Waiting indicator; do not expose discarded types to opponents unless policy allows it |
+| Robber relocation               | Highlight valid destinations                                 | Confirm destination                                                                   |
+| Victim choice, if theft adopted | Mark eligible adjacent opponents                             | Select opponent; random card chosen by rules/server                                   |
+| Card effect resolution          | Follow that effect's targeting sequence                      | Effect-specific confirmation and progress                                             |
+| Command pending                 | Preserve preview; block duplicate submission                 | Pending status; no false success animation                                            |
+| Disconnected/reconnecting       | Show last confirmed state with an explicit connection notice | Stop submitting moves; reconnect and resynchronize                                    |
+| Finished                        | Keep the final board available behind results                | Result breakdown, rematch/leave as supported                                          |
 
 For the current MVP, a seven enters robber relocation directly. A fuller implementation needs additional states and transition rules before discard/theft UI can work. Timer duration, timeout behavior, reconnect grace periods, pause/resign rules, and automatic actions are online product decisions; they are not supplied by the board game's physical rules.
 

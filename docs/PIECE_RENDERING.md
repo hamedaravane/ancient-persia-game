@@ -18,17 +18,27 @@ Dimensions describe stone geometry before outlines, contact shadow, and selectio
 import { createBuildingPiece, createRoadPiece } from '../rendering/pieces';
 
 const settlement = createBuildingPiece(scene, {
-    x: 120, y: 160, kind: 'settlement', size: 21,
-    color: 0x167ef2,
+  x: 120,
+  y: 160,
+  kind: 'settlement',
+  size: 21,
+  color: 0x167ef2,
 });
 const city = createBuildingPiece(scene, {
-    x: 120, y: 160, kind: 'city', size: 25,
-    color: player.color,
+  x: 120,
+  y: 160,
+  kind: 'city',
+  size: 25,
+  color: player.color,
 });
 const road = createRoadPiece(scene, {
-    x: 150, y: 180, length: 28, thickness: 8,
-    angle: Math.PI / 6, color: player.color,
-    state: { preview: true, legal: true, selected: true },
+  x: 150,
+  y: 180,
+  length: 28,
+  thickness: 8,
+  angle: Math.PI / 6,
+  color: player.color,
+  state: { preview: true, legal: true, selected: true },
 });
 
 road.setColor(0xf024a1).setAngle(Math.PI / 2);
@@ -48,13 +58,13 @@ Pieces deliberately have no owner numbers or plates: their ownership insets stay
 
 `state` contains independent boolean flags:
 
-| Flag | Presentation |
-| --- | --- |
-| `legal` | Thin pale perimeter with a dark separator for readability over light terrain |
-| `preview` | Translucent stone, ownership surface, bevel, and shadow |
+| Flag       | Presentation                                                                      |
+| ---------- | --------------------------------------------------------------------------------- |
+| `legal`    | Thin pale perimeter with a dark separator for readability over light terrain      |
+| `preview`  | Translucent stone, ownership surface, bevel, and shadow                           |
 | `selected` | Stronger perimeter; may combine with legal/preview for an uncommitted destination |
-| `disabled` | Desaturated ownership color and subdued material opacity |
-| No flags | Normal committed piece |
+| `disabled` | Desaturated ownership color and subdued material opacity                          |
+| No flags   | Normal committed piece                                                            |
 
 Calling `setState({})` restores normal materials. These flags affect presentation only; they do not make targets legal, disable input, or commit a placement.
 

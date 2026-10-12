@@ -2,9 +2,11 @@
 
 A mobile-first, Persian-language local strategy board game inspired by hex-based resource production and settlement building. The MVP supports three or four players sharing one device, with a generated board, turn-based production, building, bank trades, a robber, and a six-point victory target.
 
+[Play the game](https://hamedaravane.github.io/ancient-persia-game/)
+
 ## Requirements
 
-- Node.js 20 or newer
+- Node.js 24 LTS recommended (also supports Node 22.13+ within the 22 release line, and Node 26+)
 - npm
 
 ## Commands
@@ -13,24 +15,52 @@ A mobile-first, Persian-language local strategy board game inspired by hex-based
 npm install
 npm run dev
 npm run typecheck
+npm test
+npm run test:watch
+npm run lint
+npm run lint:fix
+npm run format
+npm run format:check
+npm run check
 npm run build
 npm run preview
 ```
 
 The development server is available at `http://localhost:8080`. The production build is written to `dist/`; deploy the contents of that directory to a static web host.
 
+`npm run check` runs lint, formatting verification, Vitest, and the production build (including TypeScript). `npm test` runs once; `npm run test:watch` reruns affected tests while developing. `npm run lint:fix` and `npm run format` apply fixes; the other checks do not rewrite source files.
+
+Vitest shares the Vite configuration and runs explicit-import TypeScript tests from `tests/` in Node. Test deterministic core rules, session commands, and pure layout calculations without constructing Phaser or loading a browser. Keep real rendering and device checks with the user. Mocks, environment stubs, and global stubs reset between tests. No DOM emulator or browser test runner is needed for these suites.
+
+ESLint uses a flat configuration, TypeScript project-service analysis, recommended rules, and typed promise checks. Browser globals apply to game source; Node globals apply to tooling and tests. Core modules cannot import Phaser or presentation modules. Prettier owns formatting, with `eslint-config-prettier` disabling conflicting lint rules. The formatting baseline uses four spaces for code, two for JSON/Markdown/YAML, single quotes, and LF line endings; artwork, wireframes, build output, coverage, and the generated lockfile are excluded.
+
+## GitHub Pages
+
+The playable game is published at [hamedaravane.github.io/ancient-persia-game](https://hamedaravane.github.io/ancient-persia-game/). This runs the current local multiplayer game in the browser; it does not add online matchmaking or a server.
+
+`.github/workflows/deploy-pages.yml` deploys each push to `main` and supports manual runs from GitHub Actions or `gh workflow run deploy-pages.yml`. It installs locked dependencies with Node 24, checks lint/formatting/tests, type-checks and builds the game, uploads only `dist/`, and deploys through the `github-pages` environment. Official actions are pinned to verified release commits; publishing permissions are limited to the deployment job.
+
+The workflow reads the site's base path from Pages settings and passes it to Vite at build time. This preserves the shared local configuration while making JavaScript, CSS, terrain, ocean artwork, resource icons, and fonts load correctly below the repository URL. To reproduce the project-site build locally:
+
+```sh
+npm run build -- --base=/ancient-persia-game/
+```
+
+Pages must use **GitHub Actions** as its publishing source. The setup follows [GitHub's custom Pages workflow guidance](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages) and [Vite's Pages deployment guidance](https://vite.dev/guide/static-deploy.html). Monitor publishing with `gh run list --workflow deploy-pages.yml`.
+
 ## Project map
 
-| Path | Purpose |
-| --- | --- |
-| `src/main.ts` | Browser entry point and global stylesheet import |
-| `src/game/main.ts` | Phaser configuration and game startup |
-| `src/game/scenes/` | Phaser scenes; scenes render state and forward player actions to core APIs |
-| `src/game/core/` | Phaser-independent TypeScript rules and game-state logic |
-| `src/game/ui/` | Localized interface strings |
-| `src/styles/` | Browser and canvas layout styles |
-| `public/assets/` | Runtime art loaded by Phaser from stable public URLs |
-| `docs/` | Product direction, confirmed rules, invariants, art and UI guidance, and asset conventions |
+| Path               | Purpose                                                                                    |
+| ------------------ | ------------------------------------------------------------------------------------------ |
+| `src/main.ts`      | Browser entry point and global stylesheet import                                           |
+| `src/game/main.ts` | Phaser configuration and game startup                                                      |
+| `src/game/scenes/` | Phaser scenes; scenes render state and forward player actions to core APIs                 |
+| `src/game/core/`   | Phaser-independent TypeScript rules and game-state logic                                   |
+| `src/game/ui/`     | Localized interface strings                                                                |
+| `tests/`           | Vitest rule, session, and layout tests                                                     |
+| `src/styles/`      | Browser and canvas layout styles                                                           |
+| `public/assets/`   | Runtime art loaded by Phaser from stable public URLs                                       |
+| `docs/`            | Product direction, confirmed rules, invariants, art and UI guidance, and asset conventions |
 
 `GameScene` provides local match setup, a portrait board, the active player's resource hand, and action controls. It calls pure transitions in `src/game/core/`; the scene owns no gameplay rules. See [docs/GAME_RULES.md](docs/GAME_RULES.md) for the exact MVP rules and [docs/GAMEPLAY_INVARIANTS.md](docs/GAMEPLAY_INVARIANTS.md) for state constraints.
 

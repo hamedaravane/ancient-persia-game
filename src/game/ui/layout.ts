@@ -47,3 +47,15 @@ export function boardToClient(
         y: bounds.top + (y * bounds.height) / viewport.height,
     };
 }
+
+/** Inverse projection for a board camera inset inside the full-screen UI canvas. */
+export function clientToBoard(
+    point: { x: number; y: number },
+    viewport: { width: number; height: number },
+    bounds: { left: number; top: number; width: number; height: number },
+): { x: number; y: number } {
+    return {
+        x: ((point.x - bounds.left) * viewport.width) / bounds.width,
+        y: ((point.y - bounds.top) * viewport.height) / bounds.height,
+    };
+}

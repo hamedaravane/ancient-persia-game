@@ -27,49 +27,6 @@ export class Motion {
     }
 }
 
-/** Each surface owns a group so canceling gameplay cannot cancel a new modal entrance. */
-export class AnimationGroup {
-    private animations = new Map<Animation, () => void>();
-    private unsubscribe: () => void;
-    constructor(private motion: Motion) {
-        this.unsubscribe = motion.subscribe(() => this.clear());
-    }
-
-    play(
-        element: HTMLElement,
-        frames: Keyframe[],
-        options: KeyframeAnimationOptions,
-        cleanup?: () => void,
-        reducedFrames?: Keyframe[],
-    ): void {
-        const chosen = this.motion.reduced ? reducedFrames : frames;
-        if (!chosen || !this.motion.visible || typeof element.animate !== 'function') {
-            cleanup?.();
-            return;
-        }
-        const animation = element.animate(chosen, {
-            ...options,
-            delay: this.motion.reduced ? 0 : options.delay,
-        });
-        const finish = () => {
-            if (!this.animations.delete(animation)) return;
-            cleanup?.();
-        };
-        this.animations.set(animation, finish);
-        void animation.finished.then(finish, finish);
-    }
-    clear(): void {
-        for (const [animation, finish] of this.animations) {
-            animation.cancel();
-            finish();
-        }
-    }
-    destroy(): void {
-        this.clear();
-        this.unsubscribe();
-    }
-}
-
 export const MOTION = {
     fast: 160,
     sheet: 220,

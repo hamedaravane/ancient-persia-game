@@ -2,7 +2,7 @@
 
 Prepared 2026-10-12 from the current implementation and a visual inspection of the existing terrain, resource, building, road, and dice artwork. This is a proposed production plan, not a change to gameplay rules or an implemented asset pipeline.
 
-**Later implementation decision:** the user chose original orthographic Phaser Graphics components for settlements, cities, and roads, with color-only board ownership and no number plates. Their bitmap/mask production proposals below are superseded by [PIECE_RENDERING.md](PIECE_RENDERING.md); the preserved original paintings now live under `art/reference/pieces/`. The current saturated ownership palette is documented in [UI_SYSTEM.md](UI_SYSTEM.md). Other asset categories remain applicable.
+**Later implementation decision:** the user chose original orthographic Phaser Graphics components for settlements, cities, and roads, with color-only board ownership and no number plates. Their bitmap/mask production proposals below are superseded by [PIECE_RENDERING.md](PIECE_RENDERING.md); the preserved original paintings now live under `art/reference/pieces/`. The current saturated ownership palette is documented in [UI_SYSTEM.md](UI_SYSTEM.md). The user subsequently chose Phaser Graphics for all visible UI. The HTML/CSS and bitmap-panel recommendations below are historical proposals, superseded by [PHASER_UI_DESIGN.md](PHASER_UI_DESIGN.md) and [UI_SYSTEM.md](UI_SYSTEM.md). Existing supplied art remains preserved.
 
 ## 1. Direction and production priorities
 
@@ -29,15 +29,15 @@ Historical ornament should follow [ART_DIRECTION.md](ART_DIRECTION.md). For a sp
 ### Rendering boundaries
 
 - `src/game/scenes/GameScene.ts` loads the six terrain paintings. Roads, buildings, tokens, and the robber currently use Phaser Graphics and runtime text.
-- `src/game/ui/GameHud.ts`, `sheets.ts`, and `src/styles/global.css` render the controls as HTML/CSS. Interface assets must work with responsive DOM elements; a Phaser-only interface pack would not fit this architecture.
+- `src/game/ui/InterfaceScene.ts` now draws controls, panels, labels, and original cropped illustrations in Phaser. `GameHud.ts`, `sheets.ts`, and CSS retain transparent semantic layout/input. See the later implementation decision above.
 - `src/game/rendering/boardEffects.ts` already moves and scales piece containers. `src/game/ui/GameFeedback.ts` flies the existing resource icons toward the hand/player summaries. New artwork should fit those adapters and effects.
 - Game state is authoritative. Art, effects, and animation completion never pay resources, determine legality, roll dice, or change ownership.
 
 ### Scale constraints
 
-The reference is 390 × 844 **CSS pixels**, with a maximum shell width of 480. On the reference layout the board viewport and canvas are 468 pixels high during ordinary play. Placement temporarily reserves 56 pixels for its destination selector. Compact layouts reduce fixed UI rows. Actual board size comes from the available canvas, not from a fixed background image.
+The reference is 390 × 844 **CSS pixels**, with a maximum shell width of 480. On the reference layout the board camera is 428 pixels high during ordinary play. Placement temporarily reserves 56 pixels for its destination selector. Compact layouts reduce fixed UI rows. Actual board size comes from the available canvas, not from a fixed background image.
 
-`fitBoard()` fits the entire radius-two island to the measured canvas with a 40-pixel ocean margin on every side, reserving space for the coast and procedural port markers. There is no fixed radius cap, zoom, or panning. At a 390 × 468 canvas, hex radius is about 35.8, a point-up hex is 62 × 72 pixels, and the land footprint is 310 × 286. Art must remain readable at the fitted mobile size.
+`fitBoard()` fits the entire radius-two island to the measured canvas with a 40-pixel ocean margin on every side, reserving space for the coast and procedural port markers. There is no fixed radius cap, zoom, or panning. At a 390 × 428 board viewport, hex radius is about 35.8, a point-up hex is 62 × 72 pixels, and the land footprint is 310 × 286. Art must remain readable at the fitted mobile size.
 
 | Element                | Current footprint                                    | Proposed art footprint at normal board/UI scale          |
 | ---------------------- | ---------------------------------------------------- | -------------------------------------------------------- |
@@ -128,7 +128,7 @@ For each interactive component, specify normal, pressed, disabled, selected/acti
 - If a painted frame is required, deliver a **nine-slice frame**: corners stay fixed, edges stretch/repeat, and the center remains quiet. A proposed button frame is 192 × 144 source pixels at 3×, with 24-source-pixel slice insets (8 displayed pixels). Test it at 48 CSS pixels high and widths from approximately 140 to 366. This is one stretchable source, not one asset per label.
 - An optional 192 × 192 panel-frame source at 3× with 36-source-pixel corner insets (12 displayed pixels), if the vector/CSS treatment is insufficient. The 20-pixel rounded sheet shape can remain CSS, with ornament layered inside its header; it need not inherit a square frame's corner geometry.
 
-The UI is DOM-based, so integration should use CSS borders, gradients, inline SVG, or `border-image` on a decorative layer. [MDN's border-image-slice documentation](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/border-image-slice) explains the fixed-corner/edge approach. Avoid applying a full fixed-size painting to a responsive button or turning the HUD into a single raster image. Preserve native buttons, dialog behavior, and visible focus.
+Historical proposal, superseded by the Graphics material system: the original DOM UI used CSS borders, gradients, inline SVG, or `border-image` on a decorative layer. [MDN's border-image-slice documentation](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/border-image-slice) explains the fixed-corner/edge approach. Avoid applying a full fixed-size painting to a responsive button or turning the HUD into a single raster image. Preserve native buttons, dialog behavior, and visible focus.
 
 All Persian wording, counters, costs, names, ratios, and labels remain runtime Vazirmatn text. Test long labels such as the robber confirmation and trade warnings. Ornament must not steal padding from these labels or force taller HUD rows. Keep the existing 48-pixel touch targets; a 22-pixel drawing can sit inside a 48-pixel button.
 
@@ -217,7 +217,7 @@ A spritesheet is unnecessary unless the effect visibly deforms. If one is commis
 
 Keep all five existing objects: bundled wood, bricks, tied wheat, wool bundle, and stone. The implementation calls the fifth resource `stone`; do not replace it with shiny metallic ore or introduce a sixth resource. Preserve the same order and icon proportions in the hand, costs, trade selectors, and flights.
 
-If optimization becomes useful, derive a compact atlas or individual approximately 96–128-pixel exports from the existing artwork with consistent optical scale and documented frames. That is an export task, not a repaint. The current CSS references explicit crop coordinates, so swapping an atlas requires an intentional simultaneous CSS/metadata change. The base paintings should remain available outside the runtime tree if a smaller runtime set is introduced later.
+If optimization becomes useful, derive a compact atlas or individual approximately 96–128-pixel exports from the existing artwork with consistent optical scale and documented frames. That is an export task, not a repaint. The current Phaser renderer references the shared `RESOURCE_FRAMES` metadata, so swapping an atlas requires an intentional metadata/frame update. The base paintings should remain available outside the runtime tree if a smaller runtime set is introduced later.
 
 ### Coast and ocean
 

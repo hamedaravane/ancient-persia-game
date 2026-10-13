@@ -1,6 +1,6 @@
 # Gameplay background production plan
 
-Status: implemented using the user-supplied ocean asset, retained unchanged as `backgrounds/game.png` (853 × 1844). The current responsive board centers in the measured viewport and fits with a 40-pixel ocean margin for the coast and procedural port islets. At 390 × 468 its hex radius is about 35.8. A persistent decorative coast follows its outer edges, while the ocean covers the portrait shell proportionally. The existing `backgrounds/main-menu.png` remains exclusive to the main menu. The production brief below records the design and original target dimensions; the delivered image's aspect ratio is already almost identical to the canvas, so no preprocessing was needed.
+Status: implemented using the user-supplied ocean asset, retained unchanged as `backgrounds/game.png` (853 × 1844). The current responsive board centers in the measured viewport and fits with a 40-pixel ocean margin for the coast and procedural port islets. At the current 390 × 428 reference board viewport its hex radius is about 35.8. A persistent decorative coast follows its outer edges, while the ocean covers the portrait shell proportionally. The existing `backgrounds/main-menu.png` remains exclusive to the main menu. The production brief below records the design and original target dimensions; the delivered image's aspect ratio is already almost identical to the canvas, so no preprocessing was needed.
 
 ## Visual decision
 

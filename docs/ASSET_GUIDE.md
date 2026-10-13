@@ -44,15 +44,19 @@ Use a stable asset key in code and build the URL from `import.meta.env.BASE_URL`
 - Prefer optimized web-ready images. Preserve source masters outside the runtime tree when they are needed for future editing.
 - Do not remove or replace existing project assets without a documented reason.
 
+## Procedural interface materials
+
+The current stone UI is drawn with Phaser Graphics, with cut corners, broad chisel facets, recessed keylines, deterministic mineral flecks/patina, and shallow border seams. These are presentation geometry, not new PNG textures. Grain stays at the perimeter so text remains legible, and its local generator never uses `Math.random()` or the core random source. No runtime/source art is replaced or duplicated for this treatment. Stone is now the sole approved interface, using the same original Image frames. Semantic icon dimensions use a shared CSS `--icon-size`, preserving the frame aspect ratio at each placement size without transform or negative-margin offsets.
+
 ## Current files
 
 - `backgrounds/main-menu.png`: portrait palace background used only by the main menu.
-- `backgrounds/game.png`: user-supplied 853 × 1844 ocean image, renamed from `ocean-surface-bg.png`. Used only during matches as a CSS cover background on the responsive portrait shell. The original pixels are retained. `src/game/rendering/boardCoast.ts` draws a shallow-water wash, narrow sand/stone rim, and broken surf along the actual board perimeter; no coastline is baked into this image. Board presentation measurements are shared in `src/game/ui/layout.ts`.
+- `backgrounds/game.png`: user-supplied 853 × 1844 ocean image, renamed from `ocean-surface-bg.png`. Used only during matches as a proportionally covered Phaser Image in `BackdropScene`. The original pixels are retained. `src/game/rendering/boardCoast.ts` draws a shallow-water wash, narrow sand/stone rim, and broken surf along the actual board perimeter; no coastline is baked into this image. Board presentation measurements are shared in `src/game/ui/layout.ts`.
 - `fonts/vazirmatn-regular.woff2`: unmodified Vazirmatn v33.003 Regular (400), 50,684 bytes, downloaded from the [official release](https://github.com/rastikerdar/vazirmatn/tree/v33.003/fonts/webfonts). This is the only weight currently used; no variable font, TTF, or extra weight files are shipped. Retains the upstream Persian and Latin glyph coverage.
 - `fonts/vazirmatn-license.txt`: the unmodified SIL Open Font License 1.1 and copyright notice downloaded from the same [release](https://github.com/rastikerdar/vazirmatn/blob/v33.003/OFL.txt).
 - `board/terrains/`: desert, forest, mesa, mountain, pasture, and wheat illustrations, loaded by `GameScene` with stable `terrain-` keys and displayed on their corresponding board hexes.
 - `dice/dice.png`: dice artwork; frame layout has not been documented.
-- `dice/faces.png`: supplied six-face stone dice sheet, used for the two confirmed dice in the match bar. Its front faces are ordered 1–3 across the top and 4–6 across the bottom. The source is **RGB with a baked checkerboard**, not transparent. Explicit crops and an inset silhouette clip hide the background in DOM rendering; this also omits the baked shadow and slightly trims the silhouette. A real transparent re-export is the highest-priority art cleanup. The original pixels remain unchanged.
+- `dice/faces.png`: preserved supplied six-face stone dice sheet. The match bar now draws its two confirmed dice with Phaser Graphics. Its front faces are ordered 1–3 across the top and 4–6 across the bottom. The source is **RGB with a baked checkerboard**, not transparent. The previous DOM implementation used inset silhouette clipping, trimming the painted edges and shadow. This documented art issue motivates clean procedural ivory dice in the new Graphics UI. A future transparent re-export could restore the painted version; the inspected original crops remain in the registry. The original pixels remain unchanged.
 - Settlements, cities, and roads use reusable Phaser Graphics components rather than runtime images. Their original paintings are preserved under `art/reference/pieces/`, outside the runtime tree. See [PIECE_RENDERING.md](PIECE_RENDERING.md) for dimensions, material layers, visual states, API, and the `?demo=pieces` gallery.
 - `pieces/robber/robber.png`: supplied traveler miniature, replacing the board's letter marker, including translucent destination previews and the existing movement effect. The crop removes generous source padding; a runtime contact shadow separates it from terrain. It displays about 38.4 pixels high at maximum fitted board size, a 20% enlargement. The miniature, shadow, and fallback scale together; its center sits 0.45 hex radii above tile center, using the same offset during movement.
 - `board/tokens/number.png`: supplied stone medallion, used behind runtime Persian tile numbers at 28.6 pixels across with 15.4-pixel digits, both enlarged by 10%. The fallback circle is enlarged proportionally. The desert has no board label or number token; its name remains available in tile details. The illustrated frame is detailed at source size; its center is intentionally kept clear for digits.
@@ -62,7 +66,7 @@ Use a stable asset key in code and build the URL from `import.meta.env.BASE_URL`
 - `effects/dust.png`: short construction puff behind the building marker within its container.
 - `effects/spark.png`: restrained road-placement sparkle over the confirmed edge.
 - `effects/glint.png`: short glint over the victory medallion in the dialog's top layer.
-- `resources/resources.png`: five transparent resource illustrations. Source frame rectangles are documented below. `src/styles/global.css` scales each crop proportionally into a maximum 32-pixel icon; the hand, costs, bank selectors, and animated production flights reuse those CSS classes without extra image files. Phaser also loads this same sheet and adds resource frames from `RESOURCE_FRAMES` in `assets.ts` for port markers; frame crops match the existing DOM resource icons.
+- `resources/resources.png`: five transparent resource illustrations. Source frame rectangles are documented below. Phaser loads the sheet once and adds the shared `RESOURCE_FRAMES` crops from `assets.ts`. The Graphics interface hand, costs, selectors, production flights, and board ports reuse those Image frames without duplicate files. CSS sizes transparent semantic icon placeholders to the same proportions, at a maximum 32 pixels.
 
 | Resource | Source rectangle (`x`, `y`, `width`, `height`) |
 | -------- | ---------------------------------------------- |
@@ -76,13 +80,13 @@ The MVP maps forest to wood, mesa to brick, wheat to wheat, pasture to wool, and
 
 No runtime background removal or intermediate downsampling is applied. Keep transparency and the shared hex alignment when replacing the artwork. The originals remain individual PNGs; no terrain atlas is required by the current loader.
 
-The ocean and its coast are presentation only. CSS switches between menu and match backgrounds; the transparent Phaser canvas shows only the board over the match ocean. Coast geometry is recreated when board state or viewport measurements change, and stays below the terrain. A ResizeObserver explicitly resizes the canvas with `Scale.NONE`; the island automatically fits the available width and height with a 40-pixel ocean margin for the coast and port markers. There is no interactive zoom or panning, and DOM controls retain CSS-pixel touch dimensions.
+The ocean and its coast are presentation only. `BackdropScene` switches between menu and match Image backgrounds inside the full-shell Phaser canvas. An inset board camera and full-shell interface scene share this canvas. Coast geometry is recreated when board state or viewport measurements change, and stays below the terrain. A ResizeObserver explicitly resizes the canvas with `Scale.NONE`; the island automatically fits the available width and height with a 40-pixel ocean margin for the coast and port markers. There is no interactive zoom or panning. Transparent semantic controls retain CSS-pixel touch dimensions; Graphics surfaces and runtime labels match their measured geometry.
 
 The art is retained from the existing project. Recheck resource crop rectangles against the source atlas if that image changes. The older dice sheet remains available. The original settlement/city/road paintings are reference art under `art/reference/pieces/`; the user's chosen replacement is original procedural Graphics geometry, so bitmap ownership masks are not required.
 
 ## Supplied polish assets: frames and review
 
-All nine new PNGs have been renamed/moved without re-encoding. Source rectangles and original dimensions are defined once in `src/game/assets.ts`; Phaser adds named texture frames, while DOM components generate proportional CSS background crops from the same registry. Asset URLs use `import.meta.env.BASE_URL`. These are presentation frames, not animation grids or rule data.
+All nine new PNGs have been renamed/moved without re-encoding. Source rectangles and original dimensions are defined once in `src/game/assets.ts`; Phaser adds named texture frames for board and interface Images. Semantic components attach art names and proportional placeholder measurements from the same registry. Asset URLs use `import.meta.env.BASE_URL`. These are presentation frames, not animation grids or rule data.
 
 | Art key           | Source rectangle (`x`, `y`, `width`, `height`)                  |
 | ----------------- | --------------------------------------------------------------- |
@@ -100,7 +104,7 @@ All nine new PNGs have been renamed/moved without re-encoding. Source rectangles
 
 The new illustrations share warm stone, gold, and navy materials. Some fine details disappear at mobile scale, especially the robber's face and the token's relief; their silhouettes and clear number center carry their function. Several PNGs contain faint alpha specks outside the main subject, so full-image alpha bounds are not a reliable intended crop. Frames avoid most excess padding while preserving the supplied work. Soft/uneven effect edges are used at low opacity in small finite effects.
 
-Future optimization can produce smaller transparent runtime exports from preserved masters; this integration deliberately keeps original pixels and introduces no new per-color copies. The large new source images still increase download/decoded-texture cost. Actual-size visual review on the user's device remains necessary, particularly for the dice silhouette clipping and token-number readability.
+Future optimization can produce smaller transparent runtime exports from preserved masters; this integration deliberately keeps original pixels and introduces no new per-color copies. The large new source images still increase download/decoded-texture cost. Actual-size visual review on the user's device remains necessary, particularly for the procedural dice and token-number readability.
 
 ## Ports
 

@@ -1,4 +1,5 @@
 import type { Scene } from 'phaser';
+import { clientToBoard } from '../ui/layout';
 
 interface Touch {
     startX: number;
@@ -9,14 +10,15 @@ interface Touch {
 /** One input surface chooses the nearest target; neighboring hit areas never overlap. */
 export class BoardInput {
     private touches = new Map<number, Touch>();
-    private canvas: HTMLCanvasElement;
+    private canvas: HTMLElement;
 
     constructor(
         private scene: Scene,
+        surface: HTMLElement,
         private enabled: () => boolean,
         private tap: (x: number, y: number) => void,
     ) {
-        this.canvas = scene.game.canvas;
+        this.canvas = surface;
         this.canvas.addEventListener('pointerdown', this.down);
         this.canvas.addEventListener('pointermove', this.move);
         this.canvas.addEventListener('pointerup', this.up);
@@ -25,10 +27,7 @@ export class BoardInput {
     }
     private point(event: PointerEvent): { x: number; y: number } {
         const rect = this.canvas.getBoundingClientRect();
-        return {
-            x: ((event.clientX - rect.left) * this.scene.scale.width) / rect.width,
-            y: ((event.clientY - rect.top) * this.scene.scale.height) / rect.height,
-        };
+        return clientToBoard({ x: event.clientX, y: event.clientY }, this.scene.cameras.main, rect);
     }
     private down = (event: PointerEvent): void => {
         if (!this.enabled() || event.button > 0) return;

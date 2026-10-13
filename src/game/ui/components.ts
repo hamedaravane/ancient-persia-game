@@ -1,6 +1,6 @@
 import type { ResourceType } from '../core/types';
 import { FA } from './messages.fa';
-import { ART, DICE_FACES, assetUrl, type ArtFrame, type ArtName } from '../assets';
+import { ART, DICE_FACES, type ArtFrame, type ArtName } from '../assets';
 
 export const number = (value: number): string => value.toLocaleString('fa-IR');
 export const escape = (text: string): string =>
@@ -10,20 +10,20 @@ export const escape = (text: string): string =>
     );
 export const color = (value: number): string => `#${value.toString(16).padStart(6, '0')}`;
 
-/** Decorative source crop; game information always stays in runtime text. */
+/** Semantic size placeholder; InterfaceScene draws the actual shared art crop. */
 export function frameSprite(art: ArtFrame, width: number, className = ''): string {
-    const [x, y, w, h] = art.frame;
+    const [, , w, h] = art.frame;
     const scale = width / w;
     const px = (value: number) => `${Number(value.toFixed(3))}px`;
-    return `<span aria-hidden="true" class="art-sprite ${escape(className)}" style="width:${px(width)};height:${px(h * scale)};background-image:url('${assetUrl(art.file)}');background-size:${px(art.source[0] * scale)} ${px(art.source[1] * scale)};background-position:${px(-x * scale)} ${px(-y * scale)};${art.clip ? `clip-path:${art.clip};` : ''}"></span>`;
+    return `<span aria-hidden="true" class="art-sprite ${escape(className)}" style="width:${px(width)};height:${px(h * scale)}"></span>`;
 }
 
 export const artSprite = (name: ArtName, width: number, className = ''): string =>
-    frameSprite(ART[name], width, className);
+    frameSprite(ART[name], width, className).replace('<span ', `<span data-art="${name}" `);
 
 export function diceFace(value: number): string {
     const frame = DICE_FACES[value - 1];
-    return frame ? frameSprite(frame, 24, 'dice-face') : '';
+    return frame ? `<span class="dice-face" data-dice="${value}" aria-hidden="true"></span>` : '';
 }
 
 export function button(

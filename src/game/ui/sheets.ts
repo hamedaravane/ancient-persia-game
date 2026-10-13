@@ -62,6 +62,25 @@ export function sheetContent(session: GameSession): { title: string; body: strin
     const state = session.state!;
     const player = state.players[state.activePlayerIndex];
     const sheet = session.sheet!;
+    if (sheet.kind === 'targets' || sheet.kind === 'inspect') {
+        const inspecting = sheet.kind === 'inspect';
+        const ids = inspecting ? state.board.tiles.map((tile) => tile.id) : session.targets;
+        return {
+            title: inspecting ? 'بررسی خانه‌های جزیره' : 'انتخاب محل روی جزیره',
+            body: `<p class="sheet-intro">${inspecting ? 'برای دیدن تولید و ساختمان‌های مجاور، یک خانه را انتخاب کنید.' : 'انتخاب محل فقط پیش‌نمایش است؛ تأیید نهایی روی صفحه بازی انجام می‌شود.'}</p><div class="target-list">${ids
+                .map((id, i) => {
+                    const tile = state.board.tiles.find((candidate) => candidate.id === id);
+                    const label = tile
+                        ? `${tile.resource ? FA.resources[tile.resource] : FA.desert}${tile.number === null ? '' : ` • ${number(tile.number)}`} (${number(tile.q + 3)}، ${number(tile.r + 3)})`
+                        : `محل ${number(i + 1)}`;
+                    return button(label, `${inspecting ? 'inspect' : 'preview-target'}:${id}`, {
+                        className: 'button full-width',
+                        pressed: !inspecting && session.placement?.targetId === id,
+                    });
+                })
+                .join('')}</div>`,
+        };
+    }
     if (sheet.kind === 'end-turn')
         return {
             title: 'پایان نوبت؟',
@@ -206,6 +225,6 @@ export function sheetContent(session: GameSession): { title: string; body: strin
     }
     return {
         title: 'راهنمای بازی',
-        body: `<p>بازی محلی برای سه یا چهار بازیکن است. در نوبت خود دستگاه را در اختیار بگیرید؛ منابع پایین صفحه متعلق به بازیکن فعال است.</p><ol class="help-list"><li>تاس را بیندازید. خانه‌های هم‌شماره برای آبادی‌های مجاور یک منبع و برای شهرها دو منبع تولید می‌کنند.</li><li>با تاس هفت، راهزن را به خانه دیگری ببرید. خانه دارای راهزن تولید ندارد؛ در این نسخه سرقت و دورریختن منابع وجود ندارد.</li><li>ساخت‌وساز را باز کنید تا هزینه و محل‌های مجاز را ببینید. محل را انتخاب و سپس ساخت را تأیید کنید.</li><li>در بانک، چهار منبع یکسان را با یک منبع دیگر مبادله کنید. آبادی یا شهر کنار بندر عمومی نرخ ۳ به ۱ می‌دهد؛ بندر تخصصی فقط منبع نشان‌داده‌شده را با نرخ ۲ به ۱ می‌پذیرد. ساخت راه کافی نیست. پس از ساخت آبادی بندری، همان نوبت می‌توانید از نرخ آن استفاده کنید.</li><li>پس از انجام کارها، پایان نوبت را بزنید. رسیدن به ${number(state.victoryTarget)} امتیاز بازی را تمام می‌کند.</li></ol><p>راه باید به شبکه شما وصل باشد؛ ساختمان حریف ادامه راه را قطع می‌کند. بین آبادی‌ها یک تقاطع خالی لازم است. شهر فقط آبادی خودتان را ارتقا می‌دهد.</p><p class="footnote">برای جزئیات خانه آن را لمس کنید. برای انتخاب دقیق‌تر از فهرست محل‌ها استفاده کنید؛ محل انتخاب‌شده را پیش از تأیید بررسی کنید.</p>${button('دیدن هزینه‌های ساخت', 'open:build', { className: 'button full-width' })}`,
+        body: `<p>بازی محلی برای سه یا چهار بازیکن است. در نوبت خود دستگاه را در اختیار بگیرید؛ منابع پایین صفحه متعلق به بازیکن فعال است.</p><ol class="help-list"><li>تاس را بیندازید. خانه‌های هم‌شماره برای آبادی‌های مجاور یک منبع و برای شهرها دو منبع تولید می‌کنند.</li><li>با تاس هفت، راهزن را به خانه دیگری ببرید. خانه دارای راهزن تولید ندارد؛ در این نسخه سرقت و دورریختن منابع وجود ندارد.</li><li>ساخت‌وساز را باز کنید تا هزینه و محل‌های مجاز را ببینید. محل را انتخاب و سپس ساخت را تأیید کنید.</li><li>در بانک، چهار منبع یکسان را با یک منبع دیگر مبادله کنید. آبادی یا شهر کنار بندر عمومی نرخ ۳ به ۱ می‌دهد؛ بندر تخصصی فقط منبع نشان‌داده‌شده را با نرخ ۲ به ۱ می‌پذیرد. ساخت راه کافی نیست. پس از ساخت آبادی بندری، همان نوبت می‌توانید از نرخ آن استفاده کنید.</li><li>پس از انجام کارها، پایان نوبت را بزنید. رسیدن به ${number(state.victoryTarget)} امتیاز بازی را تمام می‌کند.</li></ol><p>راه باید به شبکه شما وصل باشد؛ ساختمان حریف ادامه راه را قطع می‌کند. بین آبادی‌ها یک تقاطع خالی لازم است. شهر فقط آبادی خودتان را ارتقا می‌دهد.</p><p class="footnote">برای جزئیات خانه آن را لمس کنید. برای انتخاب دقیق‌تر از فهرست محل‌ها استفاده کنید؛ محل انتخاب‌شده را پیش از تأیید بررسی کنید.</p>${button('بررسی خانه‌های جزیره', 'open:inspect', { className: 'button full-width' })}${button('دیدن هزینه‌های ساخت', 'open:build', { className: 'button full-width' })}`,
     };
 }

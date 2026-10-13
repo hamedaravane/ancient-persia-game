@@ -6,7 +6,6 @@ import { artSprite, button, diceFace, escape, number, resourceIcon } from './com
 import { FA } from './messages.fa';
 import { BUILD_LABELS, PHASE_LABELS, costRow, sheetContent } from './sheets';
 import { type GameSession } from './session';
-import type { Motion } from './motion';
 
 export class GameHud {
     readonly boardViewport: HTMLElement;
@@ -20,7 +19,6 @@ export class GameHud {
     constructor(
         private parent: HTMLElement,
         private session: GameSession,
-        motion: Motion,
     ) {
         parent.className = 'game-app is-menu';
         parent.innerHTML = `<section class="main-menu" aria-label="آغاز بازی"><div class="menu-panel">${artSprite('corner', 42, 'panel-corner panel-corner--start')}${artSprite('corner', 42, 'panel-corner panel-corner--end')}${artSprite('rosette', 44, 'menu-emblem')}<p class="eyebrow">سرزمین فرصت‌ها</p><h1>${FA.title}</h1><p>${FA.subtitle}</p>${artSprite('divider', 120, 'menu-divider')}<h2>${FA.choosePlayers}</h2><div class="menu-choices">${button(FA.threePlayers, 'start:3', { className: 'button button--primary' })}${button(FA.fourPlayers, 'start:4')}</div><p class="footnote">${FA.handover}</p></div></section>
@@ -30,9 +28,8 @@ export class GameHud {
                 <div class="context-line"></div><section class="resource-hand" aria-label="منابع بازیکن فعال"></section><nav class="action-dock" aria-label="ابزارهای نوبت"></nav><div class="primary-row"></div><div class="bottom-space"></div>
             </section><div class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>`;
         this.boardViewport = parent.querySelector('.board-canvas')!;
-        this.sheet = new BottomSheet(parent, () => session.closeSheet(), motion);
+        this.sheet = new BottomSheet(parent, () => session.closeSheet());
         parent.addEventListener('click', this.onClick);
-        parent.addEventListener('change', this.onChange);
         document.addEventListener('keydown', this.onKeyDown);
         this.unsubscribe = session.subscribe(() => this.render());
         this.sizeObserver = new ResizeObserver(([entry]) => {
@@ -80,7 +77,7 @@ export class GameHud {
                 .map((p, i) => {
                     const summary = getPlayerSummary(state, p.id);
                     return button(
-                        `<span class="player-name"><span class="owner-dot">${number(i + 1)}</span>${escape(p.name)}</span><span class="player-stats"><span>${number(summary.score)} امتیاز</span><span>${number(summary.resources)} منبع</span></span>`,
+                        `<span class="player-name"><span class="owner-dot">${number(i + 1)}</span><span class="player-label">${escape(p.name)}</span></span><span class="player-stats"><span class="score-stat"><span class="score-symbol" aria-hidden="true"></span>${number(summary.score)}</span><span class="total-stat"><span class="total-symbol" aria-hidden="true"></span>${number(summary.resources)}</span></span>`,
                         `player:${p.id}`,
                         {
                             className: `player-chip${p.id === active.id ? ' is-active' : ''}`,
@@ -91,6 +88,11 @@ export class GameHud {
                 })
                 .join(''),
         );
+        for (const [index, chip] of [...this.part('.player-strip').children].entries()) {
+            const element = chip as HTMLElement;
+            element.dataset.score = String(getPlayerSummary(state, state.players[index].id).score);
+            element.dataset.target = String(state.victoryTarget);
+        }
         const hint =
             this.session.error ||
             (placement
@@ -138,13 +140,12 @@ export class GameHud {
                 disabled: !!placement && !placement.targetId,
             }),
         );
-        const targets = this.session.targets;
         this.part('.board-selection').classList.toggle('is-placing', !!placement);
         this.updatePart(
             '.board-selection',
             placement
-                ? `<label class="target-picker"><span class="sr-only">انتخاب محل از فهرست</span><select data-action="target" aria-label="انتخاب محل از فهرست"><option value="">انتخاب محل (${number(targets.length)})</option>${targets.map((id, i) => `<option value="${escape(id)}"${id === placement.targetId ? ' selected' : ''}>${placement.kind === 'robber' ? this.tileLabel(id) : `محل ${number(i + 1)}`}</option>`).join('')}</select></label>`
-                : `<label class="sr-only"><span>بررسی خانه</span><select data-action="inspect"><option value="">بررسی خانه</option>${state.board.tiles.map((tile) => `<option value="${escape(tile.id)}">${this.tileLabel(tile.id)}</option>`).join('')}</select></label>`,
+                ? `<div class="target-picker">${button(`انتخاب از ${number(this.session.targets.length)} محل مجاز`, 'open:targets', { className: 'button full-width' })}</div>`
+                : '',
         );
         if (focusAction && !this.session.sheet)
             [...this.parent.querySelectorAll<HTMLElement>('[data-action]')]
@@ -157,17 +158,25 @@ export class GameHud {
         this.sheet.render(this.session.sheet ? sheetContent(this.session) : null, focusAction);
     }
 
-    private tileLabel(id: string): string {
-        const tile = this.session.state!.board.tiles.find((t) => t.id === id)!;
-        return `${tile.resource ? FA.resources[tile.resource] : FA.desert}${tile.number === null ? '' : ` ${number(tile.number)}`} (${number(tile.q + 3)}، ${number(tile.r + 3)})`;
-    }
     private onClick = (event: MouseEvent): void => {
         const target = (event.target as Element).closest<HTMLButtonElement>('button[data-action]');
         if (!target || target.disabled) return;
         const [action, value, resource] = target.dataset.action!.split(':');
+        const targetId = target.dataset.action!.slice(action.length + 1);
         if (action === 'start') this.session.start(value === '3' ? 3 : 4);
-        if (action === 'open' && ['build', 'trade', 'help', 'history'].includes(value))
-            this.session.openSheet({ kind: value as 'build' | 'trade' | 'help' | 'history' });
+        if (
+            action === 'open' &&
+            ['build', 'trade', 'help', 'history', 'targets', 'inspect'].includes(value)
+        )
+            this.session.openSheet({
+                kind: value as 'build' | 'trade' | 'help' | 'history' | 'targets' | 'inspect',
+            });
+        if (
+            action === 'inspect' &&
+            this.session.state?.board.tiles.some((tile) => tile.id === targetId)
+        )
+            this.session.openSheet({ kind: 'tile', id: targetId });
+        if (action === 'preview-target') this.session.chooseTargetFromSheet(targetId);
         if (action === 'port' && this.session.state?.board.ports.some((port) => port.id === value))
             this.session.openSheet({ kind: 'port', id: value });
         if (action === 'trade-port') this.session.tradeFromPort(value);
@@ -196,20 +205,6 @@ export class GameHud {
         if (action === 'cancel-placement') this.session.cancelPlacement();
         if (action === 'new-game') this.session.returnToMenu();
     };
-    private onChange = (event: Event): void => {
-        const target = event.target as HTMLSelectElement;
-        if (!target.value) {
-            if (target.dataset.action === 'target')
-                target.value = this.session.placement?.targetId ?? '';
-            return;
-        }
-        if (target.dataset.action === 'target') this.session.preview(target.value);
-        if (target.dataset.action === 'inspect') {
-            const id = target.value;
-            target.value = '';
-            this.session.openSheet({ kind: 'tile', id });
-        }
-    };
     private onKeyDown = (event: KeyboardEvent): void => {
         if (event.key === 'Escape' && !this.session.sheet && this.session.placement)
             this.session.cancelPlacement();
@@ -219,7 +214,6 @@ export class GameHud {
         this.sizeObserver.disconnect();
         this.sheet.destroy();
         this.parent.removeEventListener('click', this.onClick);
-        this.parent.removeEventListener('change', this.onChange);
         document.removeEventListener('keydown', this.onKeyDown);
     }
 }

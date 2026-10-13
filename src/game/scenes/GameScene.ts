@@ -50,9 +50,10 @@ export class GameScene extends Scene {
     constructor(
         private session: GameSession,
         private motion: Motion,
+        private viewport: HTMLElement,
         private onReady: (scene: GameScene) => void,
     ) {
-        super('GameScene');
+        super({ key: 'GameScene', active: true });
     }
 
     preload(): void {
@@ -83,23 +84,41 @@ export class GameScene extends Scene {
         this.effects = new BoardEffects(this, this.motion);
         this.inputAdapter = new BoardInput(
             this,
+            this.viewport,
             () => !!this.session.state && !this.session.sheet,
             (x, y) => this.selectAt(x, y),
         );
         this.unsubscribe = this.session.subscribe(() => this.render());
         this.scale.on('resize', this.resizeBoard, this);
-        this.events.once('shutdown', () => {
+        let disposed = false;
+        const dispose = () => {
+            if (disposed) return;
+            disposed = true;
             this.unsubscribe();
             this.inputAdapter.destroy();
             this.effects.destroy();
             this.layoutListeners.clear();
             this.scale.off('resize', this.resizeBoard, this);
-        });
+        };
+        this.events.once('shutdown', dispose);
+        this.events.once('destroy', dispose);
         this.resizeBoard();
+        this.scene.launch('InterfaceScene');
         this.onReady(this);
     }
-    private resizeBoard(): void {
-        this.layout = fitBoard(this.scale.width, this.scale.height);
+    resizeBoard(): void {
+        if (!this.boardObjects) return;
+        const rect = this.viewport.getBoundingClientRect();
+        const canvas = this.game.canvas.getBoundingClientRect();
+        this.cameras.main.setVisible(rect.width > 0 && rect.height > 0);
+        if (rect.width <= 0 || rect.height <= 0) return;
+        this.cameras.main.setViewport(
+            rect.left - canvas.left,
+            rect.top - canvas.top,
+            rect.width,
+            rect.height,
+        );
+        this.layout = fitBoard(rect.width, rect.height);
         this.effects?.clear();
         this.layoutListeners.forEach((listener) => listener());
         this.render(true);
@@ -119,8 +138,8 @@ export class GameScene extends Scene {
         return boardToClient(
             tile,
             this.layout,
-            this.scale,
-            this.game.canvas.getBoundingClientRect(),
+            this.cameras.main,
+            this.viewport.getBoundingClientRect(),
         );
     }
 

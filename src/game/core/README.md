@@ -9,4 +9,4 @@ The modules in this directory own the game state and rules. They are plain TypeS
 - `production.ts` computes per-tile/per-recipient production grants shared by dice payment and presentation.
 - `queries.ts` exposes build availability, shortages, legal target IDs, public player summaries, and dice production probabilities without mutating state. `getBankTradeError` in `game.ts` is shared by bank commands and previews.
 
-The local session adapter calls these functions and publishes the resulting state to the DOM HUD and Phaser board scene. Drafts and previews live outside core and never spend resources. Confirmation always revalidates through a core command. Keep presentation and input behavior outside this directory.
+The local session adapter calls these functions and publishes the resulting state to the Phaser board/Graphics interface and their semantic input adapter. Drafts and previews live outside core and never spend resources. Confirmation always revalidates through a core command. Keep presentation and input behavior outside this directory.

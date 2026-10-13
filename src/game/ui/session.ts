@@ -18,7 +18,17 @@ import { FA } from './messages.fa';
 import { number } from './components';
 
 export type Sheet =
-    | { kind: 'build' | 'trade' | 'history' | 'help' | 'results' | 'end-turn' }
+    | {
+          kind:
+              | 'build'
+              | 'trade'
+              | 'history'
+              | 'help'
+              | 'results'
+              | 'end-turn'
+              | 'targets'
+              | 'inspect';
+      }
     | { kind: 'player' | 'tile' | 'port'; id: string };
 export interface Placement {
     kind: BuildType | 'robber';
@@ -131,6 +141,11 @@ export class GameSession {
         this.placement = { ...this.placement, targetId };
         this.error = null;
         this.emit();
+    }
+    chooseTargetFromSheet(targetId: string): void {
+        if (this.sheet?.kind !== 'targets' || !this.targets.includes(targetId)) return;
+        this.sheet = null;
+        this.preview(targetId);
     }
     cancelPlacement(): void {
         this.placement =

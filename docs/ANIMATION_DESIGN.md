@@ -11,18 +11,19 @@ Original research 2026-10-11; Graphics interface migration 2026-10-13. Motion pr
 
 ## Current feedback
 
-| Event                                  | Visual feedback                                                                                                                 | Approximate duration                           |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| Button press                           | Recessed Graphics face and shortened depth while held; keyboard press also supported                                            | Pointer/key press lifetime                     |
-| Open a sheet                           | Graphics panel/content fade; semantic hit regions stay stationary                                                               | 220 ms                                         |
-| Roll                                   | Emphasis ring around confirmed dice; producing board-tile rings                                                                 | 400–520 ms                                     |
-| Receive production                     | Preserved resource icon in an ownership-bordered card flies from its tile to the active hand or another player's public summary | 620 ms travel, staggered by 35 ms after 220 ms |
-| Change resources                       | Exact totals update immediately; gained/spent runtime delta labels and player emphasis                                          | 400 ms emphasis; 1.1 s delta                   |
-| Preview target / choose trade resource | Finite gold outline on the corresponding control                                                                                | 400 ms                                         |
-| Change turn                            | Active-player ownership outline, score pips, and a short emphasis ring                                                          | 400 ms                                         |
-| Confirm building                       | Existing road trace or stone-piece settle, local ring, supplied dust/spark                                                      | 400–520 ms                                     |
-| Move robber                            | Existing miniature glides from its previous tile to its confirmed destination                                                   | 400 ms                                         |
-| Victory                                | Preserved medallion with the supplied glint and brief Graphics rosette sparkles                                                 | 830 ms including delay                         |
+| Event                                  | Visual feedback                                                                                                                 | Approximate duration                                                         |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Button press                           | Recessed Graphics face and shortened depth while held; keyboard press also supported                                            | Pointer/key press lifetime                                                   |
+| Open a sheet                           | Graphics panel/content fade; semantic hit regions stay stationary                                                               | 220 ms                                                                       |
+| Roll                                   | Emphasis ring around confirmed dice; producing board-tile rings                                                                 | 400–520 ms                                                                   |
+| Receive production                     | Preserved resource icon in an ownership-bordered card flies from its tile to the active hand or another player's public summary | 620 ms travel, staggered by 35 ms after 220 ms                               |
+| Change resources                       | Exact totals update immediately; gained/spent runtime delta labels and player emphasis                                          | 400 ms emphasis; 1.1 s delta                                                 |
+| Preview target / choose trade resource | Finite gold outline on the corresponding control                                                                                | 400 ms                                                                       |
+| Change turn                            | Active-player ownership outline, score pips, and a short emphasis ring                                                          | 400 ms                                                                       |
+| Confirm building                       | Existing road trace or stone-piece settle, local ring, supplied dust/spark                                                      | 400–520 ms                                                                   |
+| Move robber                            | Existing miniature glides from its previous tile to its confirmed destination                                                   | 400 ms                                                                       |
+| Calm sea                               | Seven subtle wave packets with softly changing surface lighting; rendered at 30 Hz into a small cached target                   | Very slow local phase evolution; freezes in menus, modals and reduced motion |
+| Victory                                | Preserved medallion with the supplied glint and brief Graphics rosette sparkles                                                 | 830 ms including delay                                                       |
 
 No dice result is fabricated. Resource flights use the core production ledger, including actual city quantities and recipient ownership. Blocked tiles may show a muted ring but never send resources. A seven produces no normal resource flights. Starting grants appear directly in the initial hand.
 
@@ -37,7 +38,7 @@ No dice result is fabricated. Resource flights use the core production ledger, i
 - Semantic DOM nodes are transparent; there are no visible DOM delta/flight/glint layers and no Web Animation groups. Phaser renders the material press state, feedback, and sheet fade. The modal header and content share an opacity entrance so visible geometry never travels away from its native input targets.
 - Stable HUD Text/Image objects survive unchanged content. Removed controls release their objects. The interface repaints on semantic/measurement changes; finite feedback tweens run independently without regenerating all text each frame.
 
-There is no constant shimmer, parallax, screen shake, full-screen flash, animation-driven input lock, or extra dependency. The island fits automatically without zoom or pan.
+The user-requested procedural sea adds quiet ambient wave motion behind the island. Its independent clock freezes in menus, modal panels, hidden tabs and reduced-motion mode, resuming without a catch-up jump. There is no sharp glitter, parallax, screen shake, full-screen flash, animation-driven input lock, or extra dependency. The island fits automatically without zoom or pan. See [GAME_BACKGROUND_PLAN.md](GAME_BACKGROUND_PLAN.md).
 
 ## Verification
 

@@ -29,7 +29,7 @@ export function StartGame(parent: HTMLElement): Game {
         transparent: true,
         // ResizeObserver owns the grid measurements, including hidden-menu startup.
         scale: { mode: Scale.NONE, autoCenter: Scale.NO_CENTER, expandParent: false },
-        scene: [new BackdropScene(session), scene, ui],
+        scene: [new BackdropScene(session, motion), scene, ui],
         input: { keyboard: false, mouse: false, touch: false },
         render: { antialias: true, roundPixels: true },
     });

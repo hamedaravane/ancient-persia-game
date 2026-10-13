@@ -217,7 +217,7 @@ End-of-match results explain points and awards and provide supported rematch/lea
 
 ## Visual direction and accessibility
 
-- Preserve the existing ocean, terrain, resources, and Achaemenid identity. Use navy surfaces, warm ivory text, muted gold framing, and restrained lapis accents. Decoration belongs at panel edges, not behind numbers or dense controls.
+- Preserve the existing terrain, resources, and Achaemenid identity. The user subsequently replaced the static ocean with calm procedural water; see [GAME_BACKGROUND_PLAN.md](GAME_BACKGROUND_PLAN.md). Use navy surfaces, warm ivory text, muted gold framing, and restrained lapis accents. Decoration belongs at panel edges, not behind numbers or dense controls.
 - Keep resource counts prominent and labels short; use consistent order across hand, costs, trading, and card choices. In Persian, mirror reading order and control alignment while keeping the geographic board unchanged.
 - Use runtime Vazirmatn text. The currently shipped Regular weight is enough for the first pass through size, spacing, and contrast; add a heavier weight only when actual components need it.
 - Start around 14–16 CSS pixels for useful labels and 18–20 for key values. Dense secondary labels may be smaller only after reviewing readability. Wrap messages and support long player names; current scene text has no general wrapping and should not be copied as the final layout behavior.

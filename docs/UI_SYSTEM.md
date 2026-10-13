@@ -22,7 +22,7 @@ All visible UI surfaces are Phaser Graphics: menu frame, buttons, player chips, 
 
 ## Rendering and input ownership
 
-- `scenes/BackdropScene.ts` covers the shell proportionally with the preserved palace/menu or ocean/match image and a restrained Graphics darkening wash.
+- `scenes/BackdropScene.ts` covers the menu with the preserved palace image and matches with a procedural ocean. `rendering/ProceduralOcean.ts` caches a bounded-resolution shader material at 30 Hz, with a generated Canvas/Graphics fallback; it pauses in menus, modal panels, hidden tabs, and reduced-motion mode. The original ocean PNG is a preserved reference, not a runtime download. See [GAME_BACKGROUND_PLAN.md](GAME_BACKGROUND_PLAN.md).
 - `scenes/GameScene.ts` owns the inset board camera, terrain, coast, pieces, ports, previews, and board effects. Its camera size and semantic board surface share measurements. `rendering/boardInput.ts` listens to that surface and transforms client positions into camera-local coordinates.
 - `ui/GameHud.ts` assembles **transparent semantic controls** and responsive layout nodes. These are the input/accessibility adapter: real buttons, labels, a live region, and a native modal dialog preserve keyboard navigation, screen-reader content, focus trapping, and scrolling. Their labels and state come from the local session. CSS opacity hides their visual output without removing semantics or hit areas.
 - `ui/InterfaceScene.ts` paints the same layout as Graphics, Text, and preserved Image crops. The stage is pointer-transparent; semantic buttons dispatch through `GameHud` into the existing session. The canvas is decorative in the accessibility tree, preventing duplicate announcements.

@@ -70,17 +70,20 @@ export function drawSurface(
     const [top, base, light, foot] = MATERIALS[material];
     const cut = Math.min(options.radius ?? 6, 7, w * 0.18, h * 0.18);
     const alpha = options.disabled ? 0.8 : 1;
-    const depth = options.flat ? 0 : options.pressed || options.disabled ? 1 : 4;
+    const depth = options.flat || options.disabled ? 0 : options.pressed ? 1 : 2;
     const face = { ...box, height: h - depth };
-    g.fillStyle(0x101715, 0.5 * alpha);
-    stonePath(g, { ...box, y: y + depth + 2 }, cut).fillPath();
-    g.fillStyle(foot, alpha);
-    stonePath(g, { ...box, y: y + depth }, cut).fillPath();
+    // The foot fits inside the measured control; only a one-pixel shadow escapes it.
+    if (depth > 0) {
+        g.fillStyle(0x101715, 0.3 * alpha);
+        stonePath(g, { ...face, y: y + depth + 1 }, cut).fillPath();
+        g.fillStyle(foot, alpha);
+        stonePath(g, { ...face, y: y + depth }, cut).fillPath();
+    }
     g.fillStyle(base, alpha);
     stonePath(g, face, cut).fillPath();
 
-    // Wide chiseled facets are lit from upper left, with an uninterrupted text field.
-    const bevel = Math.min(options.flat ? 2.5 : 4, h * 0.12, w * 0.1);
+    // Shallow chiseled facets retain the material without dominating small controls.
+    const bevel = Math.min(options.flat ? 1.5 : 2, h * 0.12, w * 0.1);
     const bottom = y + face.height;
     facet(
         g,

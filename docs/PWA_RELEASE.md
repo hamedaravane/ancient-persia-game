@@ -12,6 +12,8 @@ On supported browsers, **نصب سان‌مارک** invokes the deferred browser
 
 ## Offline assets and updates
 
+The installed game uses a fixed, top-anchored shell and the full `100vh` standalone height, with browser tabs using dynamic height. Dialog and Anahita sizing share this height. Safe-area insets apply to controls; the canvas background and footer painting continue behind system areas. This targets the reported iPhone Home Screen gap caused by shortened viewport measurements; on-device verification is required. See [WebKit 254868](https://bugs.webkit.org/show_bug.cgi?id=254868).
+
 Workbox precaches the HTML, all built JavaScript/CSS, local WOFF2 font, runtime WebP images, manifest, and platform icons. This explicitly includes all six lazily rendered Anahita expressions. Unused-but-shipped runtime art is also available offline. Original art under `art/reference/` is never shipped. Individual cache entries are limited to 4 MiB; a release exceeding that limit fails the build/artifact checks instead of silently losing offline art.
 
 The first complete preparation needs connectivity and roughly 16 MiB of uncompressed response bodies, including the current game bundle and icons. HTTP transfers can be smaller through compression. Preparation runs through the worker alongside the playable game; the UI says **آماده برای بازی آفلاین** only once a worker has activated after its precache installation. An interrupted first installation shows a retry. Existing active workers keep serving their installed version while a newer one downloads. Browser storage clearing/eviction can remove offline availability; this is not an irrevocable device installation.
@@ -46,7 +48,7 @@ npm run preview -- --host
 
 The service worker is disabled in the ordinary Vite development server to avoid caching source during editing. Test the production preview on localhost or an HTTPS host; a phone visiting a plain HTTP LAN address does not satisfy the secure-context requirement.
 
-The user performs interactive/device testing. Before announcing the release broadly, check on Android Chrome and iPhone Safari/Home Screen:
+The user performs interactive/device testing and CI; agent checks stay scoped to low-cost TypeScript/lint/format and Node layout/unit checks. Before announcing the release broadly, check on Android Chrome and iPhone Safari/Home Screen:
 
 1. Install from the menu; check icon, standalone chrome, RTL, safe areas, and portrait/landscape layout.
 2. Wait for offline-ready status, enable airplane mode, fully close/reopen, and start both guided and unguided games. Replay all six expressions from the journal without a missing-art placeholder persisting.

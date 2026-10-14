@@ -8,7 +8,7 @@
 
 :root {
     color-scheme: dark;
-    background: #081525;
+    background: #252b2d;
     color: #f3ead8;
     font-family: 'Vazirmatn', Tahoma, Arial, sans-serif;
     font-weight: 400;
@@ -17,6 +17,19 @@
     -webkit-font-smoothing: antialiased;
     --muted: #c0c7bd;
     --gold: #c6a06a;
+    --app-height: 100vh;
+}
+@supports (height: 100dvh) {
+    :root {
+        --app-height: 100dvh;
+    }
+}
+/* iOS Home Screen apps can under-report dynamic height behind a translucent
+   status bar. Use the full viewport; safe areas belong to controls, not the canvas. */
+@media (display-mode: standalone) {
+    :root {
+        --app-height: 100vh;
+    }
 }
 * {
     box-sizing: border-box;
@@ -28,13 +41,10 @@ html,
 body {
     width: 100%;
     min-width: 320px;
-    height: 100%;
+    height: var(--app-height);
     margin: 0;
     overflow: hidden;
     overscroll-behavior: none;
-}
-body {
-    min-height: 100dvh;
 }
 button {
     font: inherit;
@@ -62,14 +72,17 @@ h3 {
 
 /* CSS defines semantic layout and typography. Graphics owns visible materials. */
 .game-app {
-    position: relative;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
     width: min(100%, 480px);
-    height: 100dvh;
+    height: var(--app-height);
     margin-inline: auto;
     overflow: hidden;
     isolation: isolate;
     background: #252b2d;
-    --hud-gutter: 12px;
+    --hud-gutter: 10px;
     --control-height: 48px;
 }
 .phaser-stage {
@@ -104,11 +117,15 @@ h3 {
 }
 
 .match-screen {
+    --players-height: 56px;
+    --hand-height: 60px;
     display: grid;
     height: 100%;
     padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
         env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
-    grid-template-rows: 56px 72px minmax(0, 1fr) 52px 88px 64px 68px 12px;
+    grid-template-rows:
+        48px var(--players-height) minmax(0, 1fr) 48px var(--hand-height)
+        52px 52px 4px;
 }
 .match-bar {
     display: flex;
@@ -163,7 +180,7 @@ h3 {
 .player-strip {
     display: flex;
     gap: 7px;
-    padding: 8px var(--hud-gutter);
+    padding: 2px var(--hud-gutter);
 }
 .player-chip {
     flex: 1;
@@ -171,13 +188,13 @@ h3 {
     min-height: 48px;
     border: 0;
     border-radius: 13px;
-    padding: 6px 7px 12px;
+    padding: 3px 6px 9px;
     color: #292d26;
     background: #a9a594;
     display: grid;
     justify-content: stretch;
     grid-template-columns: minmax(0, 1fr);
-    gap: 4px;
+    gap: 2px;
     --muted: #353a30;
     --gold: #48351f;
     height: 100%;
@@ -250,7 +267,7 @@ h3 {
     min-width: 0;
 }
 .board-selection.is-placing {
-    padding: 0 12px 8px;
+    padding: 0 var(--hud-gutter) 4px;
 }
 .target-picker {
     display: block;
@@ -260,7 +277,7 @@ h3 {
 }
 .context-line {
     min-width: 0;
-    padding: 0 12px 4px;
+    padding-inline: var(--hud-gutter);
 }
 .context-button {
     display: flex;
@@ -283,37 +300,46 @@ h3 {
     text-overflow: ellipsis;
 }
 .context-button > span:last-child {
-    font-size: 22px;
+    font-size: 18px;
 }
 .resource-hand {
     display: flex;
-    gap: 6px;
-    padding: 6px 12px;
+    gap: 5px;
+    padding: 2px var(--hud-gutter);
 }
 .hand-resource {
     position: relative;
     flex: 1;
     min-width: 0;
     display: grid;
-    grid-template-rows: 24px 22px 14px;
+    grid-template-columns: auto auto;
+    grid-template-rows: 22px 22px;
     align-content: center;
+    justify-content: center;
     align-items: center;
     justify-items: center;
     color: #292d26;
     --muted: #353a30;
     --gold: #48351f;
-    padding: 7px 6px 8px;
+    padding: 4px;
+    column-gap: 4px;
 }
 .hand-resource .resource-icon {
+    grid-column: 1;
+    grid-row: 2;
     transform: none;
-    --icon-size: 26px;
+    --icon-size: 22px;
 }
 .resource-count {
-    font-size: 22px;
+    grid-column: 1 / -1;
+    grid-row: 1;
+    font-size: 20px;
     line-height: 22px;
     font-variant-numeric: tabular-nums;
 }
 .resource-label {
+    grid-column: 2;
+    grid-row: 2;
     text-align: center;
     font-size: 11px;
     color: #353a30;
@@ -346,13 +372,13 @@ h3 {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 6px var(--hud-gutter) 10px;
+    padding: 2px var(--hud-gutter);
 }
 .button {
     min-height: var(--control-height, 48px);
     border: 0;
     border-radius: 14px;
-    padding: 10px 14px 14px;
+    padding: 10px 12px 12px;
     color: #292d26;
     background: #b9ac93;
     font-size: 15px;
@@ -386,31 +412,31 @@ h3 {
     flex: 1 1 0;
     font-size: 14px;
     height: 48px;
-    padding: 8px 7px 12px;
+    padding: 9px 7px 11px;
     gap: 7px;
     white-space: nowrap;
 }
 .primary-row {
-    padding: 3px var(--hud-gutter) 9px;
+    padding: 2px var(--hud-gutter);
 }
 .primary-row > button {
     width: 100%;
-    height: 56px;
-    font-size: 19px;
-    line-height: 26px;
-    padding: 12px 14px 16px;
+    height: 48px;
+    font-size: 17px;
+    line-height: 22px;
+    padding: 11px 12px 13px;
 }
 .icon-button {
     display: inline-grid;
     place-items: center;
-    padding: 0 0 4px;
+    padding: 0 0 2px;
     width: 48px;
     height: 48px;
     flex-shrink: 0;
     background: #b9ac93;
     border: 0;
     color: #292d26;
-    font-size: 27px;
+    font-size: 20px;
     --muted: #353a30;
     --gold: #48351f;
     line-height: 1;
@@ -519,7 +545,7 @@ h3 {
 }
 .menu-choices > button {
     flex: 1 1 0;
-    min-height: 60px;
+    min-height: 48px;
     padding-inline: 8px;
     font-size: 17px;
     line-height: 24px;
@@ -542,7 +568,7 @@ h3 {
     inset: auto 0 0;
     width: min(100%, 480px);
     max-width: 100%;
-    max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 20px);
+    max-height: calc(var(--app-height) - env(safe-area-inset-top, 0px) - 20px);
     margin: 0 auto;
     padding: 0;
     border: 0;
@@ -563,13 +589,13 @@ h3 {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 14px max(16px, env(safe-area-inset-right)) 10px max(16px, env(safe-area-inset-left));
+    padding: 6px max(12px, env(safe-area-inset-right)) 6px max(12px, env(safe-area-inset-left));
     flex-shrink: 0;
     color: #292d26;
     --muted: #353a30;
     --gold: #48351f;
     gap: 12px;
-    min-height: 72px;
+    min-height: 60px;
 }
 .sheet-header h2 {
     display: flex;
@@ -578,8 +604,8 @@ h3 {
     color: #292d26;
     flex: 1;
     min-width: 0;
-    font-size: 20px;
-    line-height: 28px;
+    font-size: 18px;
+    line-height: 26px;
 }
 .sheet-body {
     min-height: 0;
@@ -644,9 +670,9 @@ h3 {
     font-size: 14px;
 }
 .bottom-sheet.narrator-sheet {
-    --portrait-height: clamp(180px, 42dvh, 420px);
+    --portrait-height: clamp(180px, calc(var(--app-height) * 0.42), 420px);
     --portrait-overlap: 32px;
-    max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 12px);
+    max-height: calc(var(--app-height) - env(safe-area-inset-top, 0px) - 12px);
     padding: 0 max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom))
         max(10px, env(safe-area-inset-left));
     background: transparent;
@@ -672,14 +698,14 @@ h3 {
     display: flex;
     flex-direction: column;
     min-height: 0;
-    max-height: 50dvh;
+    max-height: calc(var(--app-height) * 0.5);
     overflow: hidden;
     flex: 0 1 auto;
     background: #252b2d;
 }
 .narrator-sheet .narrator-heading {
-    min-height: 64px;
-    padding: 12px 20px 6px;
+    min-height: 60px;
+    padding: 6px 16px;
     color: #ffe2a0;
 }
 .narrator-heading h2 {
@@ -733,10 +759,10 @@ h3 {
 }
 @media (max-height: 560px) {
     .bottom-sheet.narrator-sheet {
-        --portrait-height: clamp(100px, 30dvh, 168px);
+        --portrait-height: clamp(100px, calc(var(--app-height) * 0.3), 168px);
     }
     .narrator-panel {
-        max-height: 64dvh;
+        max-height: calc(var(--app-height) * 0.64);
     }
 }
 .trade-intro .sheet-intro {
@@ -806,10 +832,10 @@ h3 {
     align-items: center;
     justify-content: center;
     gap: 4px;
-    min-height: 108px;
+    min-height: 88px;
     min-width: 0;
     border: 0;
-    padding: 14px 4px 12px;
+    padding: 8px 4px;
     color: #292d26;
     font-size: 13px;
     --muted: #353a30;
@@ -981,54 +1007,28 @@ h3 {
     border: 0;
 }
 
+/* Compact mode follows safe content height; the media query covers first paint. */
 .is-compact .match-screen {
-    grid-template-rows: 52px 60px minmax(0, 1fr) 52px 72px 56px 56px 8px;
-}
-.is-compact .player-strip {
-    padding-block: 4px;
-}
-.is-compact .action-dock {
-    padding-block: 4px;
-}
-.is-compact .primary-row {
-    padding-block: 4px;
-}
-.is-compact .primary-row > button {
-    height: 48px;
-}
-.is-compact .resource-hand {
-    padding-block: 2px;
-}
-.is-compact .hand-resource {
-    grid-template-rows: 24px 18px 13px;
-    padding: 7px 5px 6px;
+    --players-height: 52px;
+    --hand-height: 56px;
 }
 .is-compact .trade-intro > .art-sprite {
     display: none;
 }
 @media (max-height: 719px) {
     .match-screen {
-        grid-template-rows: 52px 60px minmax(0, 1fr) 52px 72px 56px 56px 8px;
-    }
-    .player-strip {
-        padding-block: 4px;
-    }
-    .action-dock,
-    .primary-row {
-        padding-block: 4px;
-    }
-    .primary-row > button {
-        height: 48px;
-    }
-    .resource-hand {
-        padding-block: 2px;
-    }
-    .hand-resource {
-        grid-template-rows: 24px 18px 13px;
-        padding: 7px 5px 6px;
+        --players-height: 52px;
+        --hand-height: 56px;
     }
 }
 @media (max-width: 359px) {
+    .hand-resource {
+        padding-inline: 3px;
+        column-gap: 2px;
+    }
+    .hand-resource .resource-icon {
+        --icon-size: 18px;
+    }
     .player-strip {
         gap: 5px;
         padding-inline: 8px;
@@ -1043,9 +1043,6 @@ h3 {
     .player-stats {
         gap: 2px;
         font-size: 11px;
-    }
-    .resource-count {
-        font-size: 21px;
     }
     .resource-choice {
         font-size: 12px;
@@ -1076,50 +1073,4 @@ h3 {
 .build-card .availability,
 .build-card .resource-value.is-short {
     color: #5a3021;
-}
-.is-compact .player-chip {
-    grid-template-rows: 16px 16px;
-    gap: 2px;
-}
-.is-compact .player-name {
-    line-height: 16px;
-}
-.is-compact .resource-count {
-    font-size: 20px;
-    line-height: 18px;
-}
-.is-compact .resource-label {
-    line-height: 13px;
-}
-.is-compact .hand-resource .resource-icon {
-    --icon-size: 24px;
-}
-.is-compact .primary-row > button {
-    padding-block: 9px 13px;
-    line-height: 22px;
-    font-size: 17px;
-}
-@media (max-height: 719px) {
-    .player-chip {
-        grid-template-rows: 16px 16px;
-        gap: 2px;
-    }
-    .player-name {
-        line-height: 16px;
-    }
-    .resource-count {
-        font-size: 20px;
-        line-height: 18px;
-    }
-    .resource-label {
-        line-height: 13px;
-    }
-    .hand-resource .resource-icon {
-        --icon-size: 24px;
-    }
-    .primary-row > button {
-        padding-block: 9px 13px;
-        line-height: 22px;
-        font-size: 17px;
-    }
 }

@@ -1,4 +1,5 @@
 import type { GameObjects } from 'phaser';
+import { canvasDisplay } from '../rendering/display';
 import {
     drawDie,
     drawRosette,
@@ -36,7 +37,16 @@ export function drawComponent(
             radius: 22,
             flat: true,
         });
-    } else if (has('action-dock') || has('primary-row') || has('bottom-space')) {
+    } else if (has('bottom-space')) {
+        // Paint through the home-indicator inset; semantic controls stay safely above it.
+        const display = canvasDisplay(g.scene);
+        g.fillStyle(0x252b2d).fillRect(
+            0,
+            box.y,
+            display.width,
+            Math.max(0, display.height - box.y),
+        );
+    } else if (has('action-dock') || has('primary-row')) {
         g.fillStyle(0x252b2d).fillRect(box.x, box.y, box.width, box.height);
     } else if (has('menu-panel')) {
         drawSurface(g, box, 'inset', { radius: 28, accent: 0xb88c48, flat: true });
@@ -63,7 +73,7 @@ export function drawComponent(
         for (let i = 0; i < target; i++) {
             g.fillStyle(i < score ? owner : 0x5a5c51).fillRoundedRect(
                 box.x + box.width / 2 + (target / 2 - i - 1) * spacing,
-                box.y + box.height - 10,
+                box.y + box.height - 6,
                 spacing - 3,
                 3,
                 1,
@@ -152,7 +162,16 @@ export function drawComponent(
             material = 'inset';
         if (has('resource-choice') || has('port-chip') || has('port-list-item'))
             material = selected ? 'limestone' : 'card';
-        drawSurface(g, box, material, {
+        // Icon artwork stays small inside the full-size semantic touch target.
+        const surface = has('icon-button')
+            ? {
+                  x: box.x + (box.width - 32) / 2,
+                  y: box.y + (box.height - 32) / 2,
+                  width: 32,
+                  height: 32,
+              }
+            : box;
+        drawSurface(g, surface, material, {
             pressed: pressed === el,
             disabled,
             accent: selected
@@ -162,7 +181,7 @@ export function drawComponent(
                 : has('is-owned')
                   ? owner
                   : undefined,
-            radius: has('icon-button') ? 15 : 14,
+            radius: has('icon-button') ? 5 : 14,
             flat: has('context-button'),
         });
         if (selected)

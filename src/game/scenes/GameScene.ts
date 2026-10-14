@@ -9,7 +9,7 @@ import type { GameSession } from '../ui/session';
 import { UI_FONT_FAMILY } from '../ui/typography';
 import type { Motion } from '../ui/motion';
 import type { MatchTransition } from '../ui/transitions';
-import { ART, RESOURCE_FRAMES, assetUrl } from '../assets';
+import { ART, RESOURCE_FRAMES, TEXTURE_FILES, assetUrl } from '../assets';
 import { createBuildingPiece, createRoadPiece } from '../rendering/pieces';
 import {
     createPortMarker,
@@ -57,14 +57,11 @@ export class GameScene extends Scene {
     }
 
     preload(): void {
-        for (const terrain of Object.keys(TERRAIN_COLORS))
-            this.load.image(
-                `terrain-${terrain}`,
-                `${import.meta.env.BASE_URL}assets/board/terrains/${terrain}.png`,
-            );
+        for (const [terrain, file] of Object.entries(TEXTURE_FILES.terrains))
+            this.load.image(`terrain-${terrain}`, assetUrl(file));
         for (const name of ['robber', 'number', 'spark', 'dust'] as const)
             this.load.image(`art-${name}`, assetUrl(ART[name].file));
-        this.load.image('art-resources', assetUrl('resources/resources.png'));
+        this.load.image('art-resources', assetUrl(TEXTURE_FILES.resources));
     }
     create(): void {
         if (this.textures.exists('art-resources')) {

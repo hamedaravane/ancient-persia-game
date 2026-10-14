@@ -27,6 +27,8 @@ Original research 2026-10-11; Graphics interface migration 2026-10-13. Motion pr
 
 No dice result is fabricated. Resource flights use the core production ledger, including actual city quantities and recipient ownership. Blocked tiles may show a muted ring but never send resources. A seven produces no normal resource flights. Starting grants appear directly in the initial hand.
 
+Anahita's narrator portrait has its own layer behind the front dialogue panel and outside the scrolling text mask. A new expression fades in and rises 12 pixels over 280 ms, including when its lazily loaded texture first becomes ready. This is a finite entrance, with no idle bobbing or repeated motion on focus/scroll changes. Reduced motion and hidden-tab preferences settle the portrait immediately. The dialogue controls remain stationary. See [TUTORIAL_DESIGN.md](TUTORIAL_DESIGN.md).
+
 ## Ownership and interruption
 
 - `core/production.ts` computes the pure ledger used both to pay production and describe the confirmed roll.

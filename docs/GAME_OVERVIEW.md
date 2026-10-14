@@ -12,6 +12,8 @@ The board and rule state live in Phaser-independent TypeScript under `src/game/c
 
 ## Match outline
 
+The menu also offers **سفر با آناهیتا**, an opt-in guided version of the same three- or four-player local match. Anahita introduces rules through contextual Persian dialogue, six supplied expressions, phase-aware objectives, and a replayable lesson journal. Help → **دفتر سفر آناهیتا** can enable, pause, or review guidance during any match. Narrative progress lasts for the current match only. See [TUTORIAL_DESIGN.md](TUTORIAL_DESIGN.md) for research, lesson flow, and implementation boundaries.
+
 1. Choose three or four local players.
 2. Each player receives two separated starting settlements and a road at each one on a generated 19-hex board; the second settlement grants its adjacent resources once.
 3. At the start of each turn, the active player rolls two dice.

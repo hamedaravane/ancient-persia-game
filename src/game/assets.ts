@@ -1,6 +1,6 @@
-import type { ResourceType } from './core/types';
+import type { ResourceType, TerrainType } from './core/types';
 
-/** Inspected source rectangles, in original image pixels. No source art is rewritten. */
+/** Runtime texture rectangles in image pixels. Original art masters are preserved separately. */
 export interface ArtFrame {
     file: string;
     source: readonly [number, number];
@@ -10,29 +10,81 @@ export interface ArtFrame {
 
 export const assetUrl = (file: string): string => `${import.meta.env.BASE_URL}assets/${file}`;
 
+/** Full-image textures without a cropped ART frame. */
+export const TEXTURE_FILES = {
+    menuBackground: 'backgrounds/main-menu.webp',
+    resources: 'resources/resources.webp',
+    terrains: {
+        desert: 'board/terrains/desert.webp',
+        forest: 'board/terrains/forest.webp',
+        mesa: 'board/terrains/mesa.webp',
+        mountain: 'board/terrains/mountain.webp',
+        pasture: 'board/terrains/pasture.webp',
+        wheat: 'board/terrains/wheat.webp',
+    },
+} as const satisfies {
+    menuBackground: string;
+    resources: string;
+    terrains: Record<TerrainType, string>;
+};
+
 export const ART = {
-    robber: { file: 'pieces/robber/robber.png', source: [1254, 1254], frame: [380, 60, 610, 1130] },
-    number: { file: 'board/tokens/number.png', source: [1254, 1254], frame: [95, 75, 1065, 1075] },
+    'anahita-calm': {
+        file: 'characters/anahita/calm.webp',
+        source: [1086, 1448],
+        frame: [0, 0, 1086, 1448],
+    },
+    'anahita-warning': {
+        file: 'characters/anahita/warning.webp',
+        source: [1024, 1536],
+        frame: [0, 0, 1024, 1536],
+    },
+    'anahita-worried': {
+        file: 'characters/anahita/worried.webp',
+        source: [1024, 1536],
+        frame: [0, 0, 1024, 1536],
+    },
+    'anahita-joyful': {
+        file: 'characters/anahita/joyful.webp',
+        source: [1024, 1536],
+        frame: [0, 0, 1024, 1536],
+    },
+    'anahita-playful': {
+        file: 'characters/anahita/playful.webp',
+        source: [1086, 1448],
+        frame: [0, 0, 1086, 1448],
+    },
+    'anahita-explaining': {
+        file: 'characters/anahita/explaining.webp',
+        source: [1024, 1536],
+        frame: [0, 0, 1024, 1536],
+    },
+    robber: {
+        file: 'pieces/robber/robber.webp',
+        source: [1254, 1254],
+        frame: [380, 60, 610, 1130],
+    },
+    number: { file: 'board/tokens/number.webp', source: [1254, 1254], frame: [95, 75, 1065, 1075] },
     corner: {
-        file: 'ui/ornaments/ornaments.png',
+        file: 'ui/ornaments/ornaments.webp',
         source: [1254, 1254],
         frame: [35, 390, 380, 400],
     },
     divider: {
-        file: 'ui/ornaments/ornaments.png',
+        file: 'ui/ornaments/ornaments.webp',
         source: [1254, 1254],
         frame: [385, 575, 485, 110],
     },
     rosette: {
-        file: 'ui/ornaments/ornaments.png',
+        file: 'ui/ornaments/ornaments.webp',
         source: [1254, 1254],
         frame: [930, 480, 310, 310],
     },
-    victory: { file: 'ui/emblems/victory.png', source: [1254, 1254], frame: [40, 50, 1175, 1135] },
-    bank: { file: 'ui/illustrations/bank.png', source: [1254, 1254], frame: [15, 80, 1225, 1095] },
-    spark: { file: 'effects/spark.png', source: [1283, 1226], frame: [0, 0, 1283, 1226] },
-    glint: { file: 'effects/glint.png', source: [1278, 1230], frame: [0, 0, 1278, 1230] },
-    dust: { file: 'effects/dust.png', source: [1254, 1254], frame: [125, 210, 1010, 850] },
+    victory: { file: 'ui/emblems/victory.webp', source: [1254, 1254], frame: [40, 50, 1175, 1135] },
+    bank: { file: 'ui/illustrations/bank.webp', source: [1254, 1254], frame: [15, 80, 1225, 1095] },
+    spark: { file: 'effects/spark.webp', source: [1283, 1226], frame: [0, 0, 1283, 1226] },
+    glint: { file: 'effects/glint.webp', source: [1278, 1230], frame: [0, 0, 1278, 1230] },
+    dust: { file: 'effects/dust.webp', source: [1254, 1254], frame: [125, 210, 1010, 850] },
 } as const satisfies Record<string, ArtFrame>;
 
 export type ArtName = keyof typeof ART;
@@ -60,7 +112,7 @@ export const DICE_FACES: readonly ArtFrame[] = [
     [590, 542],
     [1084, 542],
 ].map(([x, y]) => ({
-    file: 'dice/faces.png',
+    file: 'dice/faces.webp',
     source: [1536, 1024],
     frame: [x, y, 344, 346],
     clip: DICE_CLIP,

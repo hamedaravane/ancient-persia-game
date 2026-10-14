@@ -4,11 +4,13 @@ import { RESOURCE_TYPES } from '../core/types';
 import type { GameSession } from './session';
 import { MOTION, type Motion } from './motion';
 import { UI_FONT_FAMILY } from './typography';
-import { drawSurface, UI_INK, type UiBox } from './graphicsTheme';
+import { drawRosette, drawSurface, UI_INK, type UiBox } from './graphicsTheme';
 import { drawComponent } from './graphicsComponents';
 import { measureTextRuns, SemanticTextMetrics } from './semanticText';
 import { fitText, textRunPosition } from './textGeometry';
 import { GraphicsFeedback } from './GraphicsFeedback';
+import { drawNarratorLight, drawNarratorPanel } from './narratorArt';
+import { LESSONS } from '../tutorial/lessons.fa';
 
 interface PaintLayer {
     container: GameObjects.Container;
@@ -25,6 +27,7 @@ interface PaintLayer {
  */
 export class InterfaceScene extends Scene {
     private hud: PaintLayer;
+    private theatre: PaintLayer;
     private modal: PaintLayer;
     private content: PaintLayer;
     private maskShape: GameObjects.Graphics;
@@ -40,6 +43,12 @@ export class InterfaceScene extends Scene {
     private cleanup: Array<() => void> = [];
     private sheetOpenedAt = -Infinity;
     private hadSheet = false;
+    private narratorLoading = false;
+    private unavailablePortraits = new Set<string>();
+    private portraitExpression = '';
+    private portraitChangedAt = -Infinity;
+    private portraitRestY = 0;
+    private portraitReady = false;
     feedback: GraphicsFeedback | undefined;
 
     constructor(
@@ -59,6 +68,7 @@ export class InterfaceScene extends Scene {
             this.textures.get(`ui-${name}`).add('crop', 0, x, y, w, h);
         }
         this.hud = this.layer();
+        this.theatre = this.layer();
         this.modal = this.layer();
         this.content = this.layer();
         this.maskShape = this.make.graphics({}, false);
@@ -120,6 +130,7 @@ export class InterfaceScene extends Scene {
             this.motion.subscribe(() => {
                 this.feedback?.clear();
                 if (this.motion.reduced) this.sheetOpenedAt = -Infinity;
+                if (this.motion.reduced || !this.motion.visible) this.portraitChangedAt = -Infinity;
                 this.invalidate();
             }),
         );
@@ -159,6 +170,14 @@ export class InterfaceScene extends Scene {
             this.modal.container.setAlpha(alpha);
             this.content.container.setAlpha(alpha);
         }
+        this.animatePortrait(time);
+    }
+    private animatePortrait(time: number): void {
+        if (!this.theatre) return;
+        const progress = Math.max(0, Math.min(1, (time - this.portraitChangedAt) / 280));
+        const eased = 1 - Math.pow(1 - progress, 3);
+        for (const image of this.theatre.objects.values())
+            image.setAlpha(eased).setY(this.portraitRestY + (1 - eased) * 12);
     }
     private layer(): PaintLayer {
         const container = this.add.container();
@@ -192,26 +211,50 @@ export class InterfaceScene extends Scene {
         };
     }
     private paint(time: number): void {
+        this.loadNarrator();
         const origin = this.parent.getBoundingClientRect();
         this.origin = { x: origin.left, y: origin.top };
-        for (const layer of [this.hud, this.modal, this.content]) this.begin(layer);
+        for (const layer of [this.hud, this.theatre, this.modal, this.content]) this.begin(layer);
         const menu = this.parent.querySelector<HTMLElement>('.main-menu')!;
         const match = this.parent.querySelector<HTMLElement>('.match-screen')!;
         this.paintTree(this.session.state ? match : menu, this.hud);
         const dialog = this.parent.querySelector<HTMLDialogElement>('dialog[open]');
+        this.theatre.container.setVisible(!!dialog);
         this.modal.container.setVisible(!!dialog);
         this.content.container.setVisible(!!dialog);
         if (dialog) {
             if (!this.hadSheet) this.sheetOpenedAt = this.motion.reduced ? -Infinity : time;
             const box = this.box(dialog);
-            this.modal.graphics
-                .fillStyle(0x040e20, 0.78)
+            const stage = dialog.querySelector<HTMLElement>('.narrator-stage');
+            this.theatre.graphics
+                .fillStyle(stage ? 0x101817 : 0x040e20, stage ? 0.65 : 0.78)
                 .fillRect(0, 0, this.scale.width, this.scale.height);
-            drawSurface(this.modal.graphics, box, 'inset', {
-                radius: 24,
-                accent: 0x8b8069,
-                flat: true,
-            });
+            if (stage) {
+                drawNarratorLight(this.theatre.graphics, this.box(stage));
+                this.paintTree(stage, this.theatre);
+                const hero = stage.querySelector<HTMLElement>('.narrator-hero')!;
+                const heroBox = this.box(hero);
+                this.portraitRestY = heroBox.y + heroBox.height / 2;
+                const expression = hero.dataset.art!;
+                const ready = this.textures.exists(`ui-${expression}`);
+                if (expression !== this.portraitExpression || (ready && !this.portraitReady)) {
+                    this.portraitExpression = expression;
+                    this.portraitChangedAt =
+                        this.motion.reduced || !this.motion.visible ? -Infinity : time;
+                }
+                this.portraitReady = ready;
+                drawNarratorPanel(
+                    this.modal.graphics,
+                    this.box(dialog.querySelector('.narrator-panel')!),
+                );
+            } else {
+                this.portraitExpression = '';
+                drawSurface(this.modal.graphics, box, 'inset', {
+                    radius: 24,
+                    accent: 0x8b8069,
+                    flat: true,
+                });
+            }
             const header = dialog.querySelector<HTMLElement>('.sheet-header')!;
             this.paintTree(header, this.modal);
             const body = dialog.querySelector<HTMLElement>('.sheet-body')!;
@@ -221,12 +264,57 @@ export class InterfaceScene extends Scene {
                 .fillStyle(0xffffff)
                 .fillRect(clip.x, clip.y, clip.width, clip.height);
             this.paintTree(body, this.content, clip);
+            const footer = dialog.querySelector<HTMLElement>('.narrator-footer');
+            if (footer) this.paintTree(footer, this.modal);
             this.scrollIndicator(body, this.modal.graphics);
             this.modal.container.setAlpha(1);
             this.content.container.setAlpha(1);
-        }
+        } else this.portraitExpression = '';
         this.hadSheet = !!dialog;
-        for (const layer of [this.hud, this.modal, this.content]) this.end(layer);
+        for (const layer of [this.hud, this.theatre, this.modal, this.content]) this.end(layer);
+    }
+    private loadNarrator(): void {
+        if (
+            this.narratorLoading ||
+            !(
+                this.session.tutorial.enabled ||
+                this.session.sheet?.kind === 'journal' ||
+                this.session.sheet?.kind === 'tutorial'
+            )
+        )
+            return;
+        // Load visible art first, then warm only the next queued expression while the player reads.
+        const names = [...this.parent.querySelectorAll<HTMLElement>('[data-art^="anahita-"]')]
+            .map((node) => node.dataset.art as keyof typeof ART)
+            .filter(
+                (name, index, all) =>
+                    all.indexOf(name) === index &&
+                    !this.textures.exists(`ui-${name}`) &&
+                    !this.unavailablePortraits.has(name),
+            );
+        const next = this.session.sheet?.kind === 'tutorial' ? this.session.tutorial.next : null;
+        if (!names.length && next) {
+            const name = `anahita-${LESSONS[next].expression}` as const;
+            if (!this.textures.exists(`ui-${name}`) && !this.unavailablePortraits.has(name))
+                names.push(name);
+        }
+        if (!names.length) return;
+        this.narratorLoading = true;
+        for (const name of names) this.load.image(`ui-${name}`, assetUrl(ART[name].file));
+        this.load.once('complete', () => {
+            for (const name of names) {
+                const texture = this.textures.get(`ui-${name}`);
+                if (!this.textures.exists(`ui-${name}`)) {
+                    this.unavailablePortraits.add(name);
+                    continue;
+                }
+                const [x, y, width, height] = ART[name].frame;
+                texture.add('crop', 0, x, y, width, height);
+            }
+            this.narratorLoading = false;
+            this.invalidate();
+        });
+        this.load.start();
     }
     private paintTree(root: HTMLElement, layer: PaintLayer, clip?: UiBox): void {
         const visit = (element: HTMLElement) => {
@@ -261,7 +349,18 @@ export class InterfaceScene extends Scene {
     private paintElement(el: HTMLElement, box: UiBox, layer: PaintLayer): void {
         drawComponent(layer.graphics, el, box, this.pressed);
         const has = (name: string) => el.classList.contains(name);
-        if (el.dataset.art) this.paintImage(layer, el, `ui-${el.dataset.art}`, 'crop', box);
+        if (el.dataset.art) {
+            const texture = `ui-${el.dataset.art}`;
+            if (el.dataset.art.startsWith('anahita-') && !this.textures.exists(texture))
+                drawRosette(
+                    layer.graphics,
+                    box.x + box.width / 2,
+                    box.y + box.height / 2,
+                    20,
+                    UI_INK.gold,
+                );
+            else this.paintImage(layer, el, texture, 'crop', box);
+        }
         if (has('resource-icon')) {
             const resource = RESOURCE_TYPES.find((r) => has(`resource-icon--${r}`));
             if (resource) this.paintImage(layer, el, 'art-resources', resource, box);

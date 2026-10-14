@@ -1,5 +1,5 @@
 import { Scene, type GameObjects } from 'phaser';
-import { assetUrl } from '../assets';
+import { TEXTURE_FILES, assetUrl } from '../assets';
 import type { GameSession } from '../ui/session';
 import type { Motion } from '../ui/motion';
 import { ProceduralOcean } from '../rendering/ProceduralOcean';
@@ -16,7 +16,7 @@ export class BackdropScene extends Scene {
         super('BackdropScene');
     }
     preload(): void {
-        this.load.image('ui-palace', assetUrl('backgrounds/main-menu.png'));
+        this.load.image('ui-palace', assetUrl(TEXTURE_FILES.menuBackground));
     }
     create(): void {
         this.ocean = new ProceduralOcean(this);

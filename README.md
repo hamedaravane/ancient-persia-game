@@ -68,6 +68,8 @@ Pages must use **GitHub Actions** as its publishing source. The setup follows [G
 
 Keep game art under `public/assets/`, grouped by purpose: `backgrounds/`, `board/terrains/`, `pieces/`, `dice/`, and `resources/`. Use lowercase kebab-case names. Build runtime asset URLs from `import.meta.env.BASE_URL`, as described in [docs/ASSET_GUIDE.md](docs/ASSET_GUIDE.md).
 
+Runtime bitmap images are optimized full-resolution WebP exports. Their complete PNG masters are preserved under `art/reference/`. Re-export with `npm run assets:optimize` and verify with `npm run assets:check`; these optional maintenance commands need Python 3 and Pillow >= 10.2 with WebP support. Regular npm development/build commands use the committed exports. See the asset guide for quality checks and per-group commands.
+
 ## Project guidance
 
 - Read [docs/GAME_OVERVIEW.md](docs/GAME_OVERVIEW.md), [docs/GAME_RULES.md](docs/GAME_RULES.md), and [docs/GAMEPLAY_INVARIANTS.md](docs/GAMEPLAY_INVARIANTS.md) before gameplay work.

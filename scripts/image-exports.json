@@ -1,0 +1,201 @@
+{
+  "version": 1,
+  "minimum_psnr": 38,
+  "assets": [
+    {
+      "file": "backgrounds/main-menu.webp",
+      "group": "backgrounds",
+      "size": [941, 1672],
+      "source_sha256": "b1e2c564179296f5ac90abfa38f38065c6048dc7b4e4e3d291c231681440e70d",
+      "frames": {}
+    },
+    {
+      "file": "board/terrains/desert.webp",
+      "group": "terrains",
+      "size": [1254, 1254],
+      "source_sha256": "1f910d960e86344c84b47b568ea5f5d76b085cf084a4510f8666fab45d33fee3",
+      "frames": {}
+    },
+    {
+      "file": "board/terrains/forest.webp",
+      "group": "terrains",
+      "size": [1254, 1254],
+      "source_sha256": "de928415751281b0960037b6997636a6559c5275d3f9d316e9a770275db04fb6",
+      "frames": {}
+    },
+    {
+      "file": "board/terrains/mesa.webp",
+      "group": "terrains",
+      "size": [1254, 1254],
+      "source_sha256": "37271fe4e6c11fe658fef4dcf2024dec4e8ee6b1f7e13f5ecae02ca592e062b0",
+      "frames": {}
+    },
+    {
+      "file": "board/terrains/mountain.webp",
+      "group": "terrains",
+      "size": [1254, 1254],
+      "source_sha256": "4c909afb6463ee5f3ad018e4b017ac4e564d5650e95fe900194e3c5c323bfc51",
+      "frames": {}
+    },
+    {
+      "file": "board/terrains/pasture.webp",
+      "group": "terrains",
+      "size": [1254, 1254],
+      "source_sha256": "64d7a42081c102af5cf0515f04f3c25fe9e068f2041ce09a20bdf729b2f0f2e9",
+      "frames": {}
+    },
+    {
+      "file": "board/terrains/wheat.webp",
+      "group": "terrains",
+      "size": [1254, 1254],
+      "source_sha256": "8bf185251a6862ade823b006e7cebc2c1738233a76b34c185f276eb3bb77a2b6",
+      "frames": {}
+    },
+    {
+      "file": "board/tokens/number.webp",
+      "group": "tokens",
+      "size": [1254, 1254],
+      "source_sha256": "1badbf7f4f7253c8104127fc7f7b8fb0e27bb19d85b8cd0bdcd4847f9b89c08b",
+      "frames": {
+        "token": [95, 75, 1065, 1075]
+      }
+    },
+    {
+      "file": "characters/anahita/calm.webp",
+      "group": "anahita",
+      "size": [1086, 1448],
+      "source_sha256": "e8e1e8eac8fc8b48c2bd887da3f8b36f4b011484fde32cfd578233a993f85b94",
+      "frames": {}
+    },
+    {
+      "file": "characters/anahita/explaining.webp",
+      "group": "anahita",
+      "size": [1024, 1536],
+      "source_sha256": "d8bf95e6d65c2229e2c464f861f8376b7d58442bc2876073a768c3426aff92bc",
+      "frames": {}
+    },
+    {
+      "file": "characters/anahita/joyful.webp",
+      "group": "anahita",
+      "size": [1024, 1536],
+      "source_sha256": "5c2ce3a460b73b670386b8f34d81fee5b0bd0b5ae5d6a0385b2313d0efdf32e5",
+      "frames": {}
+    },
+    {
+      "file": "characters/anahita/playful.webp",
+      "group": "anahita",
+      "size": [1086, 1448],
+      "source_sha256": "fdb641b4ad471c3f7f0fb3b4abc8bb09931eb6fa69f3fa7f6b409c46551d7a72",
+      "frames": {}
+    },
+    {
+      "file": "characters/anahita/warning.webp",
+      "group": "anahita",
+      "size": [1024, 1536],
+      "source_sha256": "5eb2e3896e8c84bdc544bac5bcc86e76215b9001f72722b2f001af251e7fc4a2",
+      "frames": {}
+    },
+    {
+      "file": "characters/anahita/worried.webp",
+      "group": "anahita",
+      "size": [1024, 1536],
+      "source_sha256": "e5fba3bb9800ba2939ce545e1d04c4436e2d648f4b63aa853f60fae2ebd71c91",
+      "frames": {}
+    },
+    {
+      "file": "dice/dice.webp",
+      "group": "dice",
+      "size": [1254, 1254],
+      "source_sha256": "41022e92d38bd956a9ff5d392164bcde37547a56651adce8307f7ed04766b727",
+      "frames": {}
+    },
+    {
+      "file": "dice/faces.webp",
+      "group": "dice",
+      "size": [1536, 1024],
+      "source_sha256": "296575fecbeb4d48bad8e42932b669395a68398de7117ceb17659dfb658b0de8",
+      "frames": {
+        "1": [96, 80, 344, 346],
+        "2": [590, 80, 344, 346],
+        "3": [1084, 80, 344, 346],
+        "4": [96, 542, 344, 346],
+        "5": [590, 542, 344, 346],
+        "6": [1084, 542, 344, 346]
+      }
+    },
+    {
+      "file": "effects/dust.webp",
+      "group": "effects",
+      "size": [1254, 1254],
+      "source_sha256": "22f52dbf4ae1db92703949e28a434acf8d632c82c3df7e9c9574fe00666fc73b",
+      "frames": {
+        "dust": [125, 210, 1010, 850]
+      }
+    },
+    {
+      "file": "effects/glint.webp",
+      "group": "effects",
+      "size": [1278, 1230],
+      "source_sha256": "08f8a42a6735b3b0016811464d8c8017ad556a3f05ba84a589f6041cebce92a4",
+      "frames": {}
+    },
+    {
+      "file": "effects/spark.webp",
+      "group": "effects",
+      "size": [1283, 1226],
+      "source_sha256": "57687f5205299bb3bc70ac71724c4be8a15f1581f6dd0a13747e4b7df928e6e2",
+      "frames": {}
+    },
+    {
+      "file": "pieces/robber/robber.webp",
+      "group": "pieces",
+      "size": [1254, 1254],
+      "source_sha256": "7d28c5597a6821570fbb5d6e9ef740cba62fcf49deee68cb8124ae779933cbb2",
+      "frames": {
+        "robber": [380, 60, 610, 1130]
+      }
+    },
+    {
+      "file": "resources/resources.webp",
+      "group": "resources",
+      "size": [1448, 1086],
+      "source_sha256": "cebe50ae7f24953bee669d00623e41017c5384f884a032cccaf8a755bb0825dd",
+      "frames": {
+        "wood": [44, 164, 476, 404],
+        "brick": [544, 164, 440, 404],
+        "wheat": [984, 88, 428, 492],
+        "wool": [244, 608, 484, 392],
+        "stone": [768, 584, 496, 420]
+      }
+    },
+    {
+      "file": "ui/emblems/victory.webp",
+      "group": "ui",
+      "size": [1254, 1254],
+      "source_sha256": "8415f09690a532b5fb1a1c7fd75a04da5f8f1dd54c29ace0aac03677d990018a",
+      "frames": {
+        "victory": [40, 50, 1175, 1135]
+      }
+    },
+    {
+      "file": "ui/illustrations/bank.webp",
+      "group": "ui",
+      "size": [1254, 1254],
+      "source_sha256": "fdb8072aece0139962f9624e23c224c34c7d676d40c71f22703b37d510572557",
+      "frames": {
+        "bank": [15, 80, 1225, 1095]
+      }
+    },
+    {
+      "file": "ui/ornaments/ornaments.webp",
+      "group": "ui",
+      "size": [1254, 1254],
+      "source_sha256": "c2a48b226f70b6b6a04a869df2e4dd5863f6f79833cd49c792e4a22b47f8381a",
+      "frames": {
+        "corner": [35, 390, 380, 400],
+        "divider": [385, 575, 485, 110],
+        "rosette": [930, 480, 310, 310]
+      }
+    }
+  ]
+}

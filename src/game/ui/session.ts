@@ -16,6 +16,8 @@ import type { BuildType } from '../core/building';
 import type { ActionResult, GameState, ResourceType, TradeRatio } from '../core/types';
 import { FA } from './messages.fa';
 import { number } from './components';
+import { TutorialDirector } from '../tutorial/director';
+import type { LessonId } from '../tutorial/lessons.fa';
 
 export type Sheet =
     | {
@@ -27,7 +29,9 @@ export type Sheet =
               | 'results'
               | 'end-turn'
               | 'targets'
-              | 'inspect';
+              | 'inspect'
+              | 'tutorial'
+              | 'journal';
       }
     | { kind: 'player' | 'tile' | 'port'; id: string };
 export interface Placement {
@@ -43,6 +47,8 @@ export interface MatchEvent {
 
 /** Local match adapter. Drafts never mutate or pay resources in authoritative state. */
 export class GameSession {
+    readonly tutorial = new TutorialDirector();
+    private tutorialReturnSheet: Sheet | null = null;
     private gameState: GameState | null = null;
     private transitionId = 0;
     transition: MatchTransition | null = null;
@@ -82,7 +88,48 @@ export class GameSession {
         return () => this.listeners.delete(listener);
     }
     private emit(): void {
+        if (this.state) {
+            this.tutorial.observe(this.tutorialContext());
+            if (this.tutorial.current && this.sheet?.kind !== 'tutorial') {
+                this.tutorialReturnSheet = this.sheet;
+                this.sheet = { kind: 'tutorial' };
+            }
+        }
         this.listeners.forEach((listener) => listener());
+    }
+    private tutorialContext() {
+        return {
+            state: this.state!,
+            sheet: this.sheet,
+            placement: this.placement,
+            transition: this.transition,
+            reviewingTrade: !!this.give && !!this.receive && this.give !== this.receive,
+        };
+    }
+    continueTutorial(): void {
+        if (this.sheet?.kind !== 'tutorial') return;
+        this.tutorial.acknowledge();
+        if (!this.tutorial.current) {
+            this.sheet = this.tutorialReturnSheet;
+            this.tutorialReturnSheet = null;
+        }
+        this.emit();
+    }
+    setTutorialEnabled(enabled: boolean): void {
+        if (!this.state) return;
+        if (!enabled) {
+            this.tutorial.pause();
+            if (this.sheet?.kind === 'tutorial') {
+                this.sheet = this.tutorialReturnSheet;
+                this.tutorialReturnSheet = null;
+            }
+        } else this.tutorial.resume(this.tutorialContext());
+        this.emit();
+    }
+    replayLesson(id: LessonId): void {
+        if (!this.state || this.sheet?.kind !== 'journal') return;
+        this.tutorial.replay(id);
+        this.emit();
     }
     private record(text: string): void {
         if (!this.state) return;
@@ -96,7 +143,7 @@ export class GameSession {
         if (this.history.length > 100) this.history.shift();
     }
 
-    start(count: 3 | 4): void {
+    start(count: 3 | 4, guided = false): void {
         this.gameState = createGame(
             Array.from({ length: count }, (_, i) => `${FA.player} ${number(i + 1)}`),
         );
@@ -107,10 +154,14 @@ export class GameSession {
         this.history = [];
         this.transition = null;
         this.error = null;
+        this.tutorialReturnSheet = null;
+        this.tutorial.start(guided);
         this.record(FA.startNote);
         this.emit();
     }
     returnToMenu(): void {
+        this.tutorial.start(false);
+        this.tutorialReturnSheet = null;
         this.gameState = null;
         this.sheet = this.placement = null;
         this.give = this.receive = null;
@@ -122,14 +173,20 @@ export class GameSession {
         this.emit();
     }
     openSheet(sheet: Sheet): void {
+        if (this.sheet?.kind === 'tutorial') return;
         this.sheet = sheet;
         this.emit();
     }
     closeSheet(): void {
+        if (this.sheet?.kind === 'tutorial') {
+            this.setTutorialEnabled(false);
+            return;
+        }
         this.sheet = null;
         this.emit();
     }
     chooseBuild(kind: BuildType): void {
+        if (this.sheet?.kind === 'tutorial') return;
         if (!this.state || getBuildOption(this.state, kind).reason) return;
         this.placement = { kind, targetId: null };
         this.error = null;
@@ -148,17 +205,20 @@ export class GameSession {
         this.preview(targetId);
     }
     cancelPlacement(): void {
+        if (this.sheet?.kind === 'tutorial') return;
         this.placement =
             this.placement?.kind === 'robber' ? { kind: 'robber', targetId: null } : null;
         this.error = null;
         this.emit();
     }
     chooseTrade(side: 'give' | 'receive', resource: ResourceType): void {
+        if (this.sheet?.kind === 'tutorial') return;
         if (side === 'give') this.requestedTradeRatio = null;
         this[side] = resource;
         this.emit();
     }
     chooseTradeRatio(ratio: TradeRatio): void {
+        if (this.sheet?.kind === 'tutorial') return;
         if (
             !this.state ||
             !this.give ||
@@ -173,6 +233,7 @@ export class GameSession {
         this.emit();
     }
     tradeFromPort(id: string): void {
+        if (this.sheet?.kind === 'tutorial') return;
         if (!this.state) return;
         const port = this.state.board.ports.find((candidate) => candidate.id === id);
         if (
@@ -188,6 +249,7 @@ export class GameSession {
         this.emit();
     }
     confirmTrade(): void {
+        if (this.sheet?.kind === 'tutorial') return;
         if (!this.state || !this.give || !this.receive) return;
         const ratio = this.tradeRatio;
         this.apply(
@@ -255,6 +317,7 @@ export class GameSession {
     }
     private apply(result: ActionResult, text: string, action: MatchAction): void {
         if (!result.ok) {
+            this.tutorial.explainError(result.reason);
             this.notice = FA.errors[result.reason];
             this.error = this.notice;
         } else {

@@ -24,6 +24,8 @@ import {
 } from './components';
 import { FA } from './messages.fa';
 import type { GameSession } from './session';
+import type { SheetContent } from './bottomSheet';
+import { journalContent, tutorialContent } from '../tutorial/markup';
 import { ownedPortsMarkup, portDirectory, portIcon, portName, tradeRateLabel } from './ports';
 
 export const BUILD_LABELS: Record<BuildType, string> = {
@@ -58,10 +60,12 @@ export function costRow(option: BuildOption): string {
         .join('')}</span>`;
 }
 
-export function sheetContent(session: GameSession): { title: string; body: string } {
+export function sheetContent(session: GameSession): SheetContent {
     const state = session.state!;
     const player = state.players[state.activePlayerIndex];
     const sheet = session.sheet!;
+    if (sheet.kind === 'tutorial') return tutorialContent(session);
+    if (sheet.kind === 'journal') return journalContent(session);
     if (sheet.kind === 'targets' || sheet.kind === 'inspect') {
         const inspecting = sheet.kind === 'inspect';
         const ids = inspecting ? state.board.tiles.map((tile) => tile.id) : session.targets;
@@ -220,11 +224,11 @@ export function sheetContent(session: GameSession): { title: string; body: strin
                 })
                 .join(
                     '',
-                )}</div>${button('دیدن صفحه نهایی', 'close-sheet', { className: 'button full-width' })}${button(FA.newGame, 'new-game', { className: 'button button--primary full-width' })}`,
+                )}</div>${button('دفتر سفر آناهیتا', 'open:journal', { className: 'button full-width' })}${button('دیدن صفحه نهایی', 'close-sheet', { className: 'button full-width' })}${button(FA.newGame, 'new-game', { className: 'button button--primary full-width' })}`,
         };
     }
     return {
         title: 'راهنمای بازی',
-        body: `<p>بازی محلی برای سه یا چهار بازیکن است. در نوبت خود دستگاه را در اختیار بگیرید؛ منابع پایین صفحه متعلق به بازیکن فعال است.</p><ol class="help-list"><li>تاس را بیندازید. خانه‌های هم‌شماره برای آبادی‌های مجاور یک منبع و برای شهرها دو منبع تولید می‌کنند.</li><li>با تاس هفت، راهزن را به خانه دیگری ببرید. خانه دارای راهزن تولید ندارد؛ در این نسخه سرقت و دورریختن منابع وجود ندارد.</li><li>ساخت‌وساز را باز کنید تا هزینه و محل‌های مجاز را ببینید. محل را انتخاب و سپس ساخت را تأیید کنید.</li><li>در بانک، چهار منبع یکسان را با یک منبع دیگر مبادله کنید. آبادی یا شهر کنار بندر عمومی نرخ ۳ به ۱ می‌دهد؛ بندر تخصصی فقط منبع نشان‌داده‌شده را با نرخ ۲ به ۱ می‌پذیرد. ساخت راه کافی نیست. پس از ساخت آبادی بندری، همان نوبت می‌توانید از نرخ آن استفاده کنید.</li><li>پس از انجام کارها، پایان نوبت را بزنید. رسیدن به ${number(state.victoryTarget)} امتیاز بازی را تمام می‌کند.</li></ol><p>راه باید به شبکه شما وصل باشد؛ ساختمان حریف ادامه راه را قطع می‌کند. بین آبادی‌ها یک تقاطع خالی لازم است. شهر فقط آبادی خودتان را ارتقا می‌دهد.</p><p class="footnote">برای جزئیات خانه آن را لمس کنید. برای انتخاب دقیق‌تر از فهرست محل‌ها استفاده کنید؛ محل انتخاب‌شده را پیش از تأیید بررسی کنید.</p>${button('بررسی خانه‌های جزیره', 'open:inspect', { className: 'button full-width' })}${button('دیدن هزینه‌های ساخت', 'open:build', { className: 'button full-width' })}`,
+        body: `<p>بازی محلی برای سه یا چهار بازیکن است. در نوبت خود دستگاه را در اختیار بگیرید؛ منابع پایین صفحه متعلق به بازیکن فعال است.</p><ol class="help-list"><li>تاس را بیندازید. خانه‌های هم‌شماره برای آبادی‌های مجاور یک منبع و برای شهرها دو منبع تولید می‌کنند.</li><li>با تاس هفت، راهزن را به خانه دیگری ببرید. خانه دارای راهزن تولید ندارد؛ در این نسخه سرقت و دورریختن منابع وجود ندارد.</li><li>ساخت‌وساز را باز کنید تا هزینه و محل‌های مجاز را ببینید. محل را انتخاب و سپس ساخت را تأیید کنید.</li><li>در بانک، چهار منبع یکسان را با یک منبع دیگر مبادله کنید. آبادی یا شهر کنار بندر عمومی نرخ ۳ به ۱ می‌دهد؛ بندر تخصصی فقط منبع نشان‌داده‌شده را با نرخ ۲ به ۱ می‌پذیرد. ساخت راه کافی نیست. پس از ساخت آبادی بندری، همان نوبت می‌توانید از نرخ آن استفاده کنید.</li><li>پس از انجام کارها، پایان نوبت را بزنید. رسیدن به ${number(state.victoryTarget)} امتیاز بازی را تمام می‌کند.</li></ol><p>راه باید به شبکه شما وصل باشد؛ ساختمان حریف ادامه راه را قطع می‌کند. بین آبادی‌ها یک تقاطع خالی لازم است. شهر فقط آبادی خودتان را ارتقا می‌دهد.</p><p class="footnote">برای جزئیات خانه آن را لمس کنید. برای انتخاب دقیق‌تر از فهرست محل‌ها استفاده کنید؛ محل انتخاب‌شده را پیش از تأیید بررسی کنید.</p>${button('دفتر سفر آناهیتا', 'open:journal', { className: 'button button--primary full-width' })}${button('رویدادهای بازی', 'open:history', { className: 'button full-width' })}${button('بررسی خانه‌های جزیره', 'open:inspect', { className: 'button full-width' })}${button('دیدن هزینه‌های ساخت', 'open:build', { className: 'button full-width' })}`,
     };
 }

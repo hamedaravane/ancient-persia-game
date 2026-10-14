@@ -38,7 +38,7 @@ For visual or interface work, also read:
 
 - Store runtime assets below `public/assets/`, grouped by purpose as described in `docs/ASSET_GUIDE.md`.
 - Use lowercase kebab-case for asset files and stable lowercase directory names.
-- Reference public assets by URL from the public root, such as `/assets/board/terrains/forest.png`.
+- Reference public assets by URL from the public root, such as `/assets/board/terrains/forest.webp`.
 - Keep source art outside the runtime asset tree if it is not loaded by the game, and document its location when added.
 
 ## Rules and documentation

@@ -1,3 +1,4 @@
+import { LESSONS, type LessonId } from '../tutorial/lessons.fa';
 import { BUILD_TYPES } from '../core/building';
 import { getBuildOption, getPlayerSummary } from '../core/queries';
 import { RESOURCE_TYPES, type ResourceType, type TradeRatio } from '../core/types';
@@ -21,7 +22,7 @@ export class GameHud {
         private session: GameSession,
     ) {
         parent.className = 'game-app is-menu';
-        parent.innerHTML = `<section class="main-menu" aria-label="آغاز بازی"><div class="menu-panel">${artSprite('corner', 42, 'panel-corner panel-corner--start')}${artSprite('corner', 42, 'panel-corner panel-corner--end')}${artSprite('rosette', 44, 'menu-emblem')}<p class="eyebrow">سرزمین فرصت‌ها</p><h1>${FA.title}</h1><p>${FA.subtitle}</p>${artSprite('divider', 120, 'menu-divider')}<h2>${FA.choosePlayers}</h2><div class="menu-choices">${button(FA.threePlayers, 'start:3', { className: 'button button--primary' })}${button(FA.fourPlayers, 'start:4')}</div><p class="footnote">${FA.handover}</p></div></section>
+        parent.innerHTML = `<section class="main-menu" aria-label="آغاز بازی"><div class="menu-panel">${artSprite('corner', 42, 'panel-corner panel-corner--start')}${artSprite('corner', 42, 'panel-corner panel-corner--end')}${artSprite('rosette', 44, 'menu-emblem')}<p class="eyebrow">سرزمین فرصت‌ها</p><h1>${FA.title}</h1><p>${FA.subtitle}</p>${artSprite('divider', 120, 'menu-divider')}<h2>${FA.choosePlayers}</h2><div class="menu-choices">${button(FA.threePlayers, 'start:3', { className: 'button button--primary' })}${button(FA.fourPlayers, 'start:4')}</div><p class="footnote">${FA.handover}</p><h2>سفر با آناهیتا</h2><p class="footnote">بیا توی جزیره؛ آناهیتا قدم‌به‌قدم کنارت می‌مونه.</p><div class="menu-choices tutorial-choices">${button('آموزش سه‌نفره', 'guided:3', { className: 'button button--primary' })}${button('آموزش چهارنفره', 'guided:4')}</div></div></section>
             <section class="match-screen" aria-label="صفحه بازی" hidden>
                 <header class="match-bar"></header><nav class="player-strip" aria-label="بازیکنان"></nav>
                 <div class="board-viewport"><div class="board-canvas" aria-hidden="true"></div><p class="board-loading">در حال آماده‌سازی جزیره…</p><div class="board-selection"></div></div>
@@ -101,13 +102,18 @@ export class GameHud {
                     : `${BUILD_LABELS[placement.kind]}: محل روشن را انتخاب و سپس ساخت را تأیید کنید.`
                 : state.phase === 'roll'
                   ? FA.normalRoll
-                  : this.session.notice || FA.buildHint);
+                  : this.session.tutorial.enabled
+                    ? this.session.tutorial.objective({ state, placement })
+                    : this.session.notice || FA.buildHint);
         this.updatePart(
             '.context-line',
             button(
                 `<span>${escape(hint)}</span><span aria-hidden="true">≡</span>`,
-                'open:history',
-                { className: 'context-button', label: `${hint}؛ دیدن رویدادها` },
+                this.session.tutorial.enabled ? 'open:journal' : 'open:history',
+                {
+                    className: 'context-button',
+                    label: `${hint}؛ ${this.session.tutorial.enabled ? 'دفتر سفر آناهیتا' : 'دیدن رویدادها'}`,
+                },
             ),
         );
         this.updatePart(
@@ -163,13 +169,20 @@ export class GameHud {
         if (!target || target.disabled) return;
         const [action, value, resource] = target.dataset.action!.split(':');
         const targetId = target.dataset.action!.slice(action.length + 1);
-        if (action === 'start') this.session.start(value === '3' ? 3 : 4);
+        if (action === 'start' || action === 'guided')
+            this.session.start(value === '3' ? 3 : 4, action === 'guided');
+        if (action === 'tutorial-next') this.session.continueTutorial();
+        if (action === 'tutorial-pause') this.session.setTutorialEnabled(false);
+        if (action === 'tutorial-resume') this.session.setTutorialEnabled(true);
+        if (action === 'lesson' && Object.prototype.hasOwnProperty.call(LESSONS, value))
+            this.session.replayLesson(value as LessonId);
         if (
             action === 'open' &&
-            ['build', 'trade', 'help', 'history', 'targets', 'inspect'].includes(value)
+            ['build', 'trade', 'help', 'history', 'targets', 'inspect', 'journal'].includes(value)
         )
             this.session.openSheet({
-                kind: value as 'build' | 'trade' | 'help' | 'history' | 'targets' | 'inspect',
+                kind: value as
+                    'build' | 'trade' | 'help' | 'history' | 'targets' | 'inspect' | 'journal',
             });
         if (
             action === 'inspect' &&

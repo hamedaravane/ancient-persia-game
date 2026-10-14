@@ -605,6 +605,131 @@ h3 {
     align-items: center;
     gap: 14px;
 }
+.journal-intro {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+.narrator-portrait {
+    flex-shrink: 0;
+}
+.narrator-copy {
+    min-width: 0;
+}
+.narrator-copy h3 {
+    color: #ffe2a0;
+    margin-block: 4px 8px;
+}
+.narrator-copy > p:last-child {
+    font-size: 16px;
+    line-height: 1.95;
+}
+.narrator-task {
+    color: #ffe2a0;
+    margin-block: 14px 0;
+    padding-inline: 13px 0;
+    font-size: 14px;
+    line-height: 24px;
+}
+.narrator-controls {
+    margin-top: 8px;
+    display: flex;
+    gap: 8px;
+}
+.narrator-controls > button {
+    flex: 1;
+    padding-inline: 8px;
+    font-size: 14px;
+}
+.bottom-sheet.narrator-sheet {
+    --portrait-height: clamp(180px, 42dvh, 420px);
+    --portrait-overlap: 32px;
+    max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 12px);
+    padding: 0 max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom))
+        max(10px, env(safe-area-inset-left));
+    background: transparent;
+    border-radius: 0;
+}
+.narrator-stage {
+    position: relative;
+    height: calc(var(--portrait-height) - var(--portrait-overlap));
+    flex: 0 0 calc(var(--portrait-height) - var(--portrait-overlap));
+    pointer-events: none;
+}
+.narrator-hero {
+    position: absolute;
+    bottom: calc(-1 * var(--portrait-overlap));
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(84vw, calc(var(--portrait-height) * var(--portrait-ratio))) !important;
+    height: auto !important;
+    aspect-ratio: var(--portrait-ratio);
+}
+.narrator-panel {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    max-height: 50dvh;
+    overflow: hidden;
+    flex: 0 1 auto;
+    background: #252b2d;
+}
+.narrator-sheet .narrator-heading {
+    min-height: 64px;
+    padding: 12px 20px 6px;
+    color: #ffe2a0;
+}
+.narrator-heading h2 {
+    color: #ffe2a0;
+    gap: 8px;
+    font-size: 22px;
+}
+.narrator-role {
+    color: #c0c7bd;
+    font-size: 12px;
+    margin-inline-start: 4px;
+}
+.narrator-sheet .sheet-body {
+    padding: 12px 22px 16px;
+}
+.narrator-footer {
+    flex-shrink: 0;
+    padding: 12px 16px max(12px, env(safe-area-inset-bottom));
+}
+.narrator-footer .narrator-controls {
+    margin-top: 0;
+}
+.narrator-footer > .footnote {
+    margin-top: 8px;
+    font-size: 11px;
+    line-height: 18px;
+    text-align: center;
+}
+.journal-chapter h3 {
+    margin-bottom: 12px;
+    color: #ffe2a0;
+}
+.journal-lesson {
+    flex-direction: column;
+    gap: 3px;
+    align-items: stretch;
+    text-align: start;
+}
+.journal-lesson .muted {
+    font-size: 12px;
+}
+.tutorial-choices {
+    margin-block: 12px 0;
+}
+@media (max-height: 560px) {
+    .bottom-sheet.narrator-sheet {
+        --portrait-height: clamp(100px, 30dvh, 168px);
+    }
+    .narrator-panel {
+        max-height: 64dvh;
+    }
+}
 .trade-intro .sheet-intro {
     flex: 1;
 }

@@ -1,0 +1,120 @@
+"""Export full-resolution WebP runtime assets from preserved PNG masters.
+
+Requires Python 3 and Pillow >= 10.2 with WebP support. No network/API is used.
+"""
+
+import argparse
+import hashlib
+import json
+import math
+from pathlib import Path
+
+from PIL import Image, ImageChops, ImageStat, features
+
+
+ROOT = Path(__file__).resolve().parents[1]
+MASTERS = ROOT / "art/reference"
+RUNTIME = ROOT / "public/assets"
+MANIFEST = Path(__file__).with_name("image-exports.json")
+
+
+class QualityError(ValueError):
+    """The export needs a higher quality profile."""
+
+
+def verify(source, output, asset, minimum_psnr):
+    with Image.open(output) as image:
+        if image.format != "WEBP" or image.size != source.size:
+            raise ValueError(f"Wrong format/dimensions: {output}")
+        if image.info.get("icc_profile", b"") != source.info.get("icc_profile", b""):
+            raise ValueError(f"Color profile changed: {output}")
+        decoded = image.convert("RGBA")
+    original = source.convert("RGBA")
+    if original.getchannel("A").tobytes() != decoded.getchannel("A").tobytes():
+        raise ValueError(f"Transparency changed: {output}")
+
+    frames = {"full": (0, 0, *source.size), **asset["frames"]}
+    worst = math.inf
+    for name, (x, y, width, height) in frames.items():
+        if min(x, y) < 0 or min(width, height) <= 0 or x + width > source.width or y + height > source.height:
+            raise ValueError(f"Invalid frame {name}: {asset['file']}")
+        rect = (x, y, x + width, y + height)
+        before, after = original.crop(rect), decoded.crop(rect)
+        # A regression floor per used frame; human image review remains necessary.
+        for color in ("#252b2d", "#eadfc6"):
+            base = Image.new("RGBA", before.size, color)
+            a = Image.alpha_composite(base, before).convert("RGB")
+            b = Image.alpha_composite(base, after).convert("RGB")
+            rms = ImageStat.Stat(ImageChops.difference(a, b)).rms
+            mse = sum(channel * channel for channel in rms) / 3
+            score = 10 * math.log10(255 * 255 / mse) if mse else math.inf
+            worst = min(worst, score)
+            if score < minimum_psnr:
+                raise QualityError(f"{asset['file']} / {name}: {score:.2f} dB < {minimum_psnr} dB")
+    return worst
+
+
+def export(source, output, asset, minimum_psnr):
+    temporary = output.with_suffix(".webp.tmp")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        for quality, lossless in ((95, False), (98, False), (100, False), (100, True)):
+            source.save(
+                temporary, format="WEBP", quality=quality, method=6,
+                lossless=lossless, exact=True,
+                icc_profile=source.info.get("icc_profile", b""),
+            )
+            try:
+                verify(source, temporary, asset, minimum_psnr)
+            except QualityError:
+                continue
+            if temporary.stat().st_size >= (MASTERS / Path(asset["file"]).with_suffix(".png")).stat().st_size:
+                raise ValueError(f"Export is not smaller than its master: {output}")
+            temporary.replace(output)
+            return "lossless" if lossless else f"q{quality}"
+        raise QualityError(f"Could not meet quality floor: {output}")
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def main():
+    manifest = json.loads(MANIFEST.read_text())
+    if manifest["version"] != 1:
+        raise SystemExit("Unsupported image export manifest version.")
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--check", action="store_true", help="verify exports without writing")
+    parser.add_argument("--group", choices=sorted({a["group"] for a in manifest["assets"]}))
+    args = parser.parse_args()
+    if not features.check("webp"):
+        raise SystemExit("Pillow requires WebP support for these exports.")
+
+    before_total = after_total = 0
+    for asset in manifest["assets"]:
+        if args.group and asset["group"] != args.group:
+            continue
+        master = MASTERS / Path(asset["file"]).with_suffix(".png")
+        output = RUNTIME / asset["file"]
+        if hashlib.sha256(master.read_bytes()).hexdigest() != asset["source_sha256"]:
+            raise ValueError(f"Master hash changed; review and update the manifest: {master}")
+        with Image.open(master) as source:
+            if source.mode not in ("RGB", "RGBA") or list(source.size) != asset["size"]:
+                raise ValueError(f"Unexpected master format/dimensions: {master}")
+            profile = "checked" if args.check else export(source, output, asset, manifest["minimum_psnr"])
+            score = verify(source, output, asset, manifest["minimum_psnr"])
+        before, after = master.stat().st_size, output.stat().st_size
+        if after >= before:
+            raise ValueError(f"Export is not smaller than its master: {output}")
+        before_total += before
+        after_total += after
+        print(f"{asset['file']}: {before:,} -> {after:,} bytes; {profile}; alpha exact; PSNR >= {score:.2f} dB", flush=True)
+
+    if not args.group:
+        actual = {p.relative_to(RUNTIME).as_posix() for p in RUNTIME.rglob("*") if p.suffix.lower() in (".png", ".jpg", ".jpeg", ".webp", ".avif")}
+        expected = {a["file"] for a in manifest["assets"]}
+        if actual != expected:
+            raise ValueError(f"Runtime image inventory differs from manifest: {actual ^ expected}")
+    print(f"Total: {before_total:,} -> {after_total:,} bytes ({100 * (1 - after_total / before_total):.1f}% smaller)")
+
+
+if __name__ == "__main__":
+    main()

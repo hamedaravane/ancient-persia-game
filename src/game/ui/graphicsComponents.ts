@@ -122,6 +122,17 @@ export function drawComponent(
         );
     } else if (has('build-card') || has('trade-review') || el.matches('.results-list article')) {
         drawSurface(g, box, has('trade-review') ? 'inset' : 'card', { radius: 17, flat: true });
+    } else if (has('narrator-heading') || has('narrator-footer')) {
+        const y = has('narrator-heading') ? box.y + box.height : box.y;
+        g.lineStyle(1, UI_INK.gold, 0.22).lineBetween(box.x + 22, y, box.x + box.width - 22, y);
+    } else if (has('narrator-task')) {
+        g.fillStyle(UI_INK.gold, 0.8).fillRoundedRect(
+            box.x + box.width - 3,
+            box.y + 5,
+            2,
+            Math.max(2, box.height - 10),
+            1,
+        );
     } else if (has('sheet-header')) {
         drawSurface(g, box, 'limestone', { radius: 22, flat: true });
         g.fillStyle(UI_INK.gold, 0.7).fillRoundedRect(

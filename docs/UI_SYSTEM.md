@@ -32,7 +32,7 @@ All visible UI surfaces are Phaser Graphics: menu frame, buttons, player chips, 
 - Repaint only after layout/content/focus/press/scroll changes. Stable Text/Image objects are reused, while removed semantic nodes release their objects. The observer excludes Phaser's own hidden RTL text canvases. Effects animate separately through bounded tweens.
 - `ui/bottomSheet.ts` owns native modal semantics, close/Escape/backdrop handling, focus restoration, and independent content scrolling. Its visible shell, shade, heading, controls, and scroll thumb are drawn in Phaser.
 - `ui/sheets.ts` describes construction, bank/ports, player/tile/port details, history, help, target/inspection lists, results, and unfinished-trade warnings. `ui/components.ts` supplies escaped semantic markup and art identifiers.
-- `ui/session.ts` owns confirmed state, open sheet, uncommitted trade/placement drafts, notices, latest transition, and the last 100 events. No online projection or persistence is implied.
+- `ui/session.ts` owns confirmed state, open sheet, uncommitted trade/placement drafts, notices, latest transition, and the last 100 events. Confirmed state, history, and tutorial memory are persisted through the optional local MatchStore; no online projection is implied.
 - `ui/GameFeedback.ts` consumes confirmed transitions once; `ui/GraphicsFeedback.ts` draws finite resource flights, delta labels, focus/confirmation emphasis, and victory sparkles/glint. `ui/motion.ts` shares live visibility/reduced-motion preferences. There are no visible DOM animation layers. See [ANIMATION_DESIGN.md](ANIMATION_DESIGN.md).
 - `rendering/pieces.ts` retains orthographic Graphics settlement/city/road geometry and arbitrary ownership colors. The `?demo=pieces` page remains an isolated developer gallery, not part of the game UI. See [PIECE_RENDERING.md](PIECE_RENDERING.md).
 
@@ -51,6 +51,10 @@ All visible UI surfaces are Phaser Graphics: menu frame, buttons, player chips, 
 - Tapping a tile opens production number/probability, robber status, and adjacent-building details. Help → tile list provides keyboard access. Required next actions take priority in the history/context control; live notices announce confirmed feedback.
 - Results retain the original victory emblem, winner, settlement/city score breakdown, final-board inspection, and return to menu.
 - Animation never gates a command or changes state. Reduced motion removes travel and victory sparkles and keeps deltas stationary. Sheet entrance is a short opacity fade so drawing and semantic hit regions remain aligned.
+
+## Installation and recovery
+
+The menu includes the saved-match resume action, replacement confirmation, installation guidance, and offline-preparation status. Help opens the same app workspace and saves/returns to the menu. All new surfaces use the existing Phaser Graphics/Text renderer, native modal, and semantic controls. Browser installation prompts require an explicit tap; iPhone users receive Share → Add to Home Screen instructions. Updates download in the background, are applied explicitly from the menu or after victory, and never force another open page to reload. Resuming restores confirmed state and narrator memory without historical animation or unconfirmed drafts. Storage errors remain visible without blocking play. See [PWA_RELEASE.md](PWA_RELEASE.md).
 
 ## Guided play
 

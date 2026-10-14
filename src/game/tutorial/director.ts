@@ -13,6 +13,14 @@ export interface TutorialContext {
     reviewingTrade: boolean;
 }
 
+export interface TutorialMemory {
+    enabled: boolean;
+    seen: LessonId[];
+    practiced: LessonId[];
+    queue: LessonId[];
+    replaying: boolean;
+}
+
 /** Local narrative memory. Reads confirmed rules; never changes a match or random source. */
 export class TutorialDirector {
     enabled = false;
@@ -30,6 +38,24 @@ export class TutorialDirector {
     }
     get remaining(): number {
         return this.queue.length;
+    }
+
+    snapshot(): TutorialMemory {
+        return {
+            enabled: this.enabled,
+            seen: [...this.seen],
+            practiced: [...this.practiced],
+            queue: [...this.queue],
+            replaying: this.replaying,
+        };
+    }
+    restore(memory: TutorialMemory): void {
+        this.start(false);
+        this.enabled = memory.enabled;
+        memory.seen.forEach((id) => this.seen.add(id));
+        memory.practiced.forEach((id) => this.practiced.add(id));
+        this.queue = [...memory.queue];
+        this.replaying = memory.replaying;
     }
 
     start(enabled: boolean): void {

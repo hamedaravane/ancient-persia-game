@@ -2,16 +2,19 @@ import { LESSONS, type LessonId } from '../tutorial/lessons.fa';
 import { BUILD_TYPES } from '../core/building';
 import { getBuildOption, getPlayerSummary } from '../core/queries';
 import { RESOURCE_TYPES, type ResourceType, type TradeRatio } from '../core/types';
-import { BottomSheet } from './bottomSheet';
+import { BottomSheet, type SheetContent } from './bottomSheet';
 import { artSprite, button, diceFace, escape, number, resourceIcon } from './components';
 import { FA } from './messages.fa';
 import { BUILD_LABELS, PHASE_LABELS, costRow, sheetContent } from './sheets';
 import { type GameSession } from './session';
+import type { AppPlatform } from '../../pwa/app';
+import { appContent, menuPlatform, resumeMenu, saveLabel } from '../../pwa/markup';
 
 export class GameHud {
     readonly boardViewport: HTMLElement;
     private sheet: BottomSheet;
     private unsubscribe: () => void;
+    private unsubscribePlatform: () => void;
     private lastNotice = '';
     private sizeObserver: ResizeObserver;
     private lastPrimaryAt = -Infinity;
@@ -20,6 +23,7 @@ export class GameHud {
     constructor(
         private parent: HTMLElement,
         private session: GameSession,
+        private app: AppPlatform,
     ) {
         parent.className = 'game-app is-menu';
         parent.innerHTML = `<section class="main-menu" aria-label="آغاز بازی"><div class="menu-panel">${artSprite('corner', 42, 'panel-corner panel-corner--start')}${artSprite('corner', 42, 'panel-corner panel-corner--end')}${artSprite('rosette', 44, 'menu-emblem')}<p class="eyebrow">سرزمین فرصت‌ها</p><h1>${FA.title}</h1><p>${FA.subtitle}</p>${artSprite('divider', 120, 'menu-divider')}<h2>${FA.choosePlayers}</h2><div class="menu-choices">${button(FA.threePlayers, 'start:3', { className: 'button button--primary' })}${button(FA.fourPlayers, 'start:4')}</div><p class="footnote">${FA.handover}</p><h2>سفر با آناهیتا</h2><p class="footnote">بیا توی جزیره؛ آناهیتا قدم‌به‌قدم کنارت می‌مونه.</p><div class="menu-choices tutorial-choices">${button('آموزش سه‌نفره', 'guided:3', { className: 'button button--primary' })}${button('آموزش چهارنفره', 'guided:4')}</div></div></section>
@@ -28,11 +32,24 @@ export class GameHud {
                 <div class="board-viewport"><div class="board-canvas" aria-hidden="true"></div><p class="board-loading">در حال آماده‌سازی جزیره…</p><div class="board-selection"></div></div>
                 <div class="context-line"></div><section class="resource-hand" aria-label="منابع بازیکن فعال"></section><nav class="action-dock" aria-label="ابزارهای نوبت"></nav><div class="primary-row"></div><div class="bottom-space"></div>
             </section><div class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>`;
+        parent
+            .querySelector('.menu-panel')!
+            .insertAdjacentHTML(
+                'beforeend',
+                '<section class="platform-menu" aria-label="نصب و ادامه بازی"></section>',
+            );
+        parent
+            .querySelector('.menu-panel h2')!
+            .insertAdjacentHTML(
+                'beforebegin',
+                '<section class="resume-menu" aria-label="ادامه سفر"></section>',
+            );
         this.boardViewport = parent.querySelector('.board-canvas')!;
         this.sheet = new BottomSheet(parent, () => session.closeSheet());
         parent.addEventListener('click', this.onClick);
         document.addEventListener('keydown', this.onKeyDown);
         this.unsubscribe = session.subscribe(() => this.render());
+        this.unsubscribePlatform = app.subscribe(() => this.render());
         this.sizeObserver = new ResizeObserver(([entry]) => {
             if (entry.contentRect.height > 0)
                 parent.classList.toggle('is-compact', entry.contentRect.height < 720);
@@ -59,8 +76,21 @@ export class GameHud {
         this.parent.classList.toggle('is-menu', !state);
         this.part('.main-menu').hidden = state !== null;
         this.part('.match-screen').hidden = state === null;
+        this.updatePart('.resume-menu', resumeMenu(this.app, this.session));
+        this.updatePart('.platform-menu', menuPlatform(this.app));
+        for (const button of this.parent.querySelectorAll<HTMLButtonElement>(
+            '[data-action^="start:"], [data-action^="guided:"]',
+        ))
+            button.disabled = this.app.updating;
         if (!state) {
-            this.sheet.render(null);
+            this.sheet.render(this.content(), focusAction);
+            if (focusAction && !this.session.sheet)
+                [...this.parent.querySelectorAll<HTMLElement>('[data-action]')]
+                    .find(
+                        (element) =>
+                            element.dataset.action === focusAction && !element.closest('dialog'),
+                    )
+                    ?.focus({ preventScroll: true });
             return;
         }
         const active = state.players[state.activePlayerIndex];
@@ -94,8 +124,10 @@ export class GameHud {
             element.dataset.score = String(getPlayerSummary(state, state.players[index].id).score);
             element.dataset.target = String(state.victoryTarget);
         }
+        const storageWarning = this.session.saveStatus === 'unavailable' && !placement;
         const hint =
             this.session.error ||
+            (storageWarning ? 'ذخیره خودکار فعال نیست؛ برای جزئیات بزن.' : '') ||
             (placement
                 ? placement.kind === 'robber'
                     ? 'خانه مقصد راهزن را انتخاب و تأیید کنید.'
@@ -109,10 +141,14 @@ export class GameHud {
             '.context-line',
             button(
                 `<span>${escape(hint)}</span><span aria-hidden="true">≡</span>`,
-                this.session.tutorial.enabled ? 'open:journal' : 'open:history',
+                storageWarning
+                    ? 'open-app'
+                    : this.session.tutorial.enabled
+                      ? 'open:journal'
+                      : 'open:history',
                 {
                     className: 'context-button',
-                    label: `${hint}؛ ${this.session.tutorial.enabled ? 'دفتر سفر آناهیتا' : 'دیدن رویدادها'}`,
+                    label: `${hint}؛ ${storageWarning ? 'جزئیات ذخیره بازی' : this.session.tutorial.enabled ? 'دفتر سفر آناهیتا' : 'دیدن رویدادها'}`,
                 },
             ),
         );
@@ -158,19 +194,38 @@ export class GameHud {
                 .find((el) => el.dataset.action === focusAction && !el.closest('dialog'))
                 ?.focus({ preventScroll: true });
         if (this.session.notice !== this.lastNotice) {
-            this.part('[role="status"]').textContent = this.session.notice;
+            this.part('.sr-only[role="status"]').textContent = this.session.notice;
             this.lastNotice = this.session.notice;
         }
-        this.sheet.render(this.session.sheet ? sheetContent(this.session) : null, focusAction);
+        this.sheet.render(this.content(), focusAction);
+    }
+
+    private content(): SheetContent | null {
+        if (!this.session.sheet) return null;
+        if (this.session.sheet.kind === 'app') return appContent(this.app, this.session);
+        const content = sheetContent(this.session);
+        if (this.session.sheet.kind === 'help')
+            content.body += `${this.session.saveStatus === 'unavailable' ? `<p class="availability">${escape(saveLabel(this.session))}</p>` : ''}${button(this.app.updateReady ? 'نسخه تازه و برنامه آفلاین' : 'نصب و بازی آفلاین', 'open-app', { className: 'button full-width' })}${button('ذخیره و بازگشت به منو', 'new-game', { className: 'button full-width' })}`;
+        return content;
     }
 
     private onClick = (event: MouseEvent): void => {
         const target = (event.target as Element).closest<HTMLButtonElement>('button[data-action]');
         if (!target || target.disabled) return;
+        if (this.app.updating) return;
         const [action, value, resource] = target.dataset.action!.split(':');
         const targetId = target.dataset.action!.slice(action.length + 1);
         if (action === 'start' || action === 'guided')
-            this.session.start(value === '3' ? 3 : 4, action === 'guided');
+            this.session.requestStart(value === '3' ? 3 : 4, action === 'guided');
+        if (action === 'resume-match') this.session.resumeSaved();
+        if (action === 'confirm-new-match') this.session.confirmNewMatch();
+        if (action === 'open-app') this.session.openSheet({ kind: 'app' });
+        if (action === 'app-install') void this.app.install();
+        if (action === 'app-retry') this.app.retry();
+        if (action === 'app-update') {
+            this.session.save();
+            void this.app.update(!!this.session.state && this.session.state.phase !== 'finished');
+        }
         if (action === 'tutorial-next') this.session.continueTutorial();
         if (action === 'tutorial-pause') this.session.setTutorialEnabled(false);
         if (action === 'tutorial-resume') this.session.setTutorialEnabled(true);
@@ -224,6 +279,7 @@ export class GameHud {
     };
     destroy(): void {
         this.unsubscribe();
+        this.unsubscribePlatform();
         this.sizeObserver.disconnect();
         this.sheet.destroy();
         this.parent.removeEventListener('click', this.onClick);

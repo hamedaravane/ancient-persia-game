@@ -7,11 +7,23 @@ import { Motion } from './ui/motion';
 import { InterfaceScene } from './ui/InterfaceScene';
 import { BackdropScene } from './scenes/BackdropScene';
 import { canvasPixelSize } from './rendering/displayGeometry';
+import { MatchStore } from './persistence/matchStore';
+import { AppPlatform } from '../pwa/app';
+import { connectPlatform } from '../pwa/browser';
 
 export function StartGame(parent: HTMLElement): Game {
-    const session = new GameSession();
+    let storage: Storage | null = null;
+    try {
+        storage = window.localStorage;
+    } catch {
+        /* Private/blocked storage remains playable. */
+    }
+    const scope = new URL(import.meta.env.BASE_URL, document.baseURI).pathname;
+    const session = new GameSession(new MatchStore(storage, `ancient-persia.match.v1:${scope}`));
+    const app = new AppPlatform();
+    const disconnectPlatform = connectPlatform(app);
     const motion = new Motion();
-    const hud = new GameHud(parent, session);
+    const hud = new GameHud(parent, session, app);
     const stage = document.createElement('div');
     stage.className = 'phaser-stage';
     stage.setAttribute('aria-hidden', 'true');
@@ -70,6 +82,7 @@ export function StartGame(parent: HTMLElement): Game {
     window.addEventListener('resize', resize);
     game.events.once('destroy', () => {
         observer.disconnect();
+        disconnectPlatform();
         densityQuery.removeEventListener('change', densityChanged);
         window.removeEventListener('resize', resize);
         feedback?.destroy();

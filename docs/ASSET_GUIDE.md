@@ -150,3 +150,7 @@ Runtime WebP exports now reduce download size for all image groups, with origina
 ## Ports
 
 `src/game/rendering/ports.ts` draws nine small stone trading islets with Phaser Graphics, runtime ratio text, and resource emblems cropped from the existing resource atlas. No port PNGs or per-player asset copies are needed. Marker bodies are 32 pixels across, with a 38-pixel water halo and two links to the associated coastal edge endpoints. An arbitrary runtime ownership color accents the inset border. See [PORTS.md](PORTS.md) for geometry, access rules, and interaction.
+
+## Platform icons
+
+Installable-app icons live in `public/icons/` as PNG platform exports, separate from the optimized in-game image inventory under `public/assets/`. `scripts/export-pwa-icons.py` derives them from the preserved victory emblem and its reviewed crop, without new artwork or baked text. App icons are 192/512 pixels, the maskable icon is 512 with safe padding, and the Apple touch icon is 180. These packaged sizes intentionally differ from full-resolution WebP runtime illustrations. Run `npm run pwa:icons` to regenerate; see [PWA_RELEASE.md](PWA_RELEASE.md).

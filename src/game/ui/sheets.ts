@@ -61,6 +61,11 @@ export function costRow(option: BuildOption): string {
 }
 
 export function sheetContent(session: GameSession): SheetContent {
+    if (session.sheet?.kind === 'new-match')
+        return {
+            title: 'سفر تازه‌ای شروع کنیم؟',
+            body: `<p>با شروع بازی تازه، ذخیره سفر قبلی جایگزین می‌شه. اگه می‌خوای همون سفر رو ادامه بدی، برگرد و «ادامه بازی» رو بزن.</p>${button('برگشت', 'close-sheet', { className: 'button full-width' })}${button('شروع بازی تازه', 'confirm-new-match', { className: 'button button--primary full-width' })}`,
+        };
     const state = session.state!;
     const player = state.players[state.activePlayerIndex];
     const sheet = session.sheet!;

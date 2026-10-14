@@ -45,7 +45,7 @@ export class BottomSheet {
                     (el) => el.dataset.action === this.openerAction && !el.closest('dialog'),
                 );
                 const fallback = this.parent.querySelector<HTMLElement>(
-                    '.target-picker button, .primary-row button:not([disabled])',
+                    '.target-picker button, .primary-row button:not([disabled]), .main-menu button:not([disabled])',
                 );
                 (opener ?? fallback)?.focus({ preventScroll: true });
             }

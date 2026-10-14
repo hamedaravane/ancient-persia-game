@@ -18,6 +18,7 @@ import { FA } from './messages.fa';
 import { number } from './components';
 import { TutorialDirector } from '../tutorial/director';
 import type { LessonId } from '../tutorial/lessons.fa';
+import type { MatchStore, SavedMatch } from '../persistence/matchStore';
 
 export type Sheet =
     | {
@@ -33,7 +34,9 @@ export type Sheet =
               | 'tutorial'
               | 'journal';
       }
-    | { kind: 'player' | 'tile' | 'port'; id: string };
+    | { kind: 'player' | 'tile' | 'port'; id: string }
+    | { kind: 'app' }
+    | { kind: 'new-match'; count: 3 | 4; guided: boolean };
 export interface Placement {
     kind: BuildType | 'robber';
     targetId: string | null;
@@ -61,6 +64,50 @@ export class GameSession {
     notice = '';
     error: string | null = null;
     history: MatchEvent[] = [];
+    savedMatch: SavedMatch | null = null;
+
+    constructor(private store?: MatchStore) {
+        this.savedMatch = store?.read() ?? null;
+    }
+    get saveStatus() {
+        return this.store?.status ?? 'empty';
+    }
+    requestStart(count: 3 | 4, guided = false): void {
+        if (this.savedMatch) this.openSheet({ kind: 'new-match', count, guided });
+        else this.start(count, guided);
+    }
+    confirmNewMatch(): void {
+        if (this.sheet?.kind !== 'new-match') return;
+        this.start(this.sheet.count, this.sheet.guided);
+    }
+    resumeSaved(): void {
+        if (this.state || !this.savedMatch) return;
+        // The save is JSON data; keep resume compatible with the ES2020 browser target.
+        const saved = JSON.parse(JSON.stringify(this.savedMatch)) as SavedMatch;
+        this.gameState = saved.state;
+        this.history = saved.history;
+        this.tutorial.restore(saved.tutorial);
+        this.transition = null;
+        this.transitionId = 0;
+        this.tutorialReturnSheet = null;
+        this.sheet = saved.state.phase === 'finished' ? { kind: 'results' } : null;
+        this.placement = saved.state.phase === 'robber' ? { kind: 'robber', targetId: null } : null;
+        this.give = this.receive = null;
+        this.requestedTradeRatio = null;
+        this.error = null;
+        this.notice = 'خوش برگشتی؛ از همون‌جا ادامه می‌دیم.';
+        this.emit();
+    }
+    save(): void {
+        if (!this.state) return;
+        this.savedMatch = {
+            version: 1,
+            state: this.state,
+            tutorial: this.tutorial.snapshot(),
+            history: [...this.history],
+        };
+        this.store?.write(this.savedMatch);
+    }
 
     get state(): GameState | null {
         return this.gameState;
@@ -95,6 +142,7 @@ export class GameSession {
                 this.sheet = { kind: 'tutorial' };
             }
         }
+        this.save();
         this.listeners.forEach((listener) => listener());
     }
     private tutorialContext() {
@@ -160,6 +208,7 @@ export class GameSession {
         this.emit();
     }
     returnToMenu(): void {
+        this.save();
         this.tutorial.start(false);
         this.tutorialReturnSheet = null;
         this.gameState = null;

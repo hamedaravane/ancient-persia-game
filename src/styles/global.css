@@ -724,6 +724,13 @@ h3 {
 .tutorial-choices {
     margin-block: 12px 0;
 }
+.platform-menu {
+    margin-top: 24px;
+}
+.platform-menu > * + *,
+.resume-match > * + * {
+    margin-top: 12px;
+}
 @media (max-height: 560px) {
     .bottom-sheet.narrator-sheet {
         --portrait-height: clamp(100px, 30dvh, 168px);

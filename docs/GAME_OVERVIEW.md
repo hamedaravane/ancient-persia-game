@@ -8,11 +8,11 @@ Ancient Persia is a mobile-first Persian-language local multiplayer strategy boa
 
 The game is playable locally for three or four people sharing one device. Players take turns, roll dice, collect resources, build roads and settlements, upgrade settlements, trade with the bank using eligible coastal port rates, move the robber after a seven, and race to six victory points.
 
-The board and rule state live in Phaser-independent TypeScript under `src/game/core/`. A local session adapter publishes confirmed state to the Phaser board and Graphics interface. Transparent semantic controls provide responsive measurements, keyboard/screen-reader input, scrolling, and modal focus. Controls use responsive layouts and focused bottom sheets; placement and bank exchanges require confirmation. No online services, accounts, bots, chat, or persistence are included.
+The board and rule state live in Phaser-independent TypeScript under `src/game/core/`. A local session adapter publishes confirmed state to the Phaser board and Graphics interface. Transparent semantic controls provide responsive measurements, keyboard/screen-reader input, scrolling, and modal focus. Controls use responsive layouts and focused bottom sheets; placement and bank exchanges require confirmation. Local autosave and resume preserve the current match and tutorial progress on the same device. No online services, accounts, bots, or chat are included. See [PWA_RELEASE.md](PWA_RELEASE.md).
 
 ## Match outline
 
-The menu also offers **سفر با آناهیتا**, an opt-in guided version of the same three- or four-player local match. Anahita introduces rules through contextual Persian dialogue, six supplied expressions, phase-aware objectives, and a replayable lesson journal. Help → **دفتر سفر آناهیتا** can enable, pause, or review guidance during any match. Narrative progress lasts for the current match only. See [TUTORIAL_DESIGN.md](TUTORIAL_DESIGN.md) for research, lesson flow, and implementation boundaries.
+The menu also offers **سفر با آناهیتا**, an opt-in guided version of the same three- or four-player local match. Anahita introduces rules through contextual Persian dialogue, six supplied expressions, phase-aware objectives, and a replayable lesson journal. Help → **دفتر سفر آناهیتا** can enable, pause, or review guidance during any match. Narrative progress belongs to the current match and survives closing/reopening through its local save. See [TUTORIAL_DESIGN.md](TUTORIAL_DESIGN.md) for research, lesson flow, and implementation boundaries.
 
 1. Choose three or four local players.
 2. Each player receives two separated starting settlements and a road at each one on a generated 19-hex board; the second settlement grants its adjacent resources once.
@@ -23,7 +23,7 @@ The menu also offers **سفر با آناهیتا**, an opt-in guided version of
 
 ## Platform
 
-- Web, designed for mobile portrait first
+- Installable PWA with offline play after initial preparation; web, designed for mobile portrait first
 - 390 × 844 reference layout, responsive to the available safe area
 - Phaser 4 board and Graphics UI presentation in one canvas; transparent DOM/CSS layout and accessibility adapter
 - TypeScript game state and rules

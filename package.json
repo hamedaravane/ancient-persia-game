@@ -11,6 +11,8 @@
     "assets:anahita:check": "python3 scripts/optimize-anahita.py --check",
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "pwa:check": "node scripts/check-pwa.mjs",
+    "pwa:icons": "python3 scripts/export-pwa-icons.py",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
@@ -19,7 +21,7 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "npm run lint && npm run format:check && npm test && npm run build"
+    "check": "npm run lint && npm run format:check && npm test && npm run build && npm run pwa:check"
   },
   "dependencies": {
     "phaser": "4.0.0"
@@ -34,6 +36,7 @@
     "typescript": "~5.7.2",
     "typescript-eslint": "8.71.2",
     "vite": "^6.4.4",
+    "vite-plugin-pwa": "^1.2.0",
     "vitest": "5.0.4"
   },
   "engines": {

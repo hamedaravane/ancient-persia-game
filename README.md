@@ -28,7 +28,7 @@ npm run preview
 
 The development server is available at `http://localhost:8080`. The production build is written to `dist/`; deploy the contents of that directory to a static web host.
 
-`npm run check` runs lint, formatting verification, Vitest, and the production build (including TypeScript). `npm test` runs once; `npm run test:watch` reruns affected tests while developing. `npm run lint:fix` and `npm run format` apply fixes; the other checks do not rewrite source files.
+`npm run check` runs lint, formatting verification, Vitest, the production build (including TypeScript), and PWA artifact verification. `npm test` runs once; `npm run test:watch` reruns affected tests while developing. `npm run lint:fix` and `npm run format` apply fixes; the other checks do not rewrite source files.
 
 Vitest shares the Vite configuration and runs explicit-import TypeScript tests from `tests/` in Node. Test deterministic core rules, session commands, and pure layout calculations without constructing Phaser or loading a browser. Keep real rendering and device checks with the user. Mocks, environment stubs, and global stubs reset between tests. No DOM emulator or browser test runner is needed for these suites.
 
@@ -47,6 +47,12 @@ npm run build -- --base=/ancient-persia-game/
 ```
 
 Pages must use **GitHub Actions** as its publishing source. The setup follows [GitHub's custom Pages workflow guidance](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages) and [Vite's Pages deployment guidance](https://vite.dev/guide/static-deploy.html). Monitor publishing with `gh run list --workflow deploy-pages.yml`.
+
+## Installable app and offline play
+
+The game can be installed from its menu or the browser’s Home Screen/install action. After offline preparation completes, all game art, fonts, and Anahita expressions are available without connectivity. One local match and its tutorial progress are saved automatically; reopening offers **ادامه بازی**. Updates wait for an explicit action outside an unfinished match.
+
+Run `npm run pwa:check` after a production build to verify install metadata, icon dimensions, scoped launch URLs, controlled updates, and offline asset coverage. The Pages workflow runs this before deployment. Ordinary `npm run dev` does not register a service worker; use the production preview on localhost or HTTPS for PWA checks. See [docs/PWA_RELEASE.md](docs/PWA_RELEASE.md) for implementation, storage limits, icon reproduction, and the user’s Android/iPhone release checklist.
 
 ## Project map
 

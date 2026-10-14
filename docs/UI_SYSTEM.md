@@ -2,6 +2,8 @@
 
 ## Direction
 
+The public game name is **Sunmark**, pronounced **سان‌مارک** in Persian. `src/brand.ts` supplies the shared product name and description for runtime UI, tutorial welcome, and Vite/PWA metadata. The menu title renders Sunmark as an explicit LTR English text run inside the Persian RTL layout; the smaller eyebrow includes the Persian pronunciation. Keep names as runtime text. The preserved gold sun-rosette emblem remains the app mark.
+
 The user chose a Phaser Graphics interface on 2026-10-13, superseding the earlier visible DOM/CSS HUD. The approved **carved-stone interface** uses limestone controls, basalt panels, honey-colored primary slabs, cut corners, broad chiseled bevels, recessed grooves, and restrained mineral grain. It develops the original royal-expedition direction after the user requested a more ancient, carved material feel. Stone is the only UI treatment. The previous lapis implementation and URL theme selector have been removed following user approval. The board remains the hero. See [PHASER_UI_DESIGN.md](PHASER_UI_DESIGN.md) for research and component decisions.
 
 All visible UI surfaces are Phaser Graphics: menu frame, buttons, player chips, progress pips, resource trays/cards, construction cards, trade selectors, modal frames/backdrops, scroll indicators, and destination lists. Labels are Phaser Text using runtime Persian strings. Existing resource, ornament, bank, and victory art remains cropped Phaser Images. No Persian text is baked into assets and ownership color remains runtime data.

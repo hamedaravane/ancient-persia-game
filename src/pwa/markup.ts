@@ -2,6 +2,7 @@ import type { AppPlatform } from './app';
 import type { GameSession } from '../game/ui/session';
 import type { SheetContent } from '../game/ui/bottomSheet';
 import { button, escape } from '../game/ui/components';
+import { BRAND } from '../brand';
 
 export function offlineLabel(app: AppPlatform): string {
     if (app.offline === 'ready') return 'آماده برای بازی آفلاین';
@@ -26,7 +27,7 @@ export function resumeMenu(app: AppPlatform, session: GameSession): string {
 export function menuPlatform(app: AppPlatform): string {
     return `<p class="footnote" role="status">${offlineLabel(app)}</p>
         ${app.updateReady ? `<p class="footnote">نسخه تازه آماده‌ست؛ هر وقت خواستی به‌روزش کن.</p>` : ''}
-        ${button(app.updateReady ? 'نسخه تازه و تنظیمات برنامه' : app.installed ? 'برنامه و بازی آفلاین' : 'نصب بازی روی گوشی', 'open-app', { className: 'button full-width', disabled: app.updating })}`;
+        ${button(app.updateReady ? 'نسخه تازه و تنظیمات برنامه' : app.installed ? 'برنامه و بازی آفلاین' : `نصب ${BRAND.persianName} روی گوشی`, 'open-app', { className: 'button full-width', disabled: app.updating })}`;
 }
 export function appContent(app: AppPlatform, session: GameSession): SheetContent {
     const active = !!session.state && session.state.phase !== 'finished';
@@ -34,9 +35,9 @@ export function appContent(app: AppPlatform, session: GameSession): SheetContent
         ? 'توی Safari، منوی اشتراک‌گذاری رو باز کن و «افزودن به صفحه اصلی» (Add to Home Screen) رو بزن. اگر «Open as Web App» رو دیدی، روشنش کن؛ بعد «Add» رو بزن.'
         : 'منوی مرورگر رو باز کن و «نصب برنامه» یا «افزودن به صفحه اصلی» رو بزن. اگر این گزینه رو نمی‌بینی، لینک بازی رو در Chrome یا مرورگر پشتیبانی‌شده باز کن.';
     return {
-        title: 'بازی همیشه همراهت',
+        title: `${BRAND.persianName}، همیشه همراهت`,
         body: `<h3>${app.installed ? 'بازی نصب شده' : 'نصب روی گوشی'}</h3><p>${app.installed ? 'از آیکون بازی روی صفحه اصلی، مستقیم وارد جزیره شو.' : instruction}</p>
-            ${app.installPrompt && !app.installed ? button('نصب بازی', 'app-install', { className: 'button button--primary full-width' }) : ''}
+            ${app.installPrompt && !app.installed ? button(`نصب ${BRAND.persianName}`, 'app-install', { className: 'button button--primary full-width' }) : ''}
             <h3>بازی بدون اینترنت</h3><p role="status">${offlineLabel(app)}</p><p class="footnote">تمام جزیره و شش تصویر آناهیتا آماده می‌شن. بار اول اینترنت لازمه؛ بعد از آماده‌شدن، می‌تونی بدون اینترنت بازی کنی.</p>
             ${app.offline === 'error' ? button('دوباره آماده کن', 'app-retry', { className: 'button full-width' }) : ''}
             <h3>ادامه سفر</h3><p>${escape(saveLabel(session))}</p><p class="footnote">ذخیره روی همین دستگاهه؛ با پاک‌کردن داده‌های سایت ممکنه حذف بشه.</p>

@@ -1,9 +1,9 @@
 {
-  "name": "ancient-persia-game",
+  "name": "sunmark",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "A mobile-first Persian strategy board game built with Phaser 4 and TypeScript.",
+  "description": "Sunmark — a mobile-first Persian-language strategy board game built with Phaser 4 and TypeScript.",
   "scripts": {
     "assets:optimize": "python3 scripts/optimize-images.py",
     "assets:check": "python3 scripts/optimize-images.py --check",

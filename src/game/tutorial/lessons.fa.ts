@@ -1,3 +1,5 @@
+import { BRAND } from '../../brand';
+
 export type Expression = 'calm' | 'explaining' | 'warning' | 'worried' | 'joyful' | 'playful';
 export const CHAPTERS = [
     'اولین ردِ پا',
@@ -21,7 +23,7 @@ export const LESSONS = {
         chapter: 0,
         title: 'بالاخره رسیدی',
         expression: 'calm',
-        text: 'بالاخره رسیدی... من آناهیتام. این جزیره هنوز کلی قصهٔ نگفته داره. بیا نزدیک‌تر؛ از همین دو آبادی شروع می‌کنیم. دلم می‌خواد ببینم چه سرزمینی می‌سازی.',
+        text: `بالاخره رسیدی... به ${BRAND.persianName} خوش اومدی. من آناهیتام. این جزیره هنوز کلی قصهٔ نگفته داره. بیا نزدیک‌تر؛ از همین دو آبادی شروع می‌کنیم. دلم می‌خواد ببینم چه سرزمینی می‌سازی.`,
         task: 'بیا، اولین قدم رو با هم برداریم.',
     },
     setup: {

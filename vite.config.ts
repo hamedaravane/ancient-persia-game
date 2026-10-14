@@ -1,20 +1,30 @@
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import { BRAND } from './src/brand';
 
 export default defineConfig({
     base: './',
     plugins: [
+        {
+            name: 'game-brand',
+            transformIndexHtml(html) {
+                return html
+                    .replace(/%GAME_NAME%/g, BRAND.name)
+                    .replace(/%GAME_PERSIAN_NAME%/g, BRAND.persianName)
+                    .replace(/%GAME_DESCRIPTION%/g, BRAND.description);
+            },
+        },
         VitePWA({
             registerType: 'prompt',
             // The game owns registration and reloads, including other open tabs.
             injectRegister: null,
             includeManifestIcons: false, // Already covered by the complete PNG precache glob.
             manifest: {
-                // Manifest IDs resolve against the origin, independently of the launch path.
+                // Preserve the shipped identity so Sunmark updates the existing installed app.
                 id: '/ancient-persia-game/',
-                name: 'ایران باستان',
-                short_name: 'ایران باستان',
-                description: 'بازی راهبردی محلی با دوستان، در جزیره‌ای از ایران باستان.',
+                name: BRAND.name,
+                short_name: BRAND.name,
+                description: BRAND.description,
                 lang: 'fa',
                 dir: 'rtl',
                 start_url: './',
@@ -46,7 +56,7 @@ export default defineConfig({
                 ],
             },
             workbox: {
-                cacheId: 'ancient-persia',
+                cacheId: 'ancient-persia', // Keep existing offline caches through the rename.
                 globPatterns: ['**/*.{js,css,html,webp,woff2,png,svg}'],
                 maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
                 cleanupOutdatedCaches: true,

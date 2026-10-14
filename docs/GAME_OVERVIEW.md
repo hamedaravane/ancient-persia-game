@@ -2,7 +2,7 @@
 
 ## Product
 
-Ancient Persia is a mobile-first Persian-language local multiplayer strategy board game inspired by hex-based resource production and settlement building. It uses a historically grounded Achaemenid visual direction.
+**Sunmark** (Persian pronunciation: **سان‌مارک**) is a mobile-first Persian-language local multiplayer strategy board game inspired by hex-based resource production and settlement building. It uses a historically grounded Achaemenid visual direction.
 
 ## MVP status
 

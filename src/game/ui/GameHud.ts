@@ -9,6 +9,7 @@ import { BUILD_LABELS, PHASE_LABELS, costRow, sheetContent } from './sheets';
 import { type GameSession } from './session';
 import type { AppPlatform } from '../../pwa/app';
 import { appContent, menuPlatform, resumeMenu, saveLabel } from '../../pwa/markup';
+import { BRAND } from '../../brand';
 
 export class GameHud {
     readonly boardViewport: HTMLElement;
@@ -26,7 +27,7 @@ export class GameHud {
         private app: AppPlatform,
     ) {
         parent.className = 'game-app is-menu';
-        parent.innerHTML = `<section class="main-menu" aria-label="آغاز بازی"><div class="menu-panel">${artSprite('corner', 42, 'panel-corner panel-corner--start')}${artSprite('corner', 42, 'panel-corner panel-corner--end')}${artSprite('rosette', 44, 'menu-emblem')}<p class="eyebrow">سرزمین فرصت‌ها</p><h1>${FA.title}</h1><p>${FA.subtitle}</p>${artSprite('divider', 120, 'menu-divider')}<h2>${FA.choosePlayers}</h2><div class="menu-choices">${button(FA.threePlayers, 'start:3', { className: 'button button--primary' })}${button(FA.fourPlayers, 'start:4')}</div><p class="footnote">${FA.handover}</p><h2>سفر با آناهیتا</h2><p class="footnote">بیا توی جزیره؛ آناهیتا قدم‌به‌قدم کنارت می‌مونه.</p><div class="menu-choices tutorial-choices">${button('آموزش سه‌نفره', 'guided:3', { className: 'button button--primary' })}${button('آموزش چهارنفره', 'guided:4')}</div></div></section>
+        parent.innerHTML = `<section class="main-menu" aria-label="آغاز بازی"><div class="menu-panel">${artSprite('corner', 42, 'panel-corner panel-corner--start')}${artSprite('corner', 42, 'panel-corner panel-corner--end')}${artSprite('rosette', 44, 'menu-emblem')}<p class="eyebrow">${BRAND.persianName} • سرزمین فرصت‌ها</p><h1 dir="ltr" lang="en">${FA.title}</h1><p>${FA.subtitle}</p>${artSprite('divider', 120, 'menu-divider')}<h2>${FA.choosePlayers}</h2><div class="menu-choices">${button(FA.threePlayers, 'start:3', { className: 'button button--primary' })}${button(FA.fourPlayers, 'start:4')}</div><p class="footnote">${FA.handover}</p><h2>سفر با آناهیتا</h2><p class="footnote">بیا توی جزیره؛ آناهیتا قدم‌به‌قدم کنارت می‌مونه.</p><div class="menu-choices tutorial-choices">${button('آموزش سه‌نفره', 'guided:3', { className: 'button button--primary' })}${button('آموزش چهارنفره', 'guided:4')}</div></div></section>
             <section class="match-screen" aria-label="صفحه بازی" hidden>
                 <header class="match-bar"></header><nav class="player-strip" aria-label="بازیکنان"></nav>
                 <div class="board-viewport"><div class="board-canvas" aria-hidden="true"></div><p class="board-loading">در حال آماده‌سازی جزیره…</p><div class="board-selection"></div></div>

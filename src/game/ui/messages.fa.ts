@@ -1,4 +1,5 @@
 import type { ResourceType, RuleErrorCode } from '../core/types';
+import { BRAND } from '../../brand';
 
 export const FA: {
     readonly title: string;
@@ -41,7 +42,7 @@ export const FA: {
     readonly resources: Readonly<Record<ResourceType, string>>;
     readonly errors: Readonly<Record<RuleErrorCode, string>>;
 } = {
-    title: 'ایران باستان',
+    title: BRAND.name,
     subtitle: 'بازی راهبردی چندنفره',
     choosePlayers: 'تعداد بازیکنان را انتخاب کنید',
     handover: 'برای نوبت خود، دستگاه را به بازیکن بعدی بدهید.',

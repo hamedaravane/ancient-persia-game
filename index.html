@@ -6,13 +6,15 @@
         <meta name="theme-color" content="#252b2d" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="ایران باستان" />
+        <meta name="apple-mobile-web-app-title" content="%GAME_NAME%" />
+        <meta property="og:title" content="%GAME_NAME%" />
+        <meta property="og:site_name" content="%GAME_NAME%" />
+        <meta property="og:description" content="%GAME_DESCRIPTION%" />
+        <meta property="og:type" content="website" />
+        <meta property="og:locale" content="fa_IR" />
         <link rel="icon" type="image/png" href="%BASE_URL%icons/icon-192.png" />
         <link rel="apple-touch-icon" sizes="180x180" href="%BASE_URL%icons/apple-touch-icon.png" />
-        <meta
-            name="description"
-            content="یک بازی راهبردی چندنفره به زبان فارسی، در ایران باستان."
-        />
+        <meta name="description" content="%GAME_DESCRIPTION%" />
         <link
             rel="preload"
             href="%BASE_URL%assets/fonts/vazirmatn-regular.woff2"
@@ -20,11 +22,11 @@
             type="font/woff2"
             crossorigin
         />
-        <title>ایران باستان</title>
+        <title>%GAME_NAME%</title>
     </head>
 
     <body>
-        <main id="game-container" aria-label="بازی ایران باستان"></main>
+        <main id="game-container" aria-label="بازی %GAME_PERSIAN_NAME%"></main>
         <script type="module" src="/src/main.ts"></script>
     </body>
 </html>

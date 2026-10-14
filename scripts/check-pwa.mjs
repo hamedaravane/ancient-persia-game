@@ -14,6 +14,16 @@ const base = new URL(
         `https://example.com${process.env.PAGES_BASE_PATH !== undefined ? `${process.env.PAGES_BASE_PATH}/` : '/ancient-persia-game/'}`,
 );
 const manifestUrl = new URL('manifest.webmanifest', base);
+assert.equal(manifest.name, 'Sunmark');
+assert.equal(manifest.short_name, manifest.name);
+assert(html.includes(`<title>${manifest.name}</title>`), 'Browser and install titles must match');
+assert(html.includes(`name="apple-mobile-web-app-title" content="${manifest.name}"`));
+assert(html.includes(`property="og:title" content="${manifest.name}"`));
+assert(html.includes(`property="og:description" content="${manifest.description}"`));
+assert(
+    !/%GAME_(?:NAME|PERSIAN_NAME|DESCRIPTION)%/.test(html),
+    'Brand placeholders must be resolved',
+);
 assert.equal(
     new URL(manifest.scope, manifestUrl).href,
     base.href,

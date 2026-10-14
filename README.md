@@ -1,8 +1,10 @@
-# Ancient Persia
+# Sunmark
 
-A mobile-first, Persian-language local strategy board game inspired by hex-based resource production and settlement building. The MVP supports three or four players sharing one device, with a generated board, turn-based production, building, bank trades, a robber, and a six-point victory target.
+**Sunmark (سان‌مارک)** is a mobile-first, Persian-language local strategy board game inspired by hex-based resource production and settlement building. The MVP supports three or four players sharing one device, with a generated board, turn-based production, building, bank trades, a robber, and a six-point victory target.
 
 [Play the game](https://hamedaravane.github.io/ancient-persia-game/)
+
+The game is branded **Sunmark** throughout its menu, tutorial, browser, and install metadata. The existing Pages address and internal save/app identifiers remain stable so current installations and saved matches continue working.
 
 ## Requirements
 

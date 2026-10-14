@@ -11,6 +11,7 @@ export function textRunPosition(
     padding: { left?: number; right?: number; top?: number },
     origin: { x: number; y: number },
     rtl: boolean,
+    density = 1,
 ): { x: number; y: number } {
     const fontHeight = metrics.ascent + metrics.descent;
     const baseline = rect.top + (rect.height * metrics.ascent) / fontHeight;
@@ -18,7 +19,11 @@ export function textRunPosition(
         x:
             (rtl ? rect.right - width + (padding.right ?? 0) : rect.left - (padding.left ?? 0)) -
             origin.x,
-        y: baseline - Math.round(metrics.ascent) - (padding.top ?? 0) - origin.y,
+        y:
+            baseline -
+            Math.round(metrics.ascent * density) / density -
+            (padding.top ?? 0) -
+            origin.y,
     };
 }
 

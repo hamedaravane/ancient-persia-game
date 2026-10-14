@@ -2,6 +2,7 @@ import type { Scene, GameObjects } from 'phaser';
 import { MOTION, type Motion } from './motion';
 import { UI_FONT_FAMILY } from './typography';
 import { drawSurface, drawRosette, UI_INK, type UiBox } from './graphicsTheme';
+import { createSharpText } from '../rendering/sharpText';
 
 export class GraphicsFeedback {
     private effects: GameObjects.Container;
@@ -49,16 +50,13 @@ export class GraphicsFeedback {
     delta(element: HTMLElement | null, value: string, spent: boolean): void {
         if (!element || !this.effects || !this.motion.visible) return;
         const box = this.box(element);
-        const text = this.scene.add
-            .text(box.x + box.width / 2, box.y + 6, value, {
-                fontFamily: UI_FONT_FAMILY,
-                fontSize: 17,
-                color: spent ? '#ffc3a1' : '#ffe6a1',
-                stroke: '#0b2035',
-                strokeThickness: 5,
-                resolution: 2,
-            })
-            .setOrigin(0.5);
+        const text = createSharpText(this.scene, box.x + box.width / 2, box.y + 6, value, {
+            fontFamily: UI_FONT_FAMILY,
+            fontSize: 17,
+            color: spent ? '#ffc3a1' : '#ffe6a1',
+            stroke: '#0b2035',
+            strokeThickness: 5,
+        }).setOrigin(0.5);
         this.effects.add(text);
         this.scene.tweens.add({
             targets: text,
@@ -87,15 +85,13 @@ export class GraphicsFeedback {
         });
         const icon = this.scene.add.image(0, -1, 'art-resources', resource);
         icon.setScale(28 / Math.max(icon.width, icon.height));
-        const text = this.scene.add
-            .text(12, 10, amount, {
-                fontFamily: UI_FONT_FAMILY,
-                fontSize: 12,
-                color: '#fff3d6',
-                stroke: '#10243c',
-                strokeThickness: 3,
-            })
-            .setOrigin(0.5);
+        const text = createSharpText(this.scene, 12, 10, amount, {
+            fontFamily: UI_FONT_FAMILY,
+            fontSize: 12,
+            color: '#fff3d6',
+            stroke: '#10243c',
+            strokeThickness: 3,
+        }).setOrigin(0.5);
         flight.add([g, icon, text]);
         this.effects.add(flight);
         flight.setAlpha(0).setScale(0.7);

@@ -1,5 +1,6 @@
 import type { Scene } from 'phaser';
 import { clientToBoard } from '../ui/layout';
+import { logicalCameraSize } from './display';
 
 interface Touch {
     startX: number;
@@ -27,7 +28,11 @@ export class BoardInput {
     }
     private point(event: PointerEvent): { x: number; y: number } {
         const rect = this.canvas.getBoundingClientRect();
-        return clientToBoard({ x: event.clientX, y: event.clientY }, this.scene.cameras.main, rect);
+        return clientToBoard(
+            { x: event.clientX, y: event.clientY },
+            logicalCameraSize(this.scene),
+            rect,
+        );
     }
     private down = (event: PointerEvent): void => {
         if (!this.enabled() || event.button > 0) return;

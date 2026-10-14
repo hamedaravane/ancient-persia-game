@@ -2,6 +2,7 @@ import type { GameObjects, Scene } from 'phaser';
 import type { Board, Port, TradeRatio } from '../core/types';
 import { boardToScreen, type BoardLayout } from '../ui/layout';
 import { UI_FONT_FAMILY } from '../ui/typography';
+import { createSharpText } from './sharpText';
 
 // CSS-sized markers stay readable as the island fits short/narrow viewports.
 export const PORT_OFFSET = 20;
@@ -93,14 +94,12 @@ export function createPortMarker(
         root.add(arrows);
     }
     root.add(
-        scene.add
-            .text(0, 7, `${ratio.toLocaleString('fa-IR')}:۱`, {
-                fontFamily: UI_FONT_FAMILY,
-                fontSize: '10px',
-                color: '#fff0cc',
-                rtl: false,
-            })
-            .setOrigin(0.5),
+        createSharpText(scene, 0, 7, `${ratio.toLocaleString('fa-IR')}:۱`, {
+            fontFamily: UI_FONT_FAMILY,
+            fontSize: 10,
+            color: '#fff0cc',
+            rtl: false,
+        }).setOrigin(0.5),
     );
     return root;
 }

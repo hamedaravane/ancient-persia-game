@@ -18,6 +18,8 @@ import {
     type PortLayout,
 } from '../rendering/ports';
 import { getPortOwnerId, getPortTradeRatio } from '../core/ports';
+import { configureDisplayCamera, logicalCameraSize } from '../rendering/display';
+import { createSharpText } from '../rendering/sharpText';
 
 const TERRAIN_COLORS: Record<TerrainType, number> = {
     forest: 0x3f6149,
@@ -109,12 +111,12 @@ export class GameScene extends Scene {
         const canvas = this.game.canvas.getBoundingClientRect();
         this.cameras.main.setVisible(rect.width > 0 && rect.height > 0);
         if (rect.width <= 0 || rect.height <= 0) return;
-        this.cameras.main.setViewport(
-            rect.left - canvas.left,
-            rect.top - canvas.top,
-            rect.width,
-            rect.height,
-        );
+        configureDisplayCamera(this, {
+            x: rect.left - canvas.left,
+            y: rect.top - canvas.top,
+            width: rect.width,
+            height: rect.height,
+        });
         this.layout = fitBoard(rect.width, rect.height);
         this.effects?.clear();
         this.layoutListeners.forEach((listener) => listener());
@@ -135,7 +137,7 @@ export class GameScene extends Scene {
         return boardToClient(
             tile,
             this.layout,
-            this.cameras.main,
+            logicalCameraSize(this),
             this.viewport.getBoundingClientRect(),
         );
     }
@@ -367,14 +369,12 @@ export class GameScene extends Scene {
         size: number,
         color: string,
     ): GameObjects.Text {
-        const text = this.add
-            .text(x, y, value, {
-                fontFamily: UI_FONT_FAMILY,
-                fontSize: `${size}px`,
-                color,
-                rtl: true,
-            })
-            .setOrigin(0.5);
+        const text = createSharpText(this, x, y, value, {
+            fontFamily: UI_FONT_FAMILY,
+            fontSize: size,
+            color,
+            rtl: true,
+        }).setOrigin(0.5);
         this.boardObjects.add(text);
         return text;
     }

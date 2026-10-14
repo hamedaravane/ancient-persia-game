@@ -6,6 +6,7 @@ import { GameFeedback } from './ui/GameFeedback';
 import { Motion } from './ui/motion';
 import { InterfaceScene } from './ui/InterfaceScene';
 import { BackdropScene } from './scenes/BackdropScene';
+import { canvasPixelSize } from './rendering/displayGeometry';
 
 export function StartGame(parent: HTMLElement): Game {
     const session = new GameSession();
@@ -21,31 +22,56 @@ export function StartGame(parent: HTMLElement): Game {
         hud.boardReady();
         feedback = new GameFeedback(parent, session, readyScene, ui, motion);
     });
+    const initialSize = canvasPixelSize(
+        parent.clientWidth || 390,
+        parent.clientHeight || 844,
+        window.devicePixelRatio,
+    );
     const game = new Game({
         type: AUTO,
-        width: 390,
-        height: 844,
+        width: initialSize.width,
+        height: initialSize.height,
         parent: stage,
         transparent: true,
         // ResizeObserver owns the grid measurements, including hidden-menu startup.
         scale: { mode: Scale.NONE, autoCenter: Scale.NO_CENTER, expandParent: false },
         scene: [new BackdropScene(session, motion), scene, ui],
         input: { keyboard: false, mouse: false, touch: false },
-        render: { antialias: true, roundPixels: true },
+        render: { antialias: true, roundPixels: false },
     });
     // Grid/safe-area changes can resize the board without a window resize.
-    const observer = new ResizeObserver(() => {
-        const width = Math.floor(parent.clientWidth),
-            height = Math.floor(parent.clientHeight);
-        if (width > 0 && height > 0 && (game.scale.width !== width || game.scale.height !== height))
-            game.scale.resize(width, height);
+    const resize = () => {
+        if (parent.clientWidth <= 0 || parent.clientHeight <= 0) return;
+        const size = canvasPixelSize(
+            parent.clientWidth,
+            parent.clientHeight,
+            window.devicePixelRatio,
+        );
+        if (game.scale.width !== size.width || game.scale.height !== size.height)
+            game.scale.resize(size.width, size.height);
         scene.resizeBoard();
         ui.invalidate();
-    });
+    };
+    const observer = new ResizeObserver(resize);
     observer.observe(parent);
     observer.observe(hud.boardViewport);
+    // A browser zoom or a move between displays can change DPR without changing layout.
+    let densityQuery: MediaQueryList;
+    const watchDensity = () => {
+        densityQuery?.removeEventListener('change', densityChanged);
+        densityQuery = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+        densityQuery.addEventListener('change', densityChanged);
+    };
+    const densityChanged = () => {
+        resize();
+        watchDensity();
+    };
+    watchDensity();
+    window.addEventListener('resize', resize);
     game.events.once('destroy', () => {
         observer.disconnect();
+        densityQuery.removeEventListener('change', densityChanged);
+        window.removeEventListener('resize', resize);
         feedback?.destroy();
         hud.destroy();
         motion.destroy();

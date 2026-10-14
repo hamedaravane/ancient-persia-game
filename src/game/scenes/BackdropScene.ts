@@ -3,6 +3,7 @@ import { TEXTURE_FILES, assetUrl } from '../assets';
 import type { GameSession } from '../ui/session';
 import type { Motion } from '../ui/motion';
 import { ProceduralOcean } from '../rendering/ProceduralOcean';
+import { configureDisplayCamera } from '../rendering/display';
 
 /** Background and board use separate cameras in the same Phaser game/context. */
 export class BackdropScene extends Scene {
@@ -34,7 +35,7 @@ export class BackdropScene extends Scene {
         this.renderBackground();
     }
     private renderBackground(): void {
-        const { width, height } = this.scale;
+        const { width, height } = configureDisplayCamera(this);
         this.ocean.resize(width, height);
         this.ocean.setActive(!!this.session.state);
         this.image.setVisible(!this.session.state).setPosition(width / 2, height / 2);

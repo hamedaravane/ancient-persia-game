@@ -7,6 +7,7 @@ import {
     sampleOceanWaves,
 } from './oceanModel';
 import { OCEAN_FRAGMENT } from './oceanShader';
+import { canvasDisplay } from './display';
 
 /** Decorative, cached water material. No downloaded texture, input, or game randomness. */
 export class ProceduralOcean {
@@ -25,7 +26,8 @@ export class ProceduralOcean {
     private disposed = false;
 
     constructor(scene: Scene) {
-        const size = oceanTextureSize(scene.scale.width, scene.scale.height);
+        const display = canvasDisplay(scene);
+        const size = oceanTextureSize(display.width, display.height);
         if (scene.renderer.type === WEBGL) {
             try {
                 this.shader = new GameObjects.Shader(
@@ -68,7 +70,7 @@ export class ProceduralOcean {
             this.surface = scene.add.image(0, 0, this.canvas).setOrigin(0);
             this.ripples = scene.add.graphics();
         }
-        this.resize(scene.scale.width, scene.scale.height);
+        this.resize(display.width, display.height);
         this.setActive(false);
     }
 

@@ -11,6 +11,8 @@ import { fitText, textRunPosition } from './textGeometry';
 import { GraphicsFeedback } from './GraphicsFeedback';
 import { drawNarratorLight, drawNarratorPanel } from './narratorArt';
 import { LESSONS } from '../tutorial/lessons.fa';
+import { configureDisplayCamera } from '../rendering/display';
+import { createSharpText, rasterTextStyle } from '../rendering/sharpText';
 
 interface PaintLayer {
     container: GameObjects.Container;
@@ -39,6 +41,8 @@ export class InterfaceScene extends Scene {
     private fontMetrics = new SemanticTextMetrics();
     private nextNode = 0;
     private origin = { x: 0, y: 0 };
+    private displayWidth = 390;
+    private density = 1;
     private pressed: Element | null = null;
     private cleanup: Array<() => void> = [];
     private sheetOpenedAt = -Infinity;
@@ -211,6 +215,12 @@ export class InterfaceScene extends Scene {
         };
     }
     private paint(time: number): void {
+        const display = configureDisplayCamera(this);
+        this.displayWidth = display.width;
+        this.density = Math.max(
+            display.pixelWidth / display.width,
+            display.pixelHeight / display.height,
+        );
         this.loadNarrator();
         const origin = this.parent.getBoundingClientRect();
         this.origin = { x: origin.left, y: origin.top };
@@ -228,7 +238,7 @@ export class InterfaceScene extends Scene {
             const stage = dialog.querySelector<HTMLElement>('.narrator-stage');
             this.theatre.graphics
                 .fillStyle(stage ? 0x101817 : 0x040e20, stage ? 0.65 : 0.78)
-                .fillRect(0, 0, this.scale.width, this.scale.height);
+                .fillRect(0, 0, display.width, display.height);
             if (stage) {
                 drawNarratorLight(this.theatre.graphics, this.box(stage));
                 this.paintTree(stage, this.theatre);
@@ -404,26 +414,40 @@ export class InterfaceScene extends Scene {
             const size = parseFloat(style.fontSize);
             const metrics = this.fontMetrics.get(style);
             if (!text) {
-                text = this.add
-                    .text(0, 0, run.value, {
+                text = createSharpText(
+                    this,
+                    0,
+                    0,
+                    run.value,
+                    {
                         fontFamily: UI_FONT_FAMILY,
                         fontSize: size,
                         color: style.color,
                         rtl: style.direction === 'rtl',
-                        // Phaser 4 positions RTL text using backing-canvas width.
-                        // Logical resolution keeps its right edge correct on Retina devices.
-                        resolution: 1,
                         metrics,
                         padding: { x: 1, y: 3 },
-                    })
-                    .setOrigin(0, 0);
+                    },
+                    this.density,
+                ).setOrigin(0, 0);
                 layer.objects.set(id, text);
                 layer.container.add(text);
             }
             layer.used.add(id);
             if (text.text !== run.value) text.setText(run.value);
             if (text.style.color !== style.color) text.setColor(style.color);
-            if (text.style.fontSize !== `${size}px`) text.setStyle({ fontSize: size, metrics });
+            if (
+                text.style.fontSize !== `${size * this.density}px` ||
+                text.scaleX !== 1 / this.density
+            ) {
+                text.setStyle(
+                    rasterTextStyle(
+                        { fontSize: size, metrics, padding: { x: 1, y: 3 } },
+                        this.density,
+                    ),
+                );
+                text.setPadding({ x: this.density, y: 3 * this.density });
+                text.setScale(1 / this.density);
+            }
             if (style.textOverflow === 'ellipsis') {
                 const width =
                     element.clientWidth -
@@ -432,23 +456,28 @@ export class InterfaceScene extends Scene {
                 const fitted = fitText(
                     run.value,
                     width,
-                    (value) => text!.context.measureText(value).width,
+                    (value) => text!.context.measureText(value).width / this.density,
                 );
                 if (text.text !== fitted) text.setText(fitted);
             }
             const { x, y } = textRunPosition(
                 run.rect,
-                text.width,
+                text.displayWidth,
                 metrics,
-                text.padding,
+                {
+                    left: (text.padding.left ?? 0) / this.density,
+                    right: (text.padding.right ?? 0) / this.density,
+                    top: (text.padding.top ?? 0) / this.density,
+                },
                 this.origin,
                 style.direction === 'rtl',
+                this.density,
             );
             text.setPosition(x, y).setAlpha(1);
             // Honor CSS overflow regions without shrinking Persian labels or text.
             let ancestor: HTMLElement | null = element;
             let left = 0,
-                right = this.scale.width;
+                right = this.displayWidth;
             while (ancestor && ancestor !== this.parent) {
                 if (['hidden', 'clip'].includes(getComputedStyle(ancestor).overflowX)) {
                     const box = this.box(ancestor);
@@ -457,17 +486,10 @@ export class InterfaceScene extends Scene {
                 }
                 ancestor = ancestor.parentElement;
             }
-            const resolution = text.style.resolution;
             const cropLeft = Math.max(0, left - x);
-            const cropWidth = Math.max(0, Math.min(text.width, right - x) - cropLeft);
-            if (cropLeft === 0 && cropWidth >= text.width) text.setCrop();
-            else
-                text.setCrop(
-                    cropLeft * resolution,
-                    0,
-                    cropWidth * resolution,
-                    text.height * resolution,
-                );
+            const cropWidth = Math.max(0, Math.min(text.displayWidth, right - x) - cropLeft);
+            if (cropLeft === 0 && cropWidth >= text.displayWidth) text.setCrop();
+            else text.setCrop(cropLeft * this.density, 0, cropWidth * this.density, text.height);
         }
     }
     private scrollIndicator(body: HTMLElement, graphics: GameObjects.Graphics): void {

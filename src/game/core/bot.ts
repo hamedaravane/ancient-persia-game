@@ -21,7 +21,7 @@ function siteValue(state: GameState, vertexId: string): number {
 }
 
 /** Find a useful expansion path, never build roads just to spend spare resources. */
-function expansionRoad(state: GameState): string | null {
+export function expansionRoad(state: GameState): string | null {
     const { board } = state;
     const owner = state.players[state.activePlayerIndex].id;
     const distances = new Map<string, { distance: number; firstEdge: string | null }>();

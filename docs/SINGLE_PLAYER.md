@@ -23,7 +23,7 @@ This is a basic heuristic opponent for the MVP, without difficulty settings or s
 
 ## Pacing and lifecycle
 
-`ui/botTurns.ts` schedules one guarded command every 650 ms. The timer is turn pacing, independent of animation completion. It pauses for any open dialog, a hidden page, or update activation. Visibility/platform notifications reschedule on return. Returning to the menu, changing the match, or destroying the game cancels queued work. An expected-state reference protects against old callbacks affecting a different turn or match.
+`ui/botTurns.ts` schedules one guarded command every 650 ms. The timer is turn pacing, independent of animation completion. It pauses ordinary turns for any open dialog, a hidden page, or update activation. Domestic negotiation allows only paced bot replies to human offers while its sheet is open; other automatic actions remain paused. Bots also initiate offers and negotiate with one another during legal active-player pairings. See [DOMESTIC_TRADING.md](DOMESTIC_TRADING.md). Visibility/platform notifications reschedule on return. Returning to the menu, changing the match, or destroying the game cancels queued work. An expected-state reference protects against old callbacks affecting a different turn or match.
 
 Anahita only awards practice for confirmed human actions. Her first end-turn conversation explains automatic rivals and the persistent human hand. Bots wait while it is open. Bot robber moves never create human placement previews or human seven prompts. Either a human or bot victory can trigger the neutral ending.
 

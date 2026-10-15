@@ -117,5 +117,8 @@ export type RuleErrorCode =
     | 'insufficient-resources'
     | 'same-resource-trade'
     | 'invalid-trade-ratio'
+    | 'invalid-trade-partner'
+    | 'invalid-trade-bundle'
+    | 'stale-trade'
     | 'same-robber-tile'
     | 'game-finished';

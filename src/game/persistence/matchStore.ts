@@ -1,3 +1,5 @@
+import { validTrading } from './validateTrading';
+import type { TradeMemory } from '../core/domesticTrade';
 import type { GameState } from '../core/types';
 import type { MatchEvent } from '../ui/session';
 import type { TutorialMemory } from '../tutorial/director';
@@ -11,6 +13,7 @@ export interface SavedMatch {
     state: GameState;
     tutorial: TutorialMemory;
     history: MatchEvent[];
+    trading?: TradeMemory;
 }
 export interface SaveStorage {
     getItem(key: string): string | null;
@@ -24,6 +27,7 @@ export function decodeSave(raw: string): SavedMatch | null {
         const value: unknown = JSON.parse(raw);
         if (!record(value) || value.version !== 1 || !validGameState(value.state)) return null;
         const state = value.state;
+        if (value.trading !== undefined && !validTrading(value.trading, state)) return null;
         if (
             value.humanPlayerId !== undefined &&
             !state.players.some((player) => player.id === value.humanPlayerId)

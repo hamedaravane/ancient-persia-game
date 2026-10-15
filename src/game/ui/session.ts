@@ -28,6 +28,7 @@ import { number } from './components';
 import { TutorialDirector } from '../tutorial/director';
 import type { LessonId } from '../tutorial/lessons.fa';
 import type { MatchStore, SavedMatch } from '../persistence/matchStore';
+import { PlayerTrading } from './playerTrading';
 import { BOT_NAMES, playerName } from './playerIdentity';
 
 export type Sheet =
@@ -35,6 +36,7 @@ export type Sheet =
           kind:
               | 'build'
               | 'trade'
+              | 'domestic'
               | 'history'
               | 'help'
               | 'results'
@@ -62,6 +64,18 @@ export interface MatchEvent {
 /** One human controller and local bots; drafts never mutate authoritative state. */
 export class GameSession {
     readonly tutorial = new TutorialDirector();
+    readonly trading = new PlayerTrading(
+        () => ({
+            state: this.state,
+            humanId: this.humanPlayer?.id ?? null,
+            interactive: this.sheet?.kind === 'domestic',
+        }),
+        () => this.emit(),
+        (result, text, action) => this.apply(result, text, action),
+        () => {
+            this.sheet = { kind: 'domestic' };
+        },
+    );
     private tutorialReturnSheet: Sheet | null = null;
     private gameState: GameState | null = null;
     private controlledPlayerId: string | null = null;
@@ -138,10 +152,16 @@ export class GameSession {
                 ? { ...tutorial, queue: [], replaying: false }
                 : tutorial,
         );
+        this.trading.restore(saved.trading);
         this.transition = null;
         this.transitionId = 0;
         this.tutorialReturnSheet = null;
-        this.sheet = saved.state.phase === 'finished' ? { kind: 'results' } : null;
+        this.sheet =
+            saved.state.phase === 'finished'
+                ? { kind: 'results' }
+                : this.trading.waitingForHuman
+                  ? { kind: 'domestic' }
+                  : null;
         this.placement = this.requiredPlacement();
         this.give = this.receive = null;
         this.requestedTradeRatio = null;
@@ -151,11 +171,13 @@ export class GameSession {
     }
     save(): void {
         if (!this.state) return;
+        this.trading.sync();
         this.savedMatch = {
             version: 1,
             humanPlayerId: this.humanPlayer!.id,
             state: this.state,
             tutorial: this.tutorial.snapshot(),
+            trading: this.trading.table.snapshot(),
             history: [...this.history],
         };
         this.store?.write(this.savedMatch);
@@ -174,7 +196,11 @@ export class GameSession {
         );
     }
     get botReady(): boolean {
-        return !!this.state && !this.isHumanTurn && this.state.phase !== 'finished' && !this.sheet;
+        if (!this.state || this.state.phase === 'finished') return false;
+        if (this.sheet && this.sheet.kind !== 'domestic') return false;
+        if (this.trading.botWork) return true;
+        if (this.isHumanTurn && !this.sheet) return this.trading.canPitchHuman;
+        return !this.isHumanTurn && !this.sheet && !this.trading.waitingForHuman;
     }
     get tradeRatio(): TradeRatio {
         if (!this.state || !this.give) return 4;
@@ -203,6 +229,7 @@ export class GameSession {
     }
     private emit(): void {
         if (this.state) {
+            this.trading.sync();
             this.tutorial.observe(this.tutorialContext());
             if (this.tutorial.current && this.sheet?.kind !== 'tutorial') {
                 this.tutorialReturnSheet = this.sheet;
@@ -265,6 +292,7 @@ export class GameSession {
     start(count: 3 | 4, guided = false, name = 'بازیکن'): void {
         this.gameState = createGame([playerName(name), ...BOT_NAMES].slice(0, count));
         this.controlledPlayerId = this.gameState.players[0].id;
+        this.trading.reset();
         this.sheet = null;
         this.placement = this.requiredPlacement();
         this.give = this.receive = null;
@@ -279,6 +307,7 @@ export class GameSession {
     }
     returnToMenu(): void {
         this.save();
+        this.trading.reset();
         this.tutorial.start(false);
         this.tutorialReturnSheet = null;
         this.gameState = null;
@@ -293,20 +322,23 @@ export class GameSession {
         this.emit();
     }
     openSheet(sheet: Sheet): void {
+        if (sheet.kind === 'domestic' && !this.state) return;
         if (this.sheet?.kind === 'tutorial') return;
         if (
             this.state &&
             isSetup(this.state) &&
-            ['build', 'trade', 'end-turn'].includes(sheet.kind)
+            ['build', 'trade', 'domestic', 'end-turn'].includes(sheet.kind)
         )
             return;
         if (!this.isHumanTurn && ['build', 'trade', 'targets', 'end-turn'].includes(sheet.kind))
             return;
         if (sheet.kind === 'player' && sheet.id !== this.humanPlayer?.id) return;
+        if (this.sheet?.kind === 'domestic' && sheet.kind !== 'domestic') this.trading.dismiss();
         this.sheet = sheet;
         this.emit();
     }
     closeSheet(): void {
+        if (this.sheet?.kind === 'domestic') this.trading.dismiss();
         if (this.sheet?.kind === 'tutorial') {
             this.setTutorialEnabled(false);
             return;
@@ -469,7 +501,14 @@ export class GameSession {
     advanceBot(expectedState: GameState = this.state!): void {
         if (!this.botReady || this.state !== expectedState) return;
         const state = this.state!;
+        if (this.trading.botStep()) return;
+        if (this.isHumanTurn) {
+            this.trading.pitchHuman();
+            return;
+        }
         const command = chooseBotCommand(state);
+        if (command && ['trade', 'end-turn'].includes(command.kind) && this.trading.initiateBot())
+            return;
         if (!command) return;
         const result = executeCommand(state, command);
         const actor = state.players[state.activePlayerIndex].name;
@@ -512,7 +551,13 @@ export class GameSession {
                         ? getProduction(before, result.state.lastRoll[0] + result.state.lastRoll[1])
                         : [],
             };
-            this.sheet = result.state.phase === 'finished' ? { kind: 'results' } : null;
+            this.sheet =
+                result.state.phase === 'finished'
+                    ? { kind: 'results' }
+                    : action.kind === 'domestic-trade' &&
+                        [action.terms.from, action.terms.to].includes(this.humanPlayer!.id)
+                      ? { kind: 'domestic' }
+                      : null;
             this.placement = this.requiredPlacement();
             this.give = this.receive = null;
             this.requestedTradeRatio = null;

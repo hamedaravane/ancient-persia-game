@@ -162,9 +162,20 @@ export function drawComponent(
             box.height - 3,
             2,
         );
+    } else if (has('deal-summary') || has('deal-offer') || has('deal-hand-item')) {
+        drawSurface(g, box, 'inset', {
+            radius: 8,
+            flat: true,
+            accent: has('deal-receipt') ? 0x85948b : undefined,
+        });
     } else if (has('build-card') || has('trade-review') || el.matches('.results-list article')) {
         drawSurface(g, box, has('trade-review') ? 'inset' : 'card', { radius: 17, flat: true });
-    } else if (has('narrator-heading') || has('narrator-footer')) {
+    } else if (
+        has('narrator-heading') ||
+        has('narrator-footer') ||
+        has('sheet-footer') ||
+        has('sheet-context')
+    ) {
         const y = has('narrator-heading') ? box.y + box.height : box.y;
         g.lineStyle(1, UI_INK.gold, 0.22).lineBetween(box.x + 22, y, box.x + box.width - 22, y);
     } else if (has('narrator-task')) {

@@ -5,6 +5,8 @@ The modules in this directory own the game state and rules. They are plain TypeS
 - `types.ts` defines the board, player, piece, resource, phase, and result types.
 - `board.ts` generates the hexes and their shared vertices and edges.
 - `commands.ts` defines serializable actions and dispatches them through the validated rules.
+- `domesticTrade.ts` validates simultaneous domestic payments and owns provisional consent/revisions; only accepted/current terms can confirm, and pending offers do not mutate card state.
+- `botTrading.ts` values negotiation using each bot’s own inventory and public board/scores; it does not inspect recipient hands.
 - `bot.ts` chooses deterministic actions using public board data and the bot’s own inventory; pacing and controller ownership remain outside core.
 - `setup.ts` owns highest-roll starter selection, forward/reverse opening order, free placement/road anchoring, and second-settlement resources.
 - `game.ts` initializes players and applies validated turn actions as state transitions.

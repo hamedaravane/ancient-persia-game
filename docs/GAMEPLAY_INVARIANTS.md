@@ -18,10 +18,12 @@ These invariants are enforced by the pure TypeScript rules in `src/game/core/` a
 - Only a building at one of a port's two coastal endpoints grants its owner access; roads alone never do. Building upgrades preserve access.
 - A trade pays exactly the validated 4:1 bank, 3:1 general-port, or matching-payment-resource 2:1 specialist rate and receives one unit of a different resource. Ownership and rates derive from authoritative board state; discounts never stack.
 - Newly built ports can be used immediately in the action phase. The land robber does not change port rates or access.
-- Only the active player can take an action during the action phase. The session additionally rejects human action/draft input during a bot turn; bot commands cannot execute on the human seat or after victory.
+- Only the active player may build, use the bank/ports, or end a turn. Domestic trades may include a nonactive participant, but must always include the active player after roll/robber resolution. Human ordinary action/draft input is rejected during bot turns; domestic negotiation with the acting bot is the exception. Bot ordinary commands cannot execute on the human seat or after victory.
 - A fixed human seat owns the personal header row, resource hand, and resource feedback regardless of the active seat. The header’s opponent scoreboard projects only public scores, identities, and turn status; bot activity never swaps the displayed hand or reveals exact opponent inventories.
-- Bot turns follow the normal seat order and shared validated rule commands. A stale scheduled command cannot affect a replaced/resumed state. Open dialogs, hidden pages, menu return, and teardown suspend/cancel automatic play.
-- Human tutorial practice is earned only by human commands; bot rolls, builds, trades, and robber moves cannot earn it.
+- Bot turns follow the normal seat order and shared validated rule commands. A stale scheduled command cannot affect a replaced/resumed state. Open dialogs, hidden pages, menu return, and teardown suspend/cancel ordinary automatic play. The domestic workspace permits only paced bot replies to human offers; incoming human decisions and bot-to-bot work remain paused there.
+- Domestic exchange conserves every resource across the two hands and charges both outgoing bundles before receipt. Both bundles are nonempty, contain safe nonnegative integer resource quantities, and share no resource type. Invalid, stale, withdrawn, unaccepted, or already-completed offers never transfer resources.
+- Offers/counters do not reserve or spend cards. Final confirmation requires current consent and revalidates both balances. A confirmed broadcast trade cancels competing promises; turn changes invalidate pending negotiations.
+- Human tutorial practice is earned only by human commands or completed domestic trades involving the human. Bot-to-bot trades, bot rolls/builds/bank trades, and robber moves cannot earn it.
 - Only the active player can roll while the game is waiting for the roll.
 - A seven suspends production until the robber is moved to a different tile.
 - A tile with the robber produces no resources.

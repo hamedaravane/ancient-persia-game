@@ -740,6 +740,39 @@ h3 {
 .sheet-body::-webkit-scrollbar {
     display: none;
 }
+.sheet-context {
+    flex-shrink: 0;
+    padding: 6px max(16px, env(safe-area-inset-right)) 10px max(16px, env(safe-area-inset-left));
+}
+.deal-hand-title {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+    font-size: 12px;
+    line-height: 20px;
+}
+.deal-hand {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 4px;
+}
+.deal-hand-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 2px;
+    min-width: 0;
+    font-size: 12px;
+    line-height: 18px;
+}
+.deal-hand-item .resource-value .resource-icon {
+    --icon-size: 20px;
+}
+.deal-hand-item .resource-value {
+    gap: 4px;
+    font-size: 16px;
+}
 .sheet-body > * + * {
     margin-top: 16px;
 }
@@ -1259,4 +1292,129 @@ h3 {
     align-items: center;
     gap: 8px;
     margin-bottom: 6px;
+}
+
+/* Negotiated trades keep every bundle in the human's give/receive orientation. */
+.trade-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+.trade-tabs > button {
+    color: #292d26;
+}
+.deal-targets {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+.deal-target {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 48px;
+    padding: 6px;
+    border: 0;
+    color: #292d26;
+    background: #b9ac93;
+    font-size: 13px;
+}
+.deal-target .player-avatar {
+    width: 28px;
+    height: 28px;
+    flex-basis: 28px;
+}
+.deal-target .bot-label {
+    color: #353a30;
+}
+.deal-editor-head,
+.deal-editor-row {
+    display: grid;
+    grid-template-columns: minmax(44px, 1fr) 116px 116px;
+    gap: 4px;
+    align-items: center;
+    min-height: 52px;
+}
+.deal-editor-head {
+    min-height: 24px;
+    font-size: 12px;
+    color: var(--gold);
+    text-align: center;
+}
+.sheet-body > .deal-editor-row + .deal-editor-row {
+    margin-top: 4px;
+}
+.deal-resource {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 11px;
+    line-height: 14px;
+}
+.deal-resource .resource-icon {
+    --icon-size: 18px;
+}
+.deal-resource small {
+    font-size: 10px;
+    color: #c0c7bd;
+}
+.deal-counter {
+    display: grid;
+    grid-template-columns: 48px 20px 48px;
+    align-items: center;
+    direction: ltr;
+    text-align: center;
+    font-size: 13px;
+}
+.deal-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 10px 12px;
+    min-width: 0;
+}
+.deal-summary h3 {
+    color: #ffe2a0;
+    font-size: 13px;
+    margin-bottom: 6px;
+}
+.deal-bundle {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-width: 0;
+}
+.deal-item {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 12px;
+}
+.deal-item .resource-icon {
+    --icon-size: 20px;
+}
+.deal-offer {
+    padding: 12px;
+}
+.deal-offer h3 {
+    font-size: 15px;
+}
+.deal-status {
+    font-size: 13px;
+    color: #ffe2a0;
+    margin-block: 6px;
+}
+.deal-actions {
+    display: grid;
+    gap: 8px;
+    margin-top: 10px;
+}
+.sheet-footer {
+    flex-shrink: 0;
+    padding: 10px max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom))
+        max(12px, env(safe-area-inset-left));
+}
+.sheet-footer > * + * {
+    margin-top: 8px;
 }

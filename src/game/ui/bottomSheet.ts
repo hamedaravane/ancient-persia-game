@@ -4,8 +4,12 @@ import { ART, type ArtName } from '../assets';
 export interface SheetContent {
     title: string;
     body: string;
+    /** Persistent context painted outside the scrolling body mask. */
+    context?: string;
     narrator?: { portrait: ArtName; key: string };
     footer?: string;
+    key?: string;
+    focusAction?: string;
     /** Keep a native edit session intact when unrelated platform state changes. */
     preserveInput?: boolean;
 }
@@ -70,6 +74,8 @@ export class BottomSheet {
         const focusAction = wasOpen
             ? (document.activeElement as HTMLElement | null)?.dataset.action
             : undefined;
+        const contentChanged = !!content.key && this.dialog.dataset.contentKey !== content.key;
+        this.dialog.dataset.contentKey = content.key ?? '';
         const narrationChanged =
             !!content.narrator && this.dialog.dataset.narration !== content.narrator.key;
         const scrollTop = this.dialog.querySelector('.sheet-body')?.scrollTop ?? 0;
@@ -85,25 +91,35 @@ export class BottomSheet {
         if (portrait) {
             const [, , width, height] = ART[portrait].frame;
             this.dialog.innerHTML = `<div class="narrator-stage" aria-hidden="true" style="--portrait-ratio:${width / height}">${artSprite(portrait, 320, 'narrator-hero')}</div><section class="narrator-panel">${header}${body}<footer class="narrator-footer">${content.footer ?? ''}</footer></section>`;
-        } else this.dialog.innerHTML = `${header}${body}`;
+        } else
+            this.dialog.innerHTML = `${header}${content.context ? `<section class="sheet-context" aria-label="دارایی تو">${content.context}</section>` : ''}${body}${content.footer ? `<footer class="sheet-footer">${content.footer}</footer>` : ''}`;
         const nameInput = this.dialog.querySelector<HTMLInputElement>('#player-name');
+        const preferred = [...this.dialog.querySelectorAll<HTMLElement>('[data-action]')].find(
+            (el) => el.dataset.action === content.focusAction && !el.matches(':disabled'),
+        );
         if (!wasOpen) {
             this.dialog.showModal();
             (
-                nameInput ?? this.dialog.querySelector<HTMLElement>('[data-action="tutorial-next"]')
+                preferred ??
+                nameInput ??
+                this.dialog.querySelector<HTMLElement>('[data-action="tutorial-next"]')
             )?.focus({ preventScroll: true });
         }
         if (wasOpen) {
             const restored = [...this.dialog.querySelectorAll<HTMLElement>('[data-action]')].find(
-                (el) => el.dataset.action === focusAction,
+                (el) => el.dataset.action === focusAction && !el.matches(':disabled'),
             );
             (narrationChanged
                 ? this.dialog.querySelector<HTMLElement>('[data-action="tutorial-next"]')
-                : (restored ?? nameInput ?? this.dialog.querySelector<HTMLElement>('button'))
+                : (restored ??
+                  preferred ??
+                  nameInput ??
+                  this.dialog.querySelector<HTMLElement>('button'))
             )?.focus({
                 preventScroll: true,
             });
-            this.dialog.querySelector('.sheet-body')!.scrollTop = narrationChanged ? 0 : scrollTop;
+            this.dialog.querySelector('.sheet-body')!.scrollTop =
+                narrationChanged || contentChanged ? 0 : scrollTop;
             if (nameInput && selection && selection[0] !== null && selection[1] !== null)
                 nameInput.setSelectionRange(selection[0], selection[1]);
         }

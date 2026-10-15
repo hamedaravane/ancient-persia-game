@@ -47,6 +47,16 @@ This initial-piece flow follows [CATAN's official Rules & Almanac, Set-Up Phase,
 
 These maritime rules follow the [official CATAN base rules and almanac](https://www.catan.com/sites/default/files/2021-06/catan_base_rules_2020_200707.pdf), maritime trade and harbor sections. Port types shuffle over this project's fixed coastal slots; these are not a reproduction of CATAN's printed frame layout. Other MVP rules remain as recorded above and below.
 
+## Player-to-player trading
+
+- During the action phase, any trade must include the active player and exactly one other player. Inactive participants can propose and respond to the active player; no two inactive players may trade with each other.
+- Exchange arbitrary positive integer quantities of resource cards in nonempty bundles on both sides, at any agreed ratio. A resource type cannot appear in both bundles. Gifts, loans/future payment, services, and development cards are not tradable.
+- Both players must consent to the exact current terms and own their outgoing resources before the simultaneous exchange. Proposals, counteroffers, acceptance, rejection, and withdrawal alone move no resources. Final confirmation revalidates both hands, transfers once, and cancels competing promises.
+- Completed trades and their terms are public; exact resource types/counts in opponents' remaining hands stay private. Total card counts are public. Human trade/offer counts have no per-turn limit.
+- Banks/ports remain restricted to the active player. Sunmark retains its combined build/trade phase; other recorded MVP rules are unchanged.
+
+These domestic rules follow [CATAN's official Rules & Almanac, Domestic Trade, page 7](https://www.catan.com/sites/default/files/2021-06/catan_base_rules_2020_200707.pdf#page=7) and [trade FAQ](https://www.catan.com/faq/basegame). See [DOMESTIC_TRADING.md](DOMESTIC_TRADING.md) for confirmation, bots, interface, and recovery.
+
 ## Victory
 
 - Each settlement is worth one victory point. Each city is worth two. Roads are worth zero.

@@ -93,3 +93,7 @@ The user performs interactive testing. At 390 × 844 and a compact size, review 
 This flow follows real random matches. It does not guarantee a city, trade, port acquisition, or seven in a fixed number of turns. The journal permits immediate review of rare situations without claiming they were practiced. A timed or solo training campaign would need separately designed legal scenarios and explicit practice-state lifecycle; it should not quietly alter ordinary-match rules.
 
 Opening-specific scheduling, official references, save validation, and tests are documented in [OPENING_SETUP.md](OPENING_SETUP.md).
+
+## Domestic negotiation
+
+The `domestic` conversation introduces player-to-player trading when its workspace opens, including invitations during bot turns. `domestic-done` follows a confirmed exchange involving the human; bot-to-bot deals do not earn practice. Narration restores the interrupted trade/receipt and uses existing supplied expressions. See [DOMESTIC_TRADING.md](DOMESTIC_TRADING.md).

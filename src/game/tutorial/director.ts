@@ -119,6 +119,13 @@ export class TutorialDirector {
         if (transition && transition.id !== this.observedTransition) {
             this.observedTransition = transition.id;
             const action = transition.action;
+            if (
+                action.kind === 'domestic-trade' &&
+                [action.terms.from, action.terms.to].includes(player.id)
+            ) {
+                this.practiced.add('domestic');
+                this.offer('domestic-done');
+            }
             if (transition.before.players[transition.before.activePlayerIndex].id === player.id) {
                 if (action.kind === 'setup') this.practiced.add('setup');
                 if (action.kind === 'roll') {
@@ -166,6 +173,7 @@ export class TutorialDirector {
             this.offer('victory');
             return;
         }
+        if (sheet?.kind === 'domestic') this.offer('domestic');
         if (!humanTurn) return;
         if (isSetup(state)) {
             if (state.phase === 'setup-roll') this.offer('setup-order');

@@ -29,6 +29,7 @@ import type { GameSession } from './session';
 import type { SheetContent } from './bottomSheet';
 import { journalContent, tutorialContent } from '../tutorial/markup';
 import { ownedPortsMarkup, portDirectory, portIcon, portName, tradeRateLabel } from './ports';
+import { domesticContent, tradeTabs } from './domesticSheet';
 import { avatarForSeat, PLAYER_NAME_LIMIT } from './playerIdentity';
 
 export const BUILD_LABELS: Record<BuildType, string> = {
@@ -85,6 +86,7 @@ export function sheetContent(session: GameSession): SheetContent {
     const state = session.state!;
     const player = session.humanPlayer!;
     const sheet = session.sheet!;
+    if (sheet.kind === 'domestic') return domesticContent(session);
     if (sheet.kind === 'tutorial') return tutorialContent(session);
     if (sheet.kind === 'journal') return journalContent(session);
     if (sheet.kind === 'targets' || sheet.kind === 'inspect') {
@@ -198,7 +200,7 @@ export function sheetContent(session: GameSession): SheetContent {
         }
         return {
             title: 'بانک و بندرها',
-            body: `<div class="trade-intro">${artSprite('bank', 64)}<p class="sheet-intro">${escape(player.name)} • بهترین نرخ هر منبع با بندرهای شما محاسبه می‌شود.</p></div>${ownedPortsMarkup(state.board, player.id)}${selector('give', 'می‌دهید')}${rateChoices}${selector('receive', 'می‌گیرید')}${review}<p class="availability" role="status">${hint}</p>${button('تأیید مبادله', 'confirm-trade', { className: 'button button--primary full-width', disabled: !session.give || !session.receive || error !== null })}${portDirectory(state)}`,
+            body: `${tradeTabs(session, false)}<div class="trade-intro">${artSprite('bank', 64)}<p class="sheet-intro">${escape(player.name)} • بهترین نرخ هر منبع با بندرهای شما محاسبه می‌شود.</p></div>${ownedPortsMarkup(state.board, player.id)}${selector('give', 'می‌دهید')}${rateChoices}${selector('receive', 'می‌گیرید')}${review}<p class="availability" role="status">${hint}</p>${button('تأیید مبادله', 'confirm-trade', { className: 'button button--primary full-width', disabled: !session.give || !session.receive || error !== null })}${portDirectory(state)}`,
         };
     }
     if (sheet.kind === 'port') {
@@ -280,6 +282,6 @@ export function sheetContent(session: GameSession): SheetContent {
     }
     return {
         title: 'راهنمای بازی',
-        body: `<p>تو با سه رقیب خودکار بازی می‌کنی. منابع پایین صفحه و اطلاعات بالای صفحه همیشه مال توئه. بعد از پایان نوبتت، رقبا به‌ترتیب بازی می‌کنن؛ لازم نیست گوشی رو به کسی بدی.</p><h3>جانمایی آغازین</h3><p>بالاترین تاس، شروع‌کننده رو مشخص می‌کنه. هرکس یک آبادی و یک راه کنار هم می‌ذاره؛ دور دوم از نفر آخر به عقب برمی‌گردیم. فاصلهٔ آبادی‌ها همیشه لازمه. جانمایی رایگانه و فقط آبادی دوم منابع آغازین می‌ده.</p><ol class="help-list"><li>تاس را بیندازید. خانه‌های هم‌شماره برای آبادی‌های مجاور یک منبع و برای شهرها دو منبع تولید می‌کنند.</li><li>با تاس هفت، راهزن را به خانه دیگری ببرید. خانه دارای راهزن تولید ندارد؛ در این نسخه سرقت و دورریختن منابع وجود ندارد.</li><li>ساخت‌وساز را باز کنید تا هزینه و محل‌های مجاز را ببینید. محل را انتخاب و سپس ساخت را تأیید کنید.</li><li>در بانک، چهار منبع یکسان را با یک منبع دیگر مبادله کنید. آبادی یا شهر کنار بندر عمومی نرخ ۳ به ۱ می‌دهد؛ بندر تخصصی فقط منبع نشان‌داده‌شده را با نرخ ۲ به ۱ می‌پذیرد. ساخت راه کافی نیست. پس از ساخت آبادی بندری، همان نوبت می‌توانید از نرخ آن استفاده کنید.</li><li>پس از انجام کارها، پایان نوبت را بزنید. رسیدن به ${number(state.victoryTarget)} امتیاز بازی را تمام می‌کند.</li></ol><p>راه باید به شبکه شما وصل باشد؛ ساختمان حریف ادامه راه را قطع می‌کند. بین آبادی‌ها یک تقاطع خالی لازم است. شهر فقط آبادی خودتان را ارتقا می‌دهد.</p><p class="footnote">برای جزئیات خانه آن را لمس کنید. برای انتخاب دقیق‌تر از فهرست محل‌ها استفاده کنید؛ محل انتخاب‌شده را پیش از تأیید بررسی کنید.</p>${button('دفتر سفر آناهیتا', 'open:journal', { className: 'button button--primary full-width' })}${button('رویدادهای بازی', 'open:history', { className: 'button full-width' })}${button('بررسی خانه‌های جزیره', 'open:inspect', { className: 'button full-width' })}${button('وضعیت من', `player:${player.id}`, { className: 'button full-width' })}${button('رقبای جزیره', 'open:opponents', { className: 'button full-width' })}${button('دیدن هزینه‌های ساخت', 'open:build', { className: 'button full-width', disabled: !session.isHumanTurn || isSetup(state) })}`,
+        body: `<p>تو با سه رقیب خودکار بازی می‌کنی. برای معاملهٔ توافقی، «معامله» رو باز کن؛ بعد از تاس، هر معامله باید با صاحب نوبت باشه و هر دو طرف منابع بدهند. منابع پایین صفحه و اطلاعات بالای صفحه همیشه مال توئه. بعد از پایان نوبتت، رقبا به‌ترتیب بازی می‌کنن؛ لازم نیست گوشی رو به کسی بدی.</p><h3>جانمایی آغازین</h3><p>بالاترین تاس، شروع‌کننده رو مشخص می‌کنه. هرکس یک آبادی و یک راه کنار هم می‌ذاره؛ دور دوم از نفر آخر به عقب برمی‌گردیم. فاصلهٔ آبادی‌ها همیشه لازمه. جانمایی رایگانه و فقط آبادی دوم منابع آغازین می‌ده.</p><ol class="help-list"><li>تاس را بیندازید. خانه‌های هم‌شماره برای آبادی‌های مجاور یک منبع و برای شهرها دو منبع تولید می‌کنند.</li><li>با تاس هفت، راهزن را به خانه دیگری ببرید. خانه دارای راهزن تولید ندارد؛ در این نسخه سرقت و دورریختن منابع وجود ندارد.</li><li>ساخت‌وساز را باز کنید تا هزینه و محل‌های مجاز را ببینید. محل را انتخاب و سپس ساخت را تأیید کنید.</li><li>در بانک، چهار منبع یکسان را با یک منبع دیگر مبادله کنید. آبادی یا شهر کنار بندر عمومی نرخ ۳ به ۱ می‌دهد؛ بندر تخصصی فقط منبع نشان‌داده‌شده را با نرخ ۲ به ۱ می‌پذیرد. ساخت راه کافی نیست. پس از ساخت آبادی بندری، همان نوبت می‌توانید از نرخ آن استفاده کنید.</li><li>پس از انجام کارها، پایان نوبت را بزنید. رسیدن به ${number(state.victoryTarget)} امتیاز بازی را تمام می‌کند.</li></ol><p>راه باید به شبکه شما وصل باشد؛ ساختمان حریف ادامه راه را قطع می‌کند. بین آبادی‌ها یک تقاطع خالی لازم است. شهر فقط آبادی خودتان را ارتقا می‌دهد.</p><p class="footnote">برای جزئیات خانه آن را لمس کنید. برای انتخاب دقیق‌تر از فهرست محل‌ها استفاده کنید؛ محل انتخاب‌شده را پیش از تأیید بررسی کنید.</p>${button('دفتر سفر آناهیتا', 'open:journal', { className: 'button button--primary full-width' })}${button('رویدادهای بازی', 'open:history', { className: 'button full-width' })}${button('بررسی خانه‌های جزیره', 'open:inspect', { className: 'button full-width' })}${button('وضعیت من', `player:${player.id}`, { className: 'button full-width' })}${button('رقبای جزیره', 'open:opponents', { className: 'button full-width' })}${button('دیدن هزینه‌های ساخت', 'open:build', { className: 'button full-width', disabled: !session.isHumanTurn || isSetup(state) })}`,
     };
 }

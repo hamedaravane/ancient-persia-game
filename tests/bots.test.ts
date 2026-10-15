@@ -108,11 +108,17 @@ test('automatic opponents run in sequence and pause for sheets/visibility, then 
     visible = true;
     runner.refresh();
     const rolls: number[] = [];
+    let lastRoll = 0;
     const stop = session.subscribe(() => {
-        if (session.transition?.action.kind === 'roll')
+        if (session.transition?.action.kind === 'roll' && session.transition.id !== lastRoll) {
+            lastRoll = session.transition.id;
             rolls.push(session.state!.activePlayerIndex);
+        }
     });
-    for (let i = 0; i < 30 && !session.isHumanTurn; i++) vi.advanceTimersByTime(10);
+    for (let i = 0; i < 80 && !session.isHumanTurn; i++) {
+        if (session.sheet?.kind === 'domestic') session.closeSheet();
+        vi.advanceTimersByTime(10);
+    }
     expect(rolls).toEqual([1, 2, 3]);
     expect(session.isHumanTurn).toBe(true);
     expect(session.state!.phase).toBe('roll');

@@ -1,6 +1,6 @@
 # Sunmark
 
-**Sunmark (سان‌مارک)** is a mobile-first, Persian-language local strategy board game inspired by hex-based resource production and settlement building. The MVP starts four-player matches with one human and three automatic local bots, with a generated board, player-chosen opening settlements/roads in CATAN order, turn-based production, building, bank trades, a robber, and a six-point victory target.
+**Sunmark (سان‌مارک)** is a mobile-first, Persian-language local strategy board game inspired by hex-based resource production and settlement building. The MVP starts four-player matches with one human and three automatic local bots, with a generated board, player-chosen opening settlements/roads in CATAN order, turn-based production, building, negotiated player/bot trades, bank trades, a robber, and a six-point victory target.
 
 [Play the game](https://hamedaravane.github.io/ancient-persia-game/)
 
@@ -52,7 +52,7 @@ Pages must use **GitHub Actions** as its publishing source. The setup follows [G
 
 ## Installable app and offline play
 
-The two-button menu offers Play and Tutorial. Non-installed browser visits show a dismissible installation modal with Android/Chrome or iPhone instructions; the browser’s Home Screen/install action also works. After offline preparation completes, all game art, fonts, and Anahita expressions are available without connectivity. One local match and its tutorial progress are saved automatically; the **بازی** button resumes unfinished games after reopening. Updates wait for an explicit action outside an unfinished match.
+The two-button menu offers Play and Tutorial. Non-installed browser visits show a dismissible installation modal with Android/Chrome or iPhone instructions; the browser’s Home Screen/install action also works. After offline preparation completes, all game art, fonts, and Anahita expressions are available without connectivity. One local match and its tutorial progress are saved automatically; the **بازی** button resumes unfinished games after reopening. Downloaded updates prompt for confirmation, save the match, and reload into the new release. Pending domestic-trade consent is restored without automatic payment.
 
 Run `npm run pwa:check` after a production build to verify install metadata, icon dimensions, scoped launch URLs, controlled updates, and offline asset coverage. The Pages workflow runs this before deployment. Ordinary `npm run dev` does not register a service worker; use the production preview on localhost or HTTPS for PWA checks. See [docs/PWA_RELEASE.md](docs/PWA_RELEASE.md) for implementation, storage limits, icon reproduction, and the user’s Android/iPhone release checklist.
 
@@ -86,3 +86,5 @@ Runtime bitmap images are optimized full-resolution WebP exports. Their complete
 - Update the rule documentation in the same change whenever an agreed fixed rule changes.
 
 See [AGENTS.md](AGENTS.md) for the repository’s working conventions.
+
+Player-to-player trading follows CATAN domestic-trade restrictions with clear offer/counter/review/receipt states and local bot negotiation. See [DOMESTIC_TRADING.md](docs/DOMESTIC_TRADING.md).

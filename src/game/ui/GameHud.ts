@@ -22,6 +22,7 @@ export class GameHud {
     private lastNotice = '';
     private sizeObserver: ResizeObserver;
     private lastPrimaryAt = -Infinity;
+    private lastTradeReviewAt = -Infinity;
     private markup = new Map<string, string>();
 
     constructor(
@@ -141,7 +142,7 @@ export class GameHud {
                 ? `<div class="placement-cost"><span>${placement.kind === 'road' ? 'راه کنار آبادی تازه' : second ? 'آبادی دوم' : 'آبادی اول'}</span><span class="muted">جانمایی آغازین • بدون هزینه</span></div>${button('پاک‌کردن انتخاب', 'cancel-placement', { className: 'button button--quiet', disabled: !placement.targetId })}`
                 : placement
                   ? `<div class="placement-cost"><span>${placement.kind === 'robber' ? 'جابه‌جایی راهزن' : `هزینه ${BUILD_LABELS[placement.kind]}`}</span>${placement.kind === 'robber' ? '<span class="muted">خانه فعلی قابل انتخاب نیست</span>' : costRow(getBuildOption(state, placement.kind))}</div>${button(placement.kind === 'robber' ? 'پاک‌کردن انتخاب' : 'لغو', 'cancel-placement', { className: 'button button--quiet', disabled: placement.kind === 'robber' && !placement.targetId })}`
-                  : `${button('<span class="piece-symbol piece-symbol--settlement" aria-hidden="true"></span>ساخت‌وساز', 'open:build', { className: 'button dock-button', disabled: opening || !humanTurn || state.phase === 'finished' })}${button(`${artSprite('bank', 28)}${FA.bankTrade}`, 'open:trade', { className: 'button dock-button', disabled: opening || !humanTurn || state.phase === 'finished' })}`,
+                  : `${button('<span class="piece-symbol piece-symbol--settlement" aria-hidden="true"></span>ساخت‌وساز', 'open:build', { className: 'button dock-button', disabled: opening || !humanTurn || state.phase === 'finished' })}${button(`${artSprite('bank', 28)}معامله`, 'open:domestic', { className: 'button dock-button', disabled: state.phase !== 'actions' })}`,
         );
         const primaryLabel =
             !humanTurn && state.phase !== 'finished'
@@ -228,6 +229,7 @@ export class GameHud {
             [
                 'build',
                 'trade',
+                'domestic',
                 'help',
                 'history',
                 'targets',
@@ -240,6 +242,7 @@ export class GameHud {
                 kind: value as
                     | 'build'
                     | 'trade'
+                    | 'domestic'
                     | 'help'
                     | 'history'
                     | 'targets'
@@ -268,6 +271,35 @@ export class GameHud {
             RESOURCE_TYPES.some((r) => r === resource)
         )
             this.session.chooseTrade(value, resource as ResourceType);
+        if (this.session.sheet?.kind === 'domestic') {
+            const market = this.session.trading;
+            if (
+                action === 'deal-adjust' &&
+                (value === 'give' || value === 'want') &&
+                RESOURCE_TYPES.includes(resource as ResourceType)
+            )
+                market.adjust(
+                    value,
+                    resource as ResourceType,
+                    Number(target.dataset.action!.split(':')[3]),
+                );
+            if (action === 'deal-target') market.selectTarget(value === 'all' ? null : value);
+            if (action === 'deal-send') market.send();
+            if (action === 'deal-new') market.edit();
+            if (action === 'deal-counter') market.edit(Number(value));
+            if (action === 'deal-accept') {
+                this.lastTradeReviewAt = performance.now();
+                market.respond(Number(value), true);
+            }
+            if (action === 'deal-reject') market.respond(Number(value), false);
+            if (action === 'deal-review') {
+                this.lastTradeReviewAt = performance.now();
+                market.review(Number(value));
+            }
+            if (action === 'deal-withdraw') market.withdraw(Number(value));
+            if (action === 'deal-finish' && performance.now() - this.lastTradeReviewAt >= 300)
+                market.finish(Number(value));
+        }
         if (action === 'confirm-trade') this.session.confirmTrade();
         if (action === 'confirm-end-turn') this.session.confirmEndTurn();
         if (action === 'primary') {

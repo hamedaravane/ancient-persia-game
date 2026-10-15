@@ -276,6 +276,8 @@ export class InterfaceScene extends Scene {
             }
             const header = dialog.querySelector<HTMLElement>('.sheet-header')!;
             this.paintTree(header, this.modal);
+            const context = dialog.querySelector<HTMLElement>('.sheet-context');
+            if (context) this.paintTree(context, this.modal);
             const body = dialog.querySelector<HTMLElement>('.sheet-body')!;
             const clip = this.box(body);
             this.maskShape
@@ -283,7 +285,7 @@ export class InterfaceScene extends Scene {
                 .fillStyle(0xffffff)
                 .fillRect(clip.x, clip.y, clip.width, clip.height);
             this.paintTree(body, this.content, clip);
-            const footer = dialog.querySelector<HTMLElement>('.narrator-footer');
+            const footer = dialog.querySelector<HTMLElement>('.narrator-footer, .sheet-footer');
             if (footer) this.paintTree(footer, this.modal);
             this.scrollIndicator(body, this.modal.graphics);
             this.modal.container.setAlpha(1);

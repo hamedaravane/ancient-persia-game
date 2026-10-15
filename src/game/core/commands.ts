@@ -1,3 +1,4 @@
+import { tradeWithPlayer, type TradeTerms } from './domesticTrade';
 import { placeInitialPiece, rollForStart } from './setup';
 import type { BuildType } from './building';
 import type { GameState, RandomSource, ResourceType, TradeRatio } from './types';
@@ -16,6 +17,7 @@ export type GameCommand =
     | { kind: 'setup'; type: 'settlement' | 'road'; targetId: string }
     | { kind: 'build'; type: BuildType; targetId: string }
     | { kind: 'robber'; targetId: string }
+    | { kind: 'domestic-trade'; terms: TradeTerms }
     | { kind: 'trade'; give: ResourceType; receive: ResourceType; ratio: TradeRatio };
 
 /** The same validated rule commands are available to human and bot controllers. */
@@ -35,6 +37,8 @@ export function executeCommand(
             return endTurn(state);
         case 'robber':
             return moveRobber(state, command.targetId);
+        case 'domestic-trade':
+            return tradeWithPlayer(state, command.terms);
         case 'trade':
             return tradeWithBank(state, command.give, command.receive, command.ratio);
         case 'build':

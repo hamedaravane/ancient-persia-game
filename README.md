@@ -1,6 +1,6 @@
 # Sunmark
 
-**Sunmark (سان‌مارک)** is a mobile-first, Persian-language local strategy board game inspired by hex-based resource production and settlement building. The MVP supports three or four players sharing one device, with a generated board, turn-based production, building, bank trades, a robber, and a six-point victory target.
+**Sunmark (سان‌مارک)** is a mobile-first, Persian-language local strategy board game inspired by hex-based resource production and settlement building. The MVP starts four-player matches with one human and three automatic local bots, with a generated board, player-chosen opening settlements/roads in CATAN order, turn-based production, building, bank trades, a robber, and a six-point victory target.
 
 [Play the game](https://hamedaravane.github.io/ancient-persia-game/)
 
@@ -38,7 +38,7 @@ ESLint uses a flat configuration, TypeScript project-service analysis, recommend
 
 ## GitHub Pages
 
-The playable game is published at [hamedaravane.github.io/ancient-persia-game](https://hamedaravane.github.io/ancient-persia-game/). This runs the current local multiplayer game in the browser; it does not add online matchmaking or a server.
+The playable game is published at [hamedaravane.github.io/ancient-persia-game](https://hamedaravane.github.io/ancient-persia-game/). This runs the current single-player game with local bots in the browser; it does not add online matchmaking or a server.
 
 `.github/workflows/deploy-pages.yml` deploys each push to `main` and supports manual runs from GitHub Actions or `gh workflow run deploy-pages.yml`. It installs locked dependencies with Node 24, checks lint/formatting/tests, type-checks and builds the game, uploads only `dist/`, and deploys through the `github-pages` environment. Official actions are pinned to verified release commits; publishing permissions are limited to the deployment job.
 
@@ -52,7 +52,7 @@ Pages must use **GitHub Actions** as its publishing source. The setup follows [G
 
 ## Installable app and offline play
 
-The game can be installed from its menu or the browser’s Home Screen/install action. After offline preparation completes, all game art, fonts, and Anahita expressions are available without connectivity. One local match and its tutorial progress are saved automatically; reopening offers **ادامه بازی**. Updates wait for an explicit action outside an unfinished match.
+The two-button menu offers Play and Tutorial. Non-installed browser visits show a dismissible installation modal with Android/Chrome or iPhone instructions; the browser’s Home Screen/install action also works. After offline preparation completes, all game art, fonts, and Anahita expressions are available without connectivity. One local match and its tutorial progress are saved automatically; the **بازی** button resumes unfinished games after reopening. Updates wait for an explicit action outside an unfinished match.
 
 Run `npm run pwa:check` after a production build to verify install metadata, icon dimensions, scoped launch URLs, controlled updates, and offline asset coverage. The Pages workflow runs this before deployment. Ordinary `npm run dev` does not register a service worker; use the production preview on localhost or HTTPS for PWA checks. See [docs/PWA_RELEASE.md](docs/PWA_RELEASE.md) for implementation, storage limits, icon reproduction, and the user’s Android/iPhone release checklist.
 
@@ -70,7 +70,7 @@ Run `npm run pwa:check` after a production build to verify install metadata, ico
 | `public/assets/`   | Runtime art loaded by Phaser from stable public URLs                                       |
 | `docs/`            | Product direction, confirmed rules, invariants, art and UI guidance, and asset conventions |
 
-`GameScene` provides local match setup, a portrait board, the active player's resource hand, and action controls. It calls pure transitions in `src/game/core/`; the scene owns no gameplay rules. See [docs/GAME_RULES.md](docs/GAME_RULES.md) for the exact MVP rules and [docs/GAMEPLAY_INVARIANTS.md](docs/GAMEPLAY_INVARIANTS.md) for state constraints.
+The local session and HUD provide match setup, a portrait board, the fixed human player's resource hand, and action controls. The board scene calls pure transitions in `src/game/core/`; the scene owns no gameplay rules. See [docs/SINGLE_PLAYER.md](docs/SINGLE_PLAYER.md) for bots/controller/save compatibility and [docs/GAME_RULES.md](docs/GAME_RULES.md) for the exact MVP rules and [docs/GAMEPLAY_INVARIANTS.md](docs/GAMEPLAY_INVARIANTS.md) for state constraints.
 
 ## Assets
 

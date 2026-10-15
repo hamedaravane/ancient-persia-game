@@ -1,4 +1,4 @@
-import { Scene, type GameObjects } from 'phaser';
+import { CANVAS, Scene, type GameObjects } from 'phaser';
 import { ART, assetUrl } from '../assets';
 import { RESOURCE_TYPES } from '../core/types';
 import type { GameSession } from './session';
@@ -33,7 +33,7 @@ export class InterfaceScene extends Scene {
     private modal: PaintLayer;
     private content: PaintLayer;
     private maskShape: GameObjects.Graphics;
-    private modalMask: Phaser.Display.Masks.GeometryMask;
+    private modalMask: Phaser.Display.Masks.GeometryMask | undefined;
     private dirty = true;
     private observer: MutationObserver;
     private resizeObserver: ResizeObserver;
@@ -76,8 +76,15 @@ export class InterfaceScene extends Scene {
         this.modal = this.layer();
         this.content = this.layer();
         this.maskShape = this.make.graphics({}, false);
-        this.modalMask = this.maskShape.createGeometryMask();
-        this.content.container.setMask(this.modalMask);
+        if (this.renderer.type === CANVAS) {
+            this.modalMask = this.maskShape.createGeometryMask();
+            this.content.container.setMask(this.modalMask);
+        } else {
+            // Phaser 4 geometry masks are Canvas-only. External filters share
+            // the UI camera's coordinates with the measured scroll rectangle.
+            this.content.container.enableFilters();
+            this.content.container.filters!.external.addMask(this.maskShape);
+        }
         this.feedback = new GraphicsFeedback(this, this.parent, this.motion);
         this.parent.classList.add('graphics-ui');
         this.observer = new MutationObserver(this.invalidate);
@@ -149,7 +156,7 @@ export class InterfaceScene extends Scene {
             this.resizeObserver.disconnect();
             this.cleanup.forEach((fn) => fn());
             this.scale.off('resize', this.invalidate);
-            this.modalMask.destroy();
+            this.modalMask?.destroy();
             this.maskShape.destroy();
             this.parent.classList.remove('graphics-ui');
         };

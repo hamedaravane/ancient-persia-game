@@ -1,8 +1,8 @@
+import { createReadyGame } from './helpers/setup';
 import { test } from 'vitest';
 import assert from 'node:assert/strict';
 import { createBoard } from '../src/game/core/board';
 import {
-    createGame,
     tradeWithBank,
     getBankTradeError,
     buildSettlement,
@@ -39,7 +39,7 @@ function seeded(seed: number) {
     };
 }
 function fixture() {
-    const state = createGame(['A', 'B', 'C'], seeded(42));
+    const state = createReadyGame(['A', 'B', 'C'], seeded(42));
     state.phase = 'actions';
     for (const vertex of Object.values(state.board.vertices)) vertex.building = null;
     for (const edge of Object.values(state.board.edges)) edge.road = null;

@@ -18,6 +18,10 @@ export function connectPlatform(app: AppPlatform, production = import.meta.env.P
     app.ios =
         /iPad|iPhone|iPod/.test(navigator.userAgent) ||
         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    app.android = /Android/i.test(navigator.userAgent);
+    app.chrome =
+        /Chrome\//.test(navigator.userAgent) &&
+        !/EdgA|OPR|SamsungBrowser/.test(navigator.userAgent);
     app.online = navigator.onLine;
     listen(standalone, 'change', () => {
         app.installed = standalone.matches || navigatorWithStandalone.standalone === true;
@@ -41,6 +45,9 @@ export function connectPlatform(app: AppPlatform, production = import.meta.env.P
     let registering = false;
     let disposed = false;
     let lastCheck = 0;
+    let controller = navigator.serviceWorker?.controller;
+    let reloadRequired = false;
+    let cancelActivation: (() => void) | undefined;
     const supported = production && window.isSecureContext && 'serviceWorker' in navigator;
     const fail = () => {
         if (disposed) return;
@@ -50,7 +57,8 @@ export function connectPlatform(app: AppPlatform, production = import.meta.env.P
     const sync = () => {
         if (disposed || !registration) return;
         if (registration.active?.state === 'activated') app.offline = 'ready';
-        app.updateReady = !!registration.waiting && !!navigator.serviceWorker.controller;
+        app.updateReady =
+            reloadRequired || (!!registration.waiting && !!navigator.serviceWorker.controller);
         app.changed();
     };
     const watchWorker = (worker: ServiceWorker | null) => {
@@ -58,6 +66,8 @@ export function connectPlatform(app: AppPlatform, production = import.meta.env.P
         listen(worker, 'statechange', () => {
             if (worker.state === 'redundant' && !registration?.active) fail();
             else sync();
+            // Let the registration's waiting reference settle after the state event.
+            queueMicrotask(sync);
         });
     };
     const register = async () => {
@@ -74,9 +84,17 @@ export function connectPlatform(app: AppPlatform, production = import.meta.env.P
                 watchWorker(registration.installing);
                 watchWorker(registration.active);
                 listen(registration, 'updatefound', () => watchWorker(registration!.installing));
-                listen(navigator.serviceWorker, 'controllerchange', sync);
+                listen(navigator.serviceWorker, 'controllerchange', () => {
+                    const next = navigator.serviceWorker.controller;
+                    // A release accepted by another tab still needs consent to
+                    // reload this page's older JavaScript and UI.
+                    if (controller && next && next !== controller) reloadRequired = true;
+                    controller = next;
+                    sync();
+                });
                 sync();
-            } else await registration.update();
+            }
+            if (!disposed) await registration.update();
         } catch {
             fail();
         } finally {
@@ -92,26 +110,41 @@ export function connectPlatform(app: AppPlatform, production = import.meta.env.P
         new Promise<void>((resolve, reject) => {
             const worker = registration?.waiting;
             if (!worker) {
+                if (reloadRequired) {
+                    window.location.reload();
+                    resolve();
+                    return;
+                }
                 sync();
                 reject(new Error('Update no longer waiting'));
                 return;
             }
             const changed = () => {
+                if (navigator.serviceWorker.controller !== worker) return;
                 clearTimeout(timeout);
                 navigator.serviceWorker.removeEventListener('controllerchange', changed);
+                cancelActivation = undefined;
                 resolve();
                 window.location.reload();
             };
             const timeout = window.setTimeout(() => {
                 navigator.serviceWorker.removeEventListener('controllerchange', changed);
+                cancelActivation = undefined;
                 reject(new Error('Activation timed out'));
             }, 15_000);
-            navigator.serviceWorker.addEventListener('controllerchange', changed, { once: true });
+            navigator.serviceWorker.addEventListener('controllerchange', changed);
+            cancelActivation = () => {
+                clearTimeout(timeout);
+                navigator.serviceWorker.removeEventListener('controllerchange', changed);
+                cancelActivation = undefined;
+                reject(new Error('Platform disconnected'));
+            };
             try {
                 worker.postMessage({ type: 'SKIP_WAITING' });
             } catch (error) {
                 clearTimeout(timeout);
                 navigator.serviceWorker.removeEventListener('controllerchange', changed);
+                cancelActivation = undefined;
                 reject(error);
             }
         });
@@ -132,11 +165,16 @@ export function connectPlatform(app: AppPlatform, production = import.meta.env.P
     });
     listen(window, 'focus', check);
     listen(document, 'visibilitychange', check);
-    if (supported) void register();
-    else app.offline = 'unsupported';
+    if (supported) {
+        lastCheck = Date.now();
+        void register();
+        const interval = window.setInterval(check, 5 * 60_000);
+        removers.push(() => window.clearInterval(interval));
+    } else app.offline = 'unsupported';
     app.changed();
     return () => {
         disposed = true;
+        cancelActivation?.();
         removers.forEach((remove) => remove());
     };
 }

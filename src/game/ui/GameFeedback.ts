@@ -77,41 +77,29 @@ export class GameFeedback {
     private play(transition: MatchTransition): void {
         const { action, before, after } = transition;
         const active = after.players[after.activePlayerIndex];
-        if (before.activePlayerIndex === after.activePlayerIndex) {
-            const previous = before.players[before.activePlayerIndex];
-            for (const resource of RESOURCE_TYPES) {
-                const delta = active.resources[resource] - previous.resources[resource];
-                if (delta)
-                    this.ui.feedback?.delta(
-                        this.query(`.hand-resource[data-resource="${resource}"]`),
-                        `${delta > 0 ? '+' : '−'}${number(Math.abs(delta))}`,
-                        delta < 0,
-                    );
-            }
-        }
-        for (const player of after.players) {
-            const previous = before.players.find(({ id }) => id === player.id)!;
-            const delta = RESOURCE_TYPES.reduce(
-                (sum, r) => sum + player.resources[r] - previous.resources[r],
-                0,
-            );
+        const humanId = this.session.humanPlayer!.id;
+        const human = after.players.find((p) => p.id === humanId)!;
+        const previousHuman = before.players.find((p) => p.id === humanId)!;
+        for (const resource of RESOURCE_TYPES) {
+            const delta = human.resources[resource] - previousHuman.resources[resource];
             if (delta)
-                this.ui.feedback?.pulse(
-                    this.query(`[data-action="player:${CSS.escape(player.id)}"]`),
-                    player.color,
+                this.ui.feedback?.delta(
+                    this.query(`.hand-resource[data-resource="${resource}"]`),
+                    `${delta > 0 ? '+' : '−'}${number(Math.abs(delta))}`,
+                    delta < 0,
                 );
         }
         if (action.kind === 'roll') {
-            this.ui.feedback?.pulse(this.query('.dice-result'));
+            if (this.session.isHumanTurn) this.ui.feedback?.pulse(this.query('.dice-result'));
             if (!this.session.sheet)
                 transition.production.forEach((grant, index) => {
                     const source = this.board.tileAnchor(grant.tileId);
                     const target =
-                        grant.playerId === active.id
+                        grant.playerId === humanId
                             ? this.query(
                                   `.hand-resource[data-resource="${grant.resource}"] .resource-icon`,
                               )
-                            : this.query(`[data-action="player:${CSS.escape(grant.playerId)}"]`);
+                            : null;
                     const owner = after.players.find(({ id }) => id === grant.playerId)!;
                     if (source && target)
                         this.ui.feedback?.fly(
@@ -124,11 +112,8 @@ export class GameFeedback {
                         );
                 });
         }
-        if (action.kind === 'end-turn')
-            this.ui.feedback?.pulse(
-                this.query(`[data-action="player:${CSS.escape(active.id)}"]`),
-                active.color,
-            );
+        if (action.kind === 'end-turn' && this.session.isHumanTurn)
+            this.ui.feedback?.pulse(this.query('.turn-heading'), active.color);
         if (after.phase === 'finished') this.ui.feedback?.victory();
         if (!this.session.sheet) this.board.playTransition(transition);
     }

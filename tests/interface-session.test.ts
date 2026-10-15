@@ -1,3 +1,4 @@
+import { completeSessionSetup } from './helpers/setup';
 import { expect, test, vi } from 'vitest';
 import { GameSession } from '../src/game/ui/session';
 import { sheetContent } from '../src/game/ui/sheets';
@@ -7,6 +8,7 @@ function fixture() {
     vi.spyOn(Math, 'random').mockReturnValue(0.5);
     const session = new GameSession();
     session.start(3);
+    completeSessionSetup(session);
     return session;
 }
 
@@ -61,12 +63,13 @@ test('stale or illegal target selections preserve the modal and the required rob
 test('the in-game inspection list exposes every full tile id without changing state', () => {
     const session = fixture();
     const before = session.state!;
+    const transition = session.transition;
     session.openSheet({ kind: 'inspect' });
     const { body } = sheetContent(session);
     for (const tile of before.board.tiles)
         expect(body).toContain(`data-action="inspect:${tile.id}"`);
     expect(session.state).toBe(before);
-    expect(session.transition).toBeNull();
+    expect(session.transition).toBe(transition);
 });
 
 test.each([

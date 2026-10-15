@@ -4,12 +4,8 @@ import { BRAND } from '../../brand';
 export const FA: {
     readonly title: string;
     readonly subtitle: string;
-    readonly choosePlayers: string;
-    readonly handover: string;
     readonly newGame: string;
     readonly player: string;
-    readonly threePlayers: string;
-    readonly fourPlayers: string;
     readonly startNote: string;
     readonly roll: string;
     readonly rollTitle: string;
@@ -43,14 +39,11 @@ export const FA: {
     readonly errors: Readonly<Record<RuleErrorCode, string>>;
 } = {
     title: BRAND.name,
-    subtitle: 'بازی راهبردی چندنفره',
-    choosePlayers: 'تعداد بازیکنان را انتخاب کنید',
-    handover: 'برای نوبت خود، دستگاه را به بازیکن بعدی بدهید.',
+    subtitle: 'تو و سه رقیب در یک جزیره',
     newGame: 'بازی تازه',
     player: 'بازیکن',
-    threePlayers: '۳ بازیکن',
-    fourPlayers: '۴ بازیکن',
-    startNote: 'هر بازیکن با دو آبادی و دو راه آغاز می‌کند؛ آبادی دوم منابع آغازین را می‌دهد.',
+    startNote:
+        'اول با تاس شروع‌کننده رو مشخص می‌کنیم؛ بعد هرکس جای دو آبادی و راه‌هاش رو انتخاب می‌کنه.',
     roll: 'انداختن تاس',
     rollTitle: 'تاس',
     rolled: 'نتیجه تاس',

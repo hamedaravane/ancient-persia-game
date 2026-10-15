@@ -1,3 +1,4 @@
+import { completeSessionSetup } from './helpers/setup';
 import { afterEach, expect, test, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { GameSession } from '../src/game/ui/session';
@@ -13,6 +14,7 @@ function start(guided = true) {
     vi.spyOn(Math, 'random').mockReturnValue(0.5);
     const session = new GameSession();
     session.start(3, guided);
+    completeSessionSetup(session);
     return session;
 }
 function readDialogue(session: GameSession): string[] {
@@ -31,13 +33,13 @@ function actionPhase(session: GameSession) {
     expect(session.state!.phase).toBe('actions');
 }
 
-test('guided entry teaches setup and roll without changing state; normal entry stays quiet', () => {
+test('the ordinary-roll lesson follows completed guided setup without changing state; normal entry stays quiet', () => {
     const session = start();
     const before = structuredClone(session.state);
-    expect(readDialogue(session)).toEqual(['welcome', 'setup', 'roll']);
+    expect(readDialogue(session)).toEqual(['roll']);
     expect(session.state).toEqual(before);
-    expect(session.transition).toBeNull();
-    expect(session.tutorial.practiced.size).toBe(0);
+    expect(session.tutorial.practiced.has('setup')).toBe(true);
+    expect(session.tutorial.practiced.has('roll')).toBe(false);
     session.start(4);
     expect(session.sheet).toBeNull();
     expect(session.tutorial.enabled).toBe(false);

@@ -1,4 +1,13 @@
 import { getProduction } from '../core/production';
+import {
+    getSetupTargets,
+    isSetup,
+    placeInitialPiece,
+    rollForStart,
+    setupPlacementType,
+} from '../core/setup';
+import { chooseBotCommand } from '../core/bot';
+import { executeCommand } from '../core/commands';
 import type { MatchAction, MatchTransition } from './transitions';
 import {
     buildRoad,
@@ -31,11 +40,12 @@ export type Sheet =
               | 'end-turn'
               | 'targets'
               | 'inspect'
+              | 'opponents'
               | 'tutorial'
               | 'journal';
       }
     | { kind: 'player' | 'tile' | 'port'; id: string }
-    | { kind: 'app' }
+    | { kind: 'app' | 'update' }
     | { kind: 'new-match'; count: 3 | 4; guided: boolean };
 export interface Placement {
     kind: BuildType | 'robber';
@@ -48,11 +58,12 @@ export interface MatchEvent {
     text: string;
 }
 
-/** Local match adapter. Drafts never mutate or pay resources in authoritative state. */
+/** One human controller and local bots; drafts never mutate authoritative state. */
 export class GameSession {
     readonly tutorial = new TutorialDirector();
     private tutorialReturnSheet: Sheet | null = null;
     private gameState: GameState | null = null;
+    private controlledPlayerId: string | null = null;
     private transitionId = 0;
     transition: MatchTransition | null = null;
     private listeners = new Set<() => void>();
@@ -72,6 +83,14 @@ export class GameSession {
     get saveStatus() {
         return this.store?.status ?? 'empty';
     }
+    requestPlay(guided = false): void {
+        if (this.state) return;
+        // Tutorial is an entry from the beginning, even when a guided save
+        // has already reviewed the opening lessons. Play resumes that save.
+        if (!guided && this.savedMatch && this.savedMatch.state.phase !== 'finished')
+            this.resumeSaved();
+        else this.requestStart(4, guided);
+    }
     requestStart(count: 3 | 4, guided = false): void {
         if (this.savedMatch) this.openSheet({ kind: 'new-match', count, guided });
         else this.start(count, guided);
@@ -85,13 +104,29 @@ export class GameSession {
         // The save is JSON data; keep resume compatible with the ES2020 browser target.
         const saved = JSON.parse(JSON.stringify(this.savedMatch)) as SavedMatch;
         this.gameState = saved.state;
+        this.controlledPlayerId = saved.humanPlayerId ?? saved.state.players[0].id;
         this.history = saved.history;
-        this.tutorial.restore(saved.tutorial);
+        // Old automatic-opening saves may still have an obsolete setup instruction queued.
+        const tutorial =
+            !isSetup(saved.state) && !saved.tutorial.replaying
+                ? {
+                      ...saved.tutorial,
+                      queue: saved.tutorial.queue.filter(
+                          (id) =>
+                              !['setup', 'setup-order', 'setup-road', 'setup-second'].includes(id),
+                      ),
+                  }
+                : saved.tutorial;
+        this.tutorial.restore(
+            !saved.humanPlayerId && !this.isHumanTurn
+                ? { ...tutorial, queue: [], replaying: false }
+                : tutorial,
+        );
         this.transition = null;
         this.transitionId = 0;
         this.tutorialReturnSheet = null;
         this.sheet = saved.state.phase === 'finished' ? { kind: 'results' } : null;
-        this.placement = saved.state.phase === 'robber' ? { kind: 'robber', targetId: null } : null;
+        this.placement = this.requiredPlacement();
         this.give = this.receive = null;
         this.requestedTradeRatio = null;
         this.error = null;
@@ -102,6 +137,7 @@ export class GameSession {
         if (!this.state) return;
         this.savedMatch = {
             version: 1,
+            humanPlayerId: this.humanPlayer!.id,
             state: this.state,
             tutorial: this.tutorial.snapshot(),
             history: [...this.history],
@@ -112,19 +148,34 @@ export class GameSession {
     get state(): GameState | null {
         return this.gameState;
     }
+    get humanPlayer() {
+        return this.state?.players.find((player) => player.id === this.controlledPlayerId) ?? null;
+    }
+    get isHumanTurn(): boolean {
+        return (
+            !!this.state &&
+            this.state.players[this.state.activePlayerIndex].id === this.controlledPlayerId
+        );
+    }
+    get botReady(): boolean {
+        return !!this.state && !this.isHumanTurn && this.state.phase !== 'finished' && !this.sheet;
+    }
     get tradeRatio(): TradeRatio {
         if (!this.state || !this.give) return 4;
         return (
             this.requestedTradeRatio ??
-            getBankTradeRatio(
-                this.state.board,
-                this.state.players[this.state.activePlayerIndex].id,
-                this.give,
-            )
+            getBankTradeRatio(this.state.board, this.humanPlayer!.id, this.give)
         );
     }
+    private requiredPlacement(): Placement | null {
+        if (!this.state || !this.isHumanTurn) return null;
+        const openingType = setupPlacementType(this.state);
+        if (openingType) return { kind: openingType, targetId: null };
+        return this.state.phase === 'robber' ? { kind: 'robber', targetId: null } : null;
+    }
     get targets(): string[] {
-        if (!this.state || !this.placement) return [];
+        if (!this.state || !this.isHumanTurn || !this.placement) return [];
+        if (isSetup(this.state)) return getSetupTargets(this.state);
         return this.placement.kind === 'robber'
             ? this.state.board.tiles.filter(({ robber }) => !robber).map(({ id }) => id)
             : getBuildOption(this.state, this.placement.kind).legalTargetIds;
@@ -151,6 +202,7 @@ export class GameSession {
             sheet: this.sheet,
             placement: this.placement,
             transition: this.transition,
+            humanPlayerId: this.humanPlayer!.id,
             reviewingTrade: !!this.give && !!this.receive && this.give !== this.receive,
         };
     }
@@ -179,24 +231,26 @@ export class GameSession {
         this.tutorial.replay(id);
         this.emit();
     }
-    private record(text: string): void {
+    private record(
+        text: string,
+        actor = this.state?.players[this.state.activePlayerIndex].name,
+    ): void {
         if (!this.state) return;
         this.notice = text;
         this.history.push({
             id: (this.history[this.history.length - 1]?.id ?? 0) + 1,
             turn: this.state.turn,
-            player: this.state.players[this.state.activePlayerIndex].name,
+            player: actor!,
             text,
         });
         if (this.history.length > 100) this.history.shift();
     }
 
     start(count: 3 | 4, guided = false): void {
-        this.gameState = createGame(
-            Array.from({ length: count }, (_, i) => `${FA.player} ${number(i + 1)}`),
-        );
+        this.gameState = createGame(['شما', 'داریوش', 'آرتین', 'روژان'].slice(0, count));
+        this.controlledPlayerId = this.gameState.players[0].id;
         this.sheet = null;
-        this.placement = null;
+        this.placement = this.requiredPlacement();
         this.give = this.receive = null;
         this.requestedTradeRatio = null;
         this.history = [];
@@ -212,6 +266,7 @@ export class GameSession {
         this.tutorial.start(false);
         this.tutorialReturnSheet = null;
         this.gameState = null;
+        this.controlledPlayerId = null;
         this.sheet = this.placement = null;
         this.give = this.receive = null;
         this.requestedTradeRatio = null;
@@ -223,6 +278,15 @@ export class GameSession {
     }
     openSheet(sheet: Sheet): void {
         if (this.sheet?.kind === 'tutorial') return;
+        if (
+            this.state &&
+            isSetup(this.state) &&
+            ['build', 'trade', 'end-turn'].includes(sheet.kind)
+        )
+            return;
+        if (!this.isHumanTurn && ['build', 'trade', 'targets', 'end-turn'].includes(sheet.kind))
+            return;
+        if (sheet.kind === 'player' && sheet.id !== this.humanPlayer?.id) return;
         this.sheet = sheet;
         this.emit();
     }
@@ -235,6 +299,8 @@ export class GameSession {
         this.emit();
     }
     chooseBuild(kind: BuildType): void {
+        if (this.state && isSetup(this.state)) return;
+        if (!this.isHumanTurn) return;
         if (this.sheet?.kind === 'tutorial') return;
         if (!this.state || getBuildOption(this.state, kind).reason) return;
         this.placement = { kind, targetId: null };
@@ -243,45 +309,48 @@ export class GameSession {
         this.emit();
     }
     preview(targetId: string): void {
+        if (!this.isHumanTurn) return;
         if (this.sheet || !this.placement || !this.targets.includes(targetId)) return;
         this.placement = { ...this.placement, targetId };
         this.error = null;
         this.emit();
     }
     chooseTargetFromSheet(targetId: string): void {
+        if (!this.isHumanTurn) return;
         if (this.sheet?.kind !== 'targets' || !this.targets.includes(targetId)) return;
         this.sheet = null;
         this.preview(targetId);
     }
     cancelPlacement(): void {
+        if (!this.isHumanTurn) return;
         if (this.sheet?.kind === 'tutorial') return;
-        this.placement =
-            this.placement?.kind === 'robber' ? { kind: 'robber', targetId: null } : null;
+        this.placement = this.requiredPlacement();
         this.error = null;
         this.emit();
     }
     chooseTrade(side: 'give' | 'receive', resource: ResourceType): void {
+        if (this.state && isSetup(this.state)) return;
+        if (!this.isHumanTurn) return;
         if (this.sheet?.kind === 'tutorial') return;
         if (side === 'give') this.requestedTradeRatio = null;
         this[side] = resource;
         this.emit();
     }
     chooseTradeRatio(ratio: TradeRatio): void {
+        if (!this.isHumanTurn) return;
         if (this.sheet?.kind === 'tutorial') return;
         if (
             !this.state ||
             !this.give ||
-            !getBankTradeRates(
-                this.state.board,
-                this.state.players[this.state.activePlayerIndex].id,
-                this.give,
-            ).includes(ratio)
+            !getBankTradeRates(this.state.board, this.humanPlayer!.id, this.give).includes(ratio)
         )
             return;
         this.requestedTradeRatio = ratio;
         this.emit();
     }
     tradeFromPort(id: string): void {
+        if (this.state && isSetup(this.state)) return;
+        if (!this.isHumanTurn) return;
         if (this.sheet?.kind === 'tutorial') return;
         if (!this.state) return;
         const port = this.state.board.ports.find((candidate) => candidate.id === id);
@@ -298,6 +367,7 @@ export class GameSession {
         this.emit();
     }
     confirmTrade(): void {
+        if (!this.isHumanTurn) return;
         if (this.sheet?.kind === 'tutorial') return;
         if (!this.state || !this.give || !this.receive) return;
         const ratio = this.tradeRatio;
@@ -308,15 +378,31 @@ export class GameSession {
         );
     }
     confirmEndTurn(): void {
+        if (!this.isHumanTurn) return;
         if (this.state && this.sheet?.kind === 'end-turn')
             this.apply(endTurn(this.state), FA.nextTurn, { kind: 'end-turn' });
     }
     primary(): void {
+        if (!this.isHumanTurn && this.state?.phase !== 'finished') return;
         if (!this.state || this.sheet) return;
         const state = this.state;
-        if (this.placement) {
+        if (state.phase === 'setup-roll') {
+            const result = rollForStart(state);
+            const dice = result.ok ? result.state.setup!.lastRoll!.dice : null;
+            this.apply(result, dice ? `تاس تعیین آغازکننده: ${number(dice[0] + dice[1])}` : '', {
+                kind: 'setup-roll',
+            });
+        } else if (this.placement) {
             const { kind, targetId } = this.placement;
             if (!targetId) return;
+            if (isSetup(state) && (kind === 'settlement' || kind === 'road')) {
+                this.apply(
+                    placeInitialPiece(state, kind, targetId),
+                    kind === 'road' ? 'راه آغازینت ثبت شد.' : 'آبادی آغازینت ثبت شد.',
+                    { kind: 'setup', type: kind, targetId },
+                );
+                return;
+            }
             if (kind === 'robber')
                 this.apply(moveRobber(state, targetId), FA.robberMoved, {
                     kind: 'robber',
@@ -364,9 +450,36 @@ export class GameSession {
             this.openSheet({ kind: 'results' });
         }
     }
+    advanceBot(expectedState: GameState = this.state!): void {
+        if (!this.botReady || this.state !== expectedState) return;
+        const state = this.state!;
+        const command = chooseBotCommand(state);
+        if (!command) return;
+        const result = executeCommand(state, command);
+        const actor = state.players[state.activePlayerIndex].name;
+        const text =
+            command.kind === 'setup-roll' && result.ok
+                ? `تاس تعیین آغازکننده: ${number(result.state.setup!.lastRoll!.dice[0] + result.state.setup!.lastRoll!.dice[1])}`
+                : command.kind === 'setup'
+                  ? command.type === 'road'
+                      ? 'راه آغازین رو گذاشت.'
+                      : 'آبادی آغازین رو گذاشت.'
+                  : command.kind === 'roll' && result.ok
+                    ? `تاس ${number(result.state.lastRoll![0] + result.state.lastRoll![1])}${result.state.phase === 'robber' ? '؛ جابه‌جایی راهزن' : ''}`
+                    : command.kind === 'build'
+                      ? { road: FA.roadBuilt, settlement: FA.settlementBuilt, city: FA.cityBuilt }[
+                            command.type
+                        ]
+                      : command.kind === 'robber'
+                        ? FA.robberMoved
+                        : command.kind === 'trade'
+                          ? FA.tradeCompleted
+                          : 'نوبتش رو تموم کرد.';
+        this.apply(result, `${actor}: ${text}`, command);
+    }
     private apply(result: ActionResult, text: string, action: MatchAction): void {
         if (!result.ok) {
-            this.tutorial.explainError(result.reason);
+            this.tutorial.explainError(result.reason, this.state ? isSetup(this.state) : false);
             this.notice = FA.errors[result.reason];
             this.error = this.notice;
         } else {
@@ -384,11 +497,19 @@ export class GameSession {
                         : [],
             };
             this.sheet = result.state.phase === 'finished' ? { kind: 'results' } : null;
-            this.placement =
-                result.state.phase === 'robber' ? { kind: 'robber', targetId: null } : null;
+            this.placement = this.requiredPlacement();
             this.give = this.receive = null;
             this.requestedTradeRatio = null;
-            this.record(text);
+            if (action.kind === 'setup-roll') {
+                if (result.state.phase === 'setup-settlement')
+                    text += `؛ ${result.state.players[result.state.activePlayerIndex].name} جانمایی رو شروع می‌کنه.`;
+                else if (
+                    result.state.setup?.kind === 'starter' &&
+                    !Object.keys(result.state.setup.rolls).length
+                )
+                    text += '؛ بالاترین تاس مساوی شد، دوباره تاس می‌ندازن.';
+            }
+            this.record(text, before.players[before.activePlayerIndex].name);
         }
         this.emit();
     }

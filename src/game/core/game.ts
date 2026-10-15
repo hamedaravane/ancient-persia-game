@@ -60,84 +60,6 @@ function currentActionsPlayer(state: GameState): Player | null {
     return state.phase === 'actions' && state.winnerId === null ? currentPlayer(state) : null;
 }
 
-function closestExistingDistance(vertex: BoardVertex, occupiedVertices: BoardVertex[]): number {
-    if (occupiedVertices.length === 0) {
-        return vertex.x * vertex.x + vertex.y * vertex.y;
-    }
-
-    return Math.min(
-        ...occupiedVertices.map((other) => (vertex.x - other.x) ** 2 + (vertex.y - other.y) ** 2),
-    );
-}
-
-function placeStartingPieces(board: Board, players: Player[]): { board: Board; players: Player[] } {
-    const vertices = Object.fromEntries(
-        Object.entries(board.vertices).map(([id, vertex]) => [id, { ...vertex }]),
-    );
-    const edges = Object.fromEntries(
-        Object.entries(board.edges).map(([id, edge]) => [id, { ...edge }]),
-    );
-    const tiles = board.tiles;
-    const occupied: BoardVertex[] = [];
-    const startingOrder = [...players, ...[...players].reverse()];
-    const startingCounts = new Map<string, number>(players.map(({ id }) => [id, 0] as const));
-    const startingResources = new Map<string, Player['resources']>(
-        players.map(({ id }) => [id, emptyResources()] as const),
-    );
-
-    for (const player of startingOrder) {
-        const candidates = Object.values(vertices)
-            .filter((vertex) => vertex.building === null)
-            .filter((vertex) =>
-                vertex.neighborIds.every((neighborId) => vertices[neighborId].building === null),
-            )
-            .sort(
-                (a, b) =>
-                    closestExistingDistance(b, occupied) - closestExistingDistance(a, occupied),
-            );
-        const settlementVertex = candidates[0];
-
-        if (!settlementVertex) {
-            throw new Error('Board setup could not place a starting settlement.');
-        }
-
-        settlementVertex.building = { type: 'settlement', ownerId: player.id };
-        occupied.push(settlementVertex);
-
-        const startingEdge = settlementVertex.edgeIds
-            .map((edgeId) => edges[edgeId])
-            .find(({ road }) => road === null);
-
-        if (!startingEdge) {
-            throw new Error('Board setup could not place a starting road.');
-        }
-
-        startingEdge.road = { ownerId: player.id };
-
-        const placedCount = (startingCounts.get(player.id) ?? 0) + 1;
-        startingCounts.set(player.id, placedCount);
-
-        if (placedCount === 2) {
-            const resources = startingResources.get(player.id)!;
-
-            for (const tileId of settlementVertex.tileIds) {
-                const tile = tiles.find(({ id }) => id === tileId);
-
-                if (tile?.resource && !tile.robber) {
-                    resources[tile.resource] += 1;
-                }
-            }
-        }
-    }
-
-    const playersWithStartingResources = players.map((player) => ({
-        ...player,
-        resources: startingResources.get(player.id)!,
-    }));
-
-    return { board: { ...board, vertices, edges }, players: playersWithStartingResources };
-}
-
 export function createGame(playerNames: string[], random: RandomSource = Math.random): GameState {
     if (playerNames.length < 3 || playerNames.length > 4) {
         throw new RangeError('The local MVP supports three or four players.');
@@ -149,14 +71,20 @@ export function createGame(playerNames: string[], random: RandomSource = Math.ra
         color: PLAYER_COLORS[index],
         resources: emptyResources(),
     }));
-    const setup = placeStartingPieces(createBoard(random), players);
 
     return {
-        board: setup.board,
-        players: setup.players,
+        board: createBoard(random),
+        players,
         activePlayerIndex: 0,
         turn: 1,
-        phase: 'roll',
+        phase: 'setup-roll',
+        startingPlayerIndex: 0,
+        setup: {
+            kind: 'starter',
+            contenders: players.map((_, index) => index),
+            rolls: {},
+            lastRoll: null,
+        },
         lastRoll: null,
         winnerId: null,
         victoryTarget: VICTORY_TARGET,
@@ -346,7 +274,7 @@ export function endTurn(state: GameState): ActionResult {
     }
 
     const activePlayerIndex = (state.activePlayerIndex + 1) % state.players.length;
-    const turn = state.turn + (activePlayerIndex === 0 ? 1 : 0);
+    const turn = state.turn + (activePlayerIndex === (state.startingPlayerIndex ?? 0) ? 1 : 0);
 
     return success({ ...state, activePlayerIndex, turn, phase: 'roll', lastRoll: null });
 }

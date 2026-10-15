@@ -1,6 +1,6 @@
 # MVP rules
 
-This document records the playable local MVP. Larger multiplayer, economic, setup, and scoring systems remain out of scope until designed.
+This document records the playable single-player MVP. New games have exactly four seats: one human and three local bots in fixed clockwise seat order. Play and Tutorial share these rules; Tutorial adds contextual narration. Legacy three-player saves retain their existing board/player count, with seat one controlled by the human. Online multiplayer, additional economic and scoring systems remain out of scope until designed.
 
 ## Board setup
 
@@ -10,7 +10,12 @@ This document records the playable local MVP. Larger multiplayer, economic, setu
 - Shuffle the terrain and number-token bags for each new game. The 18 productive numbers are `2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 12`.
 - The robber starts on the desert.
 - Nine ports occupy fixed, separated coastal edges: four general ports and one specialist for each of wood, brick, wheat, wool, and stone. Shuffle the port types using the same supplied random source as the board. Each port connects to exactly the two endpoints of its coastal edge.
-- In snake order, each player places two separated starting settlements and one road attached to each. Each player's second settlement grants one resource from every adjacent productive tile. There is no resource grant for the first settlement.
+- The board begins without player pieces. Each player rolls two dice to choose the highest roller as starter; these rolls do not produce resources or activate seven. Tied highest players reroll among themselves (Sunmark's explicit tie-resolution policy).
+- Each seat chooses and confirms a free settlement, then a free adjoining road, before the next seat acts. First round goes clockwise from the chosen starter; second round goes counterclockwise from the last seat. For a starter at seat 1, four-player pairs follow **1–2–3–4–4–3–2–1**. The starter then takes the first ordinary turn.
+- All starting settlements obey the distance rule, including opponents' pieces. Starting settlements need no road connection; the second can be separate from the first. Each starting road must attach to the settlement just placed, not another settlement/network.
+- Each player's second confirmed settlement immediately grants one resource per adjacent productive tile, including repeated resources from multiple tiles of the same type. The first settlement and both roads grant nothing. No dice production, trade, paid building, upgrades, or end-turn occurs during setup.
+
+This initial-piece flow follows [CATAN's official Rules & Almanac, Set-Up Phase, page 12](https://www.catan.com/sites/default/files/2021-06/catan_base_rules_2020_200707.pdf#page=12). Implementation, tie-policy attribution, recovery, and test coverage are detailed in [OPENING_SETUP.md](OPENING_SETUP.md).
 
 ## Turn and production
 
@@ -19,7 +24,7 @@ This document records the playable local MVP. Larger multiplayer, economic, setu
 - Each adjacent settlement produces one unit of the tile's resource for its owner; each adjacent city produces two.
 - A robber on a tile blocks that tile's production.
 - A total of seven gives no normal production. The active player must move the robber to a different tile before taking other actions. The MVP robber does not steal a resource.
-- After resolving the roll and any robber move, the active player can take actions until manually ending the turn. There is no action limit in the MVP.
+- After resolving the roll and any robber move, the active player can take actions until ending the turn. The human ends their own turn manually; bots choose and execute their turns automatically in the existing seat order. Bots pay identical costs, use eligible bank/port rates, move the robber when required, and receive only ordinary production. There are no bot resource gifts or forced rolls. There is no action limit in the MVP.
 
 ## Building
 
@@ -27,7 +32,7 @@ This document records the playable local MVP. Larger multiplayer, economic, setu
 - Settlement cost: one wood, one brick, one wheat, and one wool.
 - City upgrade cost: two wheat and three stone.
 - A road occupies one unoccupied board edge and must connect at one endpoint to the player's own building or an existing road in their network. An opponent's building blocks a road network from continuing through that intersection.
-- A settlement occupies an empty board vertex, must connect to one of the player's roads, and cannot be adjacent to another settlement or city.
+- After setup, a settlement occupies an empty board vertex, must connect to one of the player's roads, and cannot be adjacent to another settlement or city.
 - A city replaces one of the active player's settlements at the same vertex.
 - Building and upgrades have no additional per-turn or piece-supply limits in this MVP.
 

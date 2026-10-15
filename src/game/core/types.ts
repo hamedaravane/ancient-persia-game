@@ -3,7 +3,26 @@ export const RESOURCE_TYPES = ['wood', 'brick', 'wheat', 'wool', 'stone'] as con
 export type ResourceType = (typeof RESOURCE_TYPES)[number];
 export type TerrainType = 'forest' | 'mesa' | 'wheat' | 'pasture' | 'mountain' | 'desert';
 export type BuildingType = 'settlement' | 'city';
-export type GamePhase = 'roll' | 'robber' | 'actions' | 'finished';
+export type GamePhase =
+    'setup-roll' | 'setup-settlement' | 'setup-road' | 'roll' | 'robber' | 'actions' | 'finished';
+
+export interface StarterRoll {
+    playerId: string;
+    dice: [number, number];
+}
+export type SetupState =
+    | {
+          kind: 'starter';
+          contenders: number[];
+          rolls: Record<string, [number, number]>;
+          lastRoll: StarterRoll | null;
+      }
+    | {
+          kind: 'placement';
+          settlements: string[];
+          settlementId: string | null;
+          lastRoll: StarterRoll;
+      };
 
 export interface Building {
     type: BuildingType;
@@ -78,6 +97,9 @@ export interface GameState {
     lastRoll: [number, number] | null;
     winnerId: string | null;
     victoryTarget: number;
+    /** Absent in legacy completed openings, which began at seat zero. */
+    startingPlayerIndex?: number;
+    setup?: SetupState | null;
 }
 
 export type RandomSource = () => number;

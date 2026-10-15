@@ -6,6 +6,8 @@ import { integer, label, record, validGameState } from './validateState';
 
 export interface SavedMatch {
     version: 1;
+    /** Absent in legacy shared-device saves; their first seat becomes the human. */
+    humanPlayerId?: string;
     state: GameState;
     tutorial: TutorialMemory;
     history: MatchEvent[];
@@ -22,6 +24,11 @@ export function decodeSave(raw: string): SavedMatch | null {
         const value: unknown = JSON.parse(raw);
         if (!record(value) || value.version !== 1 || !validGameState(value.state)) return null;
         const state = value.state;
+        if (
+            value.humanPlayerId !== undefined &&
+            !state.players.some((player) => player.id === value.humanPlayerId)
+        )
+            return null;
         const memory = value.tutorial;
         if (
             !record(memory) ||

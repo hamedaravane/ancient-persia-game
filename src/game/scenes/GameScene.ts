@@ -155,7 +155,7 @@ export class GameScene extends Scene {
                         tile.robber ? 0xce977b : 0xffdda0,
                         200,
                     );
-        } else if (action.kind === 'build') {
+        } else if (action.kind === 'build' || action.kind === 'setup') {
             if (action.type === 'road') {
                 const edge = after.board.edges[action.targetId];
                 this.effects.road(
@@ -256,6 +256,15 @@ export class GameScene extends Scene {
                 targets.has(vertex.id);
             const selected = eligible && placement?.targetId === vertex.id;
             const owner = state.players.find(({ id }) => id === vertex.building?.ownerId);
+            if (
+                this.session.state?.phase === 'setup-settlement' &&
+                eligible &&
+                !selected &&
+                !owner
+            ) {
+                this.circle(p.x, p.y, 4, active.color, 0.8, 0xf3ead8);
+                continue;
+            }
             if (owner || eligible) {
                 const city =
                     vertex.building?.type === 'city' || (selected && placement?.kind === 'city');

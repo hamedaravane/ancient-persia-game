@@ -158,6 +158,7 @@ export function drawComponent(
             : has('button--primary')
               ? 'honey'
               : 'limestone';
+        if (has('button--tutorial')) material = 'basalt';
         if (has('context-button') || has('button--quiet') || el.tagName === 'SUMMARY')
             material = 'inset';
         if (has('resource-choice') || has('port-chip') || has('port-list-item'))
@@ -223,7 +224,8 @@ export function drawComponent(
             !has('button--quiet') &&
                 !has('context-button') &&
                 el.tagName !== 'SUMMARY' &&
-                !has('button--end-turn')
+                !has('button--end-turn') &&
+                !has('button--tutorial')
                 ? 0x314956
                 : 0xffedb8,
         ).strokeRoundedRect(box.x - 2, box.y - 2, box.width + 4, box.height + 4, 16);

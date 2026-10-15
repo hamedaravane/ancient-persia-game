@@ -1,3 +1,4 @@
+import { completeSessionSetup } from './helpers/setup';
 import { expect, test, vi } from 'vitest';
 import { RESOURCE_TYPES, type ResourceType, type TradeRatio } from '../src/game/core/types';
 import { GameSession } from '../src/game/ui/session';
@@ -8,6 +9,7 @@ function fixture() {
     vi.spyOn(Math, 'random').mockReturnValue(0.5);
     const session = new GameSession();
     session.start(3);
+    completeSessionSetup(session);
     const state = session.state!;
     state.phase = 'actions';
     for (const vertex of Object.values(state.board.vertices)) vertex.building = null;
@@ -79,6 +81,7 @@ test('a rejected trade keeps resources, draft and history intact', () => {
     session.openSheet({ kind: 'trade' });
     session.state!.players[0].resources.wood = 1;
     const before = session.state;
+    const transition = session.transition;
     const historyCount = session.history.length;
     expect(sheetContent(session).body).toContain(
         'data-action="confirm-trade" class="button button--primary full-width" disabled',
@@ -89,7 +92,7 @@ test('a rejected trade keeps resources, draft and history intact', () => {
     expect(session.give).toBe('wood');
     expect(session.receive).toBe('stone');
     expect(session.history).toHaveLength(historyCount);
-    expect(session.transition).toBeNull();
+    expect(session.transition).toBe(transition);
 });
 
 test('owned port shortcuts preselect payment; opponent ports remain inspection-only', () => {

@@ -1,6 +1,7 @@
 import { createBoard } from '../core/board';
 import { getVictoryPoints } from '../core/game';
 import { RESOURCE_TYPES, type GameState } from '../core/types';
+import { validOpening } from './validateSetup';
 
 export function record(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -43,7 +44,17 @@ export function validGameState(value: unknown): value is GameState {
         !integer(value.turn, 1) ||
         value.victoryTarget !== 6 ||
         typeof value.phase !== 'string' ||
-        !['roll', 'robber', 'actions', 'finished'].includes(value.phase)
+        ![
+            'setup-roll',
+            'setup-settlement',
+            'setup-road',
+            'roll',
+            'robber',
+            'actions',
+            'finished',
+        ].includes(value.phase) ||
+        (value.startingPlayerIndex !== undefined &&
+            !integer(value.startingPlayerIndex, 0, players.length - 1))
     )
         return false;
     if (
@@ -55,7 +66,8 @@ export function validGameState(value: unknown): value is GameState {
         )
     )
         return false;
-    if (value.phase !== 'roll' && value.lastRoll === null) return false;
+    if (['actions', 'robber', 'finished'].includes(value.phase) && value.lastRoll === null)
+        return false;
     if (value.phase === 'robber' && (value.lastRoll as number[]).reduce((a, b) => a + b, 0) !== 7)
         return false;
     const board = value.board;
@@ -166,6 +178,7 @@ export function validGameState(value: unknown): value is GameState {
     )
         return false;
     const state = value as unknown as GameState;
+    if (!validOpening(state)) return false;
     if (
         Object.values(state.board.vertices).some(
             (v) => v.building && v.neighborIds.some((id) => state.board.vertices[id].building),

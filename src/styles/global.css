@@ -117,14 +117,13 @@ h3 {
 }
 
 .match-screen {
-    --players-height: 56px;
     --hand-height: 60px;
     display: grid;
     height: 100%;
     padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
         env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
     grid-template-rows:
-        48px var(--players-height) minmax(0, 1fr) 48px var(--hand-height)
+        48px minmax(0, 1fr) 48px var(--hand-height)
         52px 52px 4px;
 }
 .match-bar {
@@ -1009,7 +1008,6 @@ h3 {
 
 /* Compact mode follows safe content height; the media query covers first paint. */
 .is-compact .match-screen {
-    --players-height: 52px;
     --hand-height: 56px;
 }
 .is-compact .trade-intro > .art-sprite {
@@ -1017,7 +1015,6 @@ h3 {
 }
 @media (max-height: 719px) {
     .match-screen {
-        --players-height: 52px;
         --hand-height: 56px;
     }
 }
@@ -1073,4 +1070,27 @@ h3 {
 .build-card .availability,
 .build-card .resource-value.is-short {
     color: #5a3021;
+}
+
+/* One human seat: the board keeps the space formerly occupied by the player strip. */
+.human-score {
+    color: var(--gold);
+    font-size: 12px;
+}
+.human-color {
+    font-size: 12px;
+}
+.menu-actions {
+    display: grid;
+    gap: 12px;
+    margin-block: 28px 18px;
+}
+.button--tutorial {
+    color: #f3ead8;
+    background: #3d4c48;
+    --muted: #c0c7bd;
+    --gold: #c6a06a;
+}
+.menu-panel > .footnote + .footnote {
+    margin-top: 12px;
 }

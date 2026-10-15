@@ -2,11 +2,11 @@
 
 ## Implemented experience
 
-The menu offers **سفر با آناهیتا** for three or four people sharing a device. This starts an ordinary match with a narrative companion enabled. It uses the same generated board, starting pieces, dice, costs, legal targets, bank, ports, and six-point victory as an unguided match. It is a guided local game, not a solo campaign. There are no bots, staged resource gifts, forced rolls, or new setup decisions.
+The menu’s **آموزش** button starts the same four-seat single-player match as Play: one human and three bots, with **سفر با آناهیتا** enabled. Tutorial always starts from the opening welcome and empty-board setup; it asks before replacing an existing save. Play resumes an unfinished guided match with its narrator memory intact. This starts an ordinary match with a narrative companion enabled. It uses the same generated board, starting pieces, dice, costs, legal targets, bank, ports, and six-point victory as an unguided match. Bots use ordinary validated actions; both modes now include player-chosen opening settlements/roads, with no staged resource gifts or forced production rolls.
 
-Anahita invites the group into an island story built from their actual decisions. Her voice uses contemporary colloquial Persian: intimate, confident, observant, and lightly teasing. She addresses whoever holds the active turn as «تو», then includes the group at handoff and in the ending. She accompanies every local player; her warmth does not imply a private alliance with one competitor. The player remains the decision-maker.
+Anahita invites the human into an island story built from their actual decisions. Her voice uses contemporary colloquial Persian: intimate, confident, observant, and lightly teasing. She consistently addresses the human as «تو». After the human ends a turn, she explains that rivals play automatically while the phone and resource hand remain the human’s. Bot actions never count as the human’s practice. The ending stays valid if a bot wins. The player remains the decision-maker.
 
-There are 28 short Persian conversations across five chapters. Each has an expression, a title, one explanatory paragraph, and an actionable next step. Runtime text lives in `src/game/tutorial/lessons.fa.ts`. Examples:
+There are 31 short Persian conversations across five chapters. Each has an expression, a title, one explanatory paragraph, and an actionable next step. Runtime text lives in `src/game/tutorial/lessons.fa.ts`. Examples:
 
 - Greeting: «بالاخره رسیدی... من آناهیتام. این جزیره هنوز کلی قصهٔ نگفته داره.»
 - Trading: «انبارت پر از یه چیزه و درست همونی رو که می‌خوای نداری؟ بیا یه معامله کنیم.»
@@ -16,13 +16,13 @@ These are fictional character lines, not historical claims about the supplied de
 
 ## Voice and narrative continuity
 
-The 28 conversations form a loose dramatic arc that remains valid in a random local match: arrival and two starting lights, discovering how the island answers, leaving a mark through roads and settlements, opening trade opportunities, confronting the robber, and looking back at the decisions that shaped the final board. The ending recalls the two starting settlements. These recurring images supply continuity without inventing quests, enemies, hidden rewards, historical events, or a guaranteed sequence of actions.
+The 31 conversations form a loose dramatic arc that remains valid in a random local match: arrival and two starting lights, discovering how the island answers, leaving a mark through roads and settlements, opening trade opportunities, confronting the robber, and looking back at the decisions that shaped the final board. The ending recalls the two starting settlements. These recurring images supply continuity without inventing quests, enemies, hidden rewards, historical events, or a guaranteed sequence of actions.
 
 - Use spoken forms such as «رو»، «یه»، «اگه»، «می‌تونی» and «توئه», with readable Persian spelling and half-spaces. Keep familiar mechanic names, precise quantities, and actual button labels clear.
 - Give each conversation one brief emotional beat, followed by its concrete mechanic and a direct next step. Current dialogue paragraphs are roughly 25–42 whitespace-separated words. Tasks, journal copy, menu invitation, and Continue/Pause wording use the same contemporary register.
 - Convey understated allure through invitation, curiosity, close attention, and gentle teasing: «بیا نزدیک‌تر»، «یه راز کوچیک بهت بگم» and «از این بلندپروازیت خوشم میاد». Vary these touches; avoid inserting a flirt or compliment into every lesson.
 - Let dramatic language follow the moment: quiet reassurance for no income, caution before confirmation, tension around seven, delight after construction. Never replace a cost, restriction, or consequence with a metaphor.
-- Keep copy compatible with replay and shared-device play. A success line requires a confirmed result, and the ending refers to the winner without assuming the reader personally won. Do not turn probabilistic production into a promise or imply that moving the robber makes the desert productive.
+- Keep copy compatible with replay and single-player play. A success line requires a confirmed result, and the ending refers to the winner without assuming the reader personally won. Do not turn probabilistic production into a promise or imply that moving the robber makes the desert productive.
 - Avoid archaic court speech, modern internet memes, lengthy lore exposition, development-version asides, and claims of an exclusive romantic relationship. Anahita's personality comes from how she notices and responds to play.
 
 ## Research and design rationale
@@ -47,25 +47,25 @@ The [GDC session description for Breathing Life into Greek Myth](https://www.gdc
 
 ## Learning flow and triggers
 
-| Chapter / situation                | Before or during the action                                                            | Result / follow-up                                                                                      |
-| ---------------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| Arrival                            | Welcome → automatic setup and starting grant → first roll                              | First roll records practice; no manual setup is implied                                                 |
-| Production                         | Explain matching numbers and ownership after the first non-seven roll                  | Explain a roll with no active-player income when encountered                                            |
-| Land inspection                    | First unblocked-tile inspection introduces terrain resources and unequal probabilities | Return to the same full tile ID                                                                         |
-| Action phase                       | Introduce building, trade, and manual end-turn                                         | Task strip offers an affordable, legal, unpracticed construction opportunity                            |
-| Construction workspace             | Explain an affordable construction type, or shortages when none is available           | Restore the workspace without payment                                                                   |
-| Road / settlement / city placement | Explain that type's cost and restrictions when chosen                                  | Preview lesson preserves selection and teaches confirmation/cancellation                                |
-| Confirmed building                 | Recognize the actual building and its consequences                                     | Mark construction and confirmation as practiced                                                         |
-| Bank                               | Explain ordinary 4:1 at first bank visit                                               | Review appears after two different resources are selected; confirmation records practice                |
-| Port inspection                    | General or specialist lesson matches the inspected port                                | Return to the same port                                                                                 |
-| New port access                    | Detect ownership newly granted by a confirmed coastal building                         | Explain immediate same-turn use                                                                         |
-| Seven                              | Prioritize required relocation over optional narration                                 | Confirmed relocation explains blocking at the destination and restored eligibility at the previous tile |
-| Blocked-tile inspection            | Explain production blocking and independence from ports                                | Return to the same tile                                                                                 |
-| Turn handoff                       | Confirmed end-turn introduces the next player's resource hand                          | Lessons are shared across the group, avoiding duplicate introductions                                   |
-| Five points                        | Warn when the active player is one point from the target                               | No requirement to choose a particular winning action                                                    |
-| Victory                            | Replace ordinary celebrations with the ending                                          | Return to results; final-board and journal inspection remain available                                  |
+| Chapter / situation                | Before or during the action                                                                                        | Result / follow-up                                                                                      |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| Arrival                            | Welcome → starter contest/order → chosen settlement → adjoining road → second settlement/resources → ordinary roll | Setup earns its own practice; ordinary roll/building practice stays separate                            |
+| Production                         | Explain matching numbers and ownership after the first non-seven roll                                              | Explain a roll with no active-player income when encountered                                            |
+| Land inspection                    | First unblocked-tile inspection introduces terrain resources and unequal probabilities                             | Return to the same full tile ID                                                                         |
+| Action phase                       | Introduce building, trade, and manual end-turn                                                                     | Task strip offers an affordable, legal, unpracticed construction opportunity                            |
+| Construction workspace             | Explain an affordable construction type, or shortages when none is available                                       | Restore the workspace without payment                                                                   |
+| Road / settlement / city placement | Explain that type's cost and restrictions when chosen                                                              | Preview lesson preserves selection and teaches confirmation/cancellation                                |
+| Confirmed building                 | Recognize the actual building and its consequences                                                                 | Mark construction and confirmation as practiced                                                         |
+| Bank                               | Explain ordinary 4:1 at first bank visit                                                                           | Review appears after two different resources are selected; confirmation records practice                |
+| Port inspection                    | General or specialist lesson matches the inspected port                                                            | Return to the same port                                                                                 |
+| New port access                    | Detect ownership newly granted by a confirmed coastal building                                                     | Explain immediate same-turn use                                                                         |
+| Seven                              | Prioritize required relocation over optional narration                                                             | Confirmed relocation explains blocking at the destination and restored eligibility at the previous tile |
+| Blocked-tile inspection            | Explain production blocking and independence from ports                                                            | Return to the same tile                                                                                 |
+| Turn handoff                       | The human’s confirmed end-turn explains automatic rival turns                                                      | The resource hand stays human-owned; bots pause until dialogue is dismissed                             |
+| Five points                        | Warn when the human is one point from the target                                                                   | No requirement to choose a particular winning action                                                    |
+| Victory                            | Replace ordinary celebrations with the ending                                                                      | Return to results; final-board and journal inspection remain available                                  |
 
-The opening introduces only the character, automatic setup, and roll. Ports, probability, and city economics wait for relevant situations. The journal groups the entire curriculum for optional review; normal guidance does not expose the rulebook all at once.
+The opening teaches starter selection and forward/reverse order, then each manual free placement at its actual step. The ordinary roll lesson waits until the human reaches an ordinary roll phase. Ports, probability, and city economics wait for relevant situations. The journal groups the entire curriculum for optional review; normal guidance does not expose the rulebook all at once.
 
 ## Scheduling and state ownership
 
@@ -73,8 +73,8 @@ The opening introduces only the character, automatic setup, and roll. Ports, pro
 - `GameSession` observes context before notifying subscribers. It remembers the interrupted sheet before showing narration. The last page restores that sheet, including trade choices, requested rate, placement, and target.
 - Each transition ID is consumed once. Automatic lessons stop repeating after acknowledgement. Replay is explicit and returns to the journal. Pausing drops pending narration without consuming it; resuming examines current context and ignores historical commands.
 - Seen means a conversation was acknowledged, including optional journal review. Practiced means a relevant confirmed core action was observed while guidance was enabled. Neither is a mastery assessment. Some concepts have no direct action and remain review-only.
-- Close, backdrop, Escape, or Pause stop automatic guidance and restore the interrupted screen. Help → journal can resume it. Memory survives pausing but resets with a new match, return to menu, or page reload.
-- No time-based queue exists. Required robber movement and finished matches take priority over optional celebrations. Unavailable actions never become mandatory objectives.
+- Close, backdrop, Escape, or Pause stop automatic guidance and restore the interrupted screen. Help → journal can resume it. Memory is saved with the match and survives pausing, menu return/resume, and page reload; a new match resets it.
+- No time-based narrative queue exists. The independent bot runner pauses during every dialog. Situational lessons and practice require the human’s action/turn; victory remains observable for either human or bot winners. Required robber movement and finished matches take priority over optional celebrations. Unavailable actions never become mandatory objectives.
 
 ## Presentation and art
 
@@ -86,8 +86,10 @@ The six original PNG masters total 12,199,151 bytes and are preserved byte-for-b
 
 ## Verification and device review
 
-`tests/tutorial.test.ts` covers guided/normal entry, transition consumption, robber priority, building/payment/preview behavior, shortages, preserved trade drafts, pause/resume, replay, tile/port inspection, immediate port access, victory priority, and expression coverage. Run the existing core/session/layout checks through `npm run check`.
+`tests/tutorial.test.ts` covers guided/normal entry, transition consumption, robber priority, building/payment/preview behavior, shortages, preserved trade drafts, pause/resume, replay, tile/port inspection, immediate port access, victory priority, and expression coverage. `tests/bots.test.ts` also checks that bot actions cannot earn human practice or create a human robber-placement draft. Agent verification stays with focused Node/TypeScript/lint checks; full game/device testing and CI belong to the user.
 
 The user performs interactive testing. At 390 × 844 and a compact size, review reading and body scrolling, portrait loading and expression changes, keyboard focus and Escape, returning to a previewed target, preserved bank choices, handoff clarity, and journal navigation. Node tests do not validate appearance or native-modal behavior.
 
 This flow follows real random matches. It does not guarantee a city, trade, port acquisition, or seven in a fixed number of turns. The journal permits immediate review of rare situations without claiming they were practiced. A timed or solo training campaign would need separately designed legal scenarios and explicit practice-state lifecycle; it should not quietly alter ordinary-match rules.
+
+Opening-specific scheduling, official references, save validation, and tests are documented in [OPENING_SETUP.md](OPENING_SETUP.md).

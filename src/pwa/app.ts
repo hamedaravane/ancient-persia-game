@@ -6,6 +6,8 @@ export class AppPlatform {
     online = true;
     installed = false;
     ios = false;
+    android = false;
+    chrome = false;
     updateReady = false;
     updating = false;
     error = '';
@@ -33,8 +35,8 @@ export class AppPlatform {
         }
         this.changed();
     }
-    async update(matchActive: boolean): Promise<boolean> {
-        if (matchActive || !this.updateReady || this.updating || !this.activateUpdate) return false;
+    async update(): Promise<boolean> {
+        if (!this.updateReady || this.updating || !this.activateUpdate) return false;
         this.updating = true;
         this.error = '';
         this.changed();

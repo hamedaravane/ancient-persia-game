@@ -1,3 +1,4 @@
+import { isSetup } from '../core/setup';
 import { getBuildOption, getPlayerSummary } from '../core/queries';
 import { getPortOwnerId } from '../core/ports';
 import type { GameState, RuleErrorCode } from '../core/types';
@@ -7,6 +8,7 @@ import { LESSONS, type LessonId } from './lessons.fa';
 
 export interface TutorialContext {
     state: GameState;
+    humanPlayerId?: string;
     sheet: Sheet | null;
     placement: Placement | null;
     transition: MatchTransition | null;
@@ -65,7 +67,7 @@ export class TutorialDirector {
         this.queue = [];
         this.observedTransition = 0;
         this.replaying = false;
-        if (enabled) this.offer('welcome', 'setup', 'roll');
+        if (enabled) this.offer('welcome', 'setup-order');
     }
     private offer(...ids: LessonId[]): void {
         if (!this.enabled) return;
@@ -92,7 +94,11 @@ export class TutorialDirector {
         this.queue = [id];
         this.replaying = true;
     }
-    explainError(reason: RuleErrorCode): void {
+    explainError(reason: RuleErrorCode, opening = false): void {
+        if (opening) {
+            this.offer(reason === 'not-connected' ? 'setup-road' : 'setup');
+            return;
+        }
         const lesson: Partial<Record<RuleErrorCode, LessonId>> = {
             'insufficient-resources': 'shortage',
             'too-close': 'settlement',
@@ -106,52 +112,71 @@ export class TutorialDirector {
     observe(context: TutorialContext): void {
         if (!this.enabled || this.current || this.replaying) return;
         const { state, sheet, placement, transition } = context;
-        const player = state.players[state.activePlayerIndex];
+        const player =
+            state.players.find((p) => p.id === context.humanPlayerId) ??
+            state.players[state.activePlayerIndex];
+        const humanTurn = state.players[state.activePlayerIndex].id === player.id;
         if (transition && transition.id !== this.observedTransition) {
             this.observedTransition = transition.id;
             const action = transition.action;
-            if (action.kind === 'roll') {
-                this.practiced.add('roll');
-                if (state.phase !== 'robber') {
-                    this.practiced.add('production');
-                    this.offer('production');
-                    if (!transition.production.some((grant) => grant.playerId === player.id))
-                        this.offer('no-income');
+            if (transition.before.players[transition.before.activePlayerIndex].id === player.id) {
+                if (action.kind === 'setup') this.practiced.add('setup');
+                if (action.kind === 'roll') {
+                    this.practiced.add('roll');
+                    if (state.phase !== 'robber') {
+                        this.practiced.add('production');
+                        this.offer('production');
+                        if (!transition.production.some((grant) => grant.playerId === player.id))
+                            this.offer('no-income');
+                    }
                 }
-            }
-            if (action.kind === 'build') {
-                this.practiced.add(action.type);
-                this.practiced.add('preview');
-                this.offer(`built-${action.type}`);
-                if (
-                    state.board.ports.some(
-                        (port) =>
-                            getPortOwnerId(state.board, port) === player.id &&
-                            getPortOwnerId(transition.before.board, port) !== player.id,
-                    )
-                ) {
-                    this.practiced.add('port-access');
-                    this.offer('port-access');
+                if (action.kind === 'build') {
+                    this.practiced.add(action.type);
+                    this.practiced.add('preview');
+                    this.offer(`built-${action.type}`);
+                    if (
+                        state.board.ports.some(
+                            (port) =>
+                                getPortOwnerId(state.board, port) === player.id &&
+                                getPortOwnerId(transition.before.board, port) !== player.id,
+                        )
+                    ) {
+                        this.practiced.add('port-access');
+                        this.offer('port-access');
+                    }
                 }
-            }
-            if (action.kind === 'trade') {
-                this.practiced.add('bank');
-                this.practiced.add('trade-review');
-                this.offer('traded');
-            }
-            if (action.kind === 'robber') {
-                this.practiced.add('seven');
-                this.offer('robber-moved');
-            }
-            if (action.kind === 'end-turn') {
-                this.practiced.add('actions');
-                this.offer('handover');
+                if (action.kind === 'trade') {
+                    this.practiced.add('bank');
+                    this.practiced.add('trade-review');
+                    this.offer('traded');
+                }
+                if (action.kind === 'robber') {
+                    this.practiced.add('seven');
+                    this.offer('robber-moved');
+                }
+                if (action.kind === 'end-turn') {
+                    this.practiced.add('actions');
+                    this.offer('handover');
+                }
             }
         }
         // Mandatory situations outrank optional celebrations; don't leave stale prompts at victory.
         if (state.phase === 'finished') {
             this.queue = [];
             this.offer('victory');
+            return;
+        }
+        if (!humanTurn) return;
+        if (isSetup(state)) {
+            if (state.phase === 'setup-roll') this.offer('setup-order');
+            else if (state.phase === 'setup-road') this.offer('setup-road');
+            else
+                this.offer(
+                    state.setup?.kind === 'placement' &&
+                        state.setup.settlements.length >= state.players.length
+                        ? 'setup-second'
+                        : 'setup',
+                );
             return;
         }
         if (state.phase === 'robber') {
@@ -199,6 +224,14 @@ export class TutorialDirector {
 
     objective({ state, placement }: Pick<TutorialContext, 'state' | 'placement'>): string {
         if (state.phase === 'finished') return LESSONS.victory.task;
+        if (isSetup(state))
+            return placement?.targetId
+                ? 'محل رو روی نقشه بررسی کن و تأییدش کن؛ جانمایی آغازین رایگانه.'
+                : state.phase === 'setup-roll'
+                  ? LESSONS['setup-order'].task
+                  : state.phase === 'setup-road'
+                    ? LESSONS['setup-road'].task
+                    : LESSONS.setup.task;
         if (state.phase === 'robber') return LESSONS.seven.task;
         if (placement)
             return placement.targetId

@@ -10,6 +10,8 @@ import { canvasPixelSize } from './rendering/displayGeometry';
 import { MatchStore } from './persistence/matchStore';
 import { AppPlatform } from '../pwa/app';
 import { connectPlatform } from '../pwa/browser';
+import { BotTurnRunner } from './ui/botTurns';
+import { UpdateNotice } from '../pwa/updateFlow';
 
 export function StartGame(parent: HTMLElement): Game {
     let storage: Storage | null = null;
@@ -22,8 +24,12 @@ export function StartGame(parent: HTMLElement): Game {
     const session = new GameSession(new MatchStore(storage, `ancient-persia.match.v1:${scope}`));
     const app = new AppPlatform();
     const disconnectPlatform = connectPlatform(app);
+    const bots = new BotTurnRunner(session, () => !document.hidden && !app.updating);
+    document.addEventListener('visibilitychange', bots.refresh);
+    const disconnectBotsPlatform = app.subscribe(bots.refresh);
     const motion = new Motion();
     const hud = new GameHud(parent, session, app);
+    const updates = new UpdateNotice(app, session);
     const stage = document.createElement('div');
     stage.className = 'phaser-stage';
     stage.setAttribute('aria-hidden', 'true');
@@ -82,6 +88,10 @@ export function StartGame(parent: HTMLElement): Game {
     window.addEventListener('resize', resize);
     game.events.once('destroy', () => {
         observer.disconnect();
+        updates.destroy();
+        bots.destroy();
+        disconnectBotsPlatform();
+        document.removeEventListener('visibilitychange', bots.refresh);
         disconnectPlatform();
         densityQuery.removeEventListener('change', densityChanged);
         window.removeEventListener('resize', resize);

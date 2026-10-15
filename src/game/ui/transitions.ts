@@ -1,12 +1,8 @@
-import type { BuildType } from '../core/building';
+import type { GameCommand } from '../core/commands';
 import type { ProductionGrant } from '../core/production';
-import type { GameState, ResourceType, TradeRatio } from '../core/types';
+import type { GameState } from '../core/types';
 
-export type MatchAction =
-    | { kind: 'roll' | 'end-turn' }
-    | { kind: 'build'; type: BuildType; targetId: string }
-    | { kind: 'robber'; targetId: string }
-    | { kind: 'trade'; give: ResourceType; receive: ResourceType; ratio: TradeRatio };
+export type MatchAction = GameCommand;
 
 /** One confirmed command, consumed once by presentation. Never an animation callback. */
 export interface MatchTransition {

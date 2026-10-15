@@ -42,11 +42,18 @@ export class BottomSheet {
             if (this.dialog.open) {
                 this.dialog.close();
                 const opener = [...this.parent.querySelectorAll<HTMLElement>('[data-action]')].find(
-                    (el) => el.dataset.action === this.openerAction && !el.closest('dialog'),
+                    (el) =>
+                        el.dataset.action === this.openerAction &&
+                        !el.closest('dialog, [hidden]') &&
+                        !el.matches(':disabled'),
                 );
-                const fallback = this.parent.querySelector<HTMLElement>(
-                    '.target-picker button, .primary-row button:not([disabled]), .main-menu button:not([disabled])',
-                );
+                const fallback =
+                    this.parent.querySelector<HTMLElement>(
+                        '.match-screen:not([hidden]) .target-picker button:not([disabled]), .match-screen:not([hidden]) .primary-row button:not([disabled])',
+                    ) ??
+                    this.parent.querySelector<HTMLElement>(
+                        '.match-screen:not([hidden]) .match-bar button:not([disabled]), .main-menu:not([hidden]) button:not([disabled])',
+                    );
                 (opener ?? fallback)?.focus({ preventScroll: true });
             }
             return;

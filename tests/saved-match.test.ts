@@ -1,3 +1,4 @@
+import { completeSessionSetup } from './helpers/setup';
 import { expect, test, vi } from 'vitest';
 import { GameSession } from '../src/game/ui/session';
 import { decodeSave, MatchStore, type SaveStorage } from '../src/game/persistence/matchStore';
@@ -12,6 +13,7 @@ function fixture() {
     };
     const session = new GameSession(new MatchStore(storage));
     session.start(3);
+    completeSessionSetup(session);
     return { storage, session, values, reload: () => new GameSession(new MatchStore(storage)) };
 }
 
@@ -56,7 +58,7 @@ test('Anahita remembers acknowledged dialogue, pending dialogue, and paused guid
     const restored = reload();
     restored.resumeSaved();
     expect(restored.tutorial.snapshot()).toEqual(session.tutorial.snapshot());
-    expect(restored.tutorial.current).toBe('setup');
+    expect(restored.tutorial.current).toBe('setup-order');
     expect(restored.sheet?.kind).toBe('tutorial');
     restored.setTutorialEnabled(false);
     const paused = reload();
@@ -64,6 +66,39 @@ test('Anahita remembers acknowledged dialogue, pending dialogue, and paused guid
     expect(paused.tutorial.enabled).toBe(false);
     expect(paused.tutorial.seen.has('welcome')).toBe(true);
     expect(paused.tutorial.current).toBeNull();
+});
+
+test('Tutorial requests a fresh opening instead of silently resuming reviewed guided progress', () => {
+    const { session, reload } = fixture();
+    const readDialogue = () => {
+        while (session.sheet?.kind === 'tutorial') session.continueTutorial();
+    };
+    session.setTutorialEnabled(true);
+    readDialogue();
+    const random = vi.spyOn(Math, 'random').mockReturnValue(0.5);
+    session.primary();
+    random.mockRestore();
+    readDialogue();
+    expect(session.state?.phase).toBe('actions');
+    const saved = structuredClone(session.savedMatch);
+
+    const resumed = reload();
+    resumed.requestPlay();
+    expect(resumed.state).toEqual(saved!.state);
+
+    const tutorial = reload();
+    tutorial.requestPlay(true);
+    expect(tutorial.state).toBeNull();
+    expect(tutorial.savedMatch).toEqual(saved);
+    expect(tutorial.sheet).toEqual({ kind: 'new-match', count: 4, guided: true });
+    tutorial.confirmNewMatch();
+    expect(tutorial.state?.phase).toBe('setup-roll');
+    expect(tutorial.state?.players).toHaveLength(4);
+    expect(Object.values(tutorial.state!.board.vertices).every((v) => !v.building)).toBe(true);
+    expect(Object.values(tutorial.state!.board.edges).every((e) => !e.road)).toBe(true);
+    expect(tutorial.tutorial.current).toBe('welcome');
+    expect(tutorial.sheet?.kind).toBe('tutorial');
+    expect(tutorial.tutorial.seen.size).toBe(0);
 });
 
 test('unconfirmed construction and trade drafts never pay resources or resume automatically', () => {
@@ -145,6 +180,7 @@ test.each([
 test('storage denial and quota errors keep play usable and expose the missing persistence', () => {
     const denied = new GameSession(new MatchStore(null));
     denied.start(3);
+    completeSessionSetup(denied);
     expect(denied.saveStatus).toBe('unavailable');
     denied.primary();
     expect(denied.state?.lastRoll).not.toBeNull();

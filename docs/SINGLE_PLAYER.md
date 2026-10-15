@@ -1,0 +1,42 @@
+# Single-player stage
+
+New games contain exactly four seats: the human (`شما`), داریوش, آرتین, and روژان. Opening rolls choose the starter. The human chooses both of their settlement/road pairs, and bots choose their own, in the same clockwise/reverse order. Ordinary turns begin at the starter; see [OPENING_SETUP.md](OPENING_SETUP.md). The main menu has Play and Tutorial; both use identical rules and bot behavior. Tutorial enables Anahita rather than creating a different player-count/scenario mode. Play resumes an unfinished save; Tutorial starts a fresh guided opening, requesting confirmation before replacing any saved match. Play can resume a guided save with its narrator memory intact. Help provides a confirmed restart without adding a third menu button.
+
+## Authority and presentation
+
+`GameSession` owns a fixed human player ID separately from `activePlayerIndex`. The header, hand, personal details, port shortcuts, and resource feedback belong to that human even while opponents act. Opponent dice are excluded from the header. The history/context line reports opponent activity, and Help → رقبای جزیره shows public score and board-piece counts. Opponent inventories are not substituted into the human HUD.
+
+Human draft/action entry points reject input on opponent turns. `advanceBot(expectedState)` rejects human turns, finished matches, open sheets, and stale state references. Successful bot commands use the same transition, production, history, tutorial observation, and autosave pipeline as human moves. History attributes an end-turn to the actor who ended it, rather than to the next player.
+
+`core/commands.ts` defines serializable commands and dispatches to existing validated core rules. `core/bot.ts` is a deterministic planner without Phaser, timers, storage, or UI imports. It receives current state but chooses using only public board data and its own inventory. Dice still use ordinary core randomness. Bots receive no bonus resources, discounted costs, forced rolls, hidden future information, or special victory rules.
+
+## Bot behavior
+
+- During opening, roll for the starter and choose each free settlement/adjoining road through setup commands.
+- During ordinary play, roll when required; on seven choose a different tile, favoring opposing production (especially leading players) and penalizing harm to their own buildings.
+- Upgrade an affordable settlement to a city, or build an affordable legal settlement. Rank sites by dice production weight, resource variety, and port access.
+- Extend roads along a breadth-first path toward a possible settlement site. Opponent roads/buildings block traversal as specified by the core rules. Once a legal settlement site is ready, conserve wood/brick rather than building unnecessary roads.
+- Trade surplus toward missing construction costs, using the best eligible bank/port rate. A trade never sells resources reserved for that candidate cost and receives a missing resource. Ordinary payment reduces total inventory, so repeated trade/build planning is finite within a turn.
+- End the turn when no useful affordable build or trade is available. Victory stops immediately through the shared rules.
+
+This is a basic heuristic opponent for the MVP, without difficulty settings or search of future turns. Strategic strength and perceived pacing need the user's playtesting; legality/unit checks do not establish game balance.
+
+## Pacing and lifecycle
+
+`ui/botTurns.ts` schedules one guarded command every 650 ms. The timer is turn pacing, independent of animation completion. It pauses for any open dialog, a hidden page, or update activation. Visibility/platform notifications reschedule on return. Returning to the menu, changing the match, or destroying the game cancels queued work. An expected-state reference protects against old callbacks affecting a different turn or match.
+
+Anahita only awards practice for confirmed human actions. Her first end-turn conversation explains automatic rivals and the persistent human hand. Bots wait while it is open. Bot robber moves never create human placement previews or human seven prompts. Either a human or bot victory can trigger the neutral ending.
+
+## Saves and installation
+
+Version-1 saves add an optional validated `humanPlayerId`; existing app/save keys remain stable. New saves retain the human identity through reloads, including midway through a bot turn or between a confirmed opening settlement and its required road. Opening metadata is validated before recovery; completed legacy matches never restart setup. Legacy saves without it assign seat one to the human and the remaining seats to bots. A three-player legacy board is preserved as three players rather than inserting pieces into an ongoing game. Reviewed/practiced narrator memory is preserved; pending legacy narration for another seat is dropped. All new games use four players.
+
+Non-standalone startup opens a dismissible installation/app modal once per page lifetime. Native prompt availability is independent of that explanation; deferred browser prompts are still only invoked by a tap. Android Chrome, other Android/in-app browsers, iOS Safari, and desktop fallback have separate copy. Installed launches omit the install explanation. Offline preparation, updates, and local autosave remain available without extra main-menu buttons. See [PWA_RELEASE.md](PWA_RELEASE.md).
+
+## Later online stage
+
+The fixed human identity and serializable command shape separate this device's controller from the active turn, but this release remains entirely local. A later backend must authenticate seat ownership, validate commands on authoritative server state, own randomness, project private hands appropriately, and handle matchmaking/reconnects. Client-side guards and local saves are not server authority. No backend contract, hosting choice, or online rule change is implied by this stage.
+
+## Focused verification
+
+`tests/bots.test.ts` covers both entry modes, the two-button menu, human turn guards, human-only header, automatic seat order, pause/resume/cancellation, stale callbacks, bot seven, tutorial practice isolation, legal/immutable planning over seeded boards, port payment, victory stopping, and new/legacy save recovery. Existing session/trade/tutorial/persistence tests protect confirmation boundaries. Platform tests check Android/Chrome/iOS copy and capability detection. TypeScript and scoped lint/format checks complete routine verification; device/game testing, production builds, and CI remain with the user.

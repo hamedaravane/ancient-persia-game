@@ -1,3 +1,4 @@
+import { isSetup } from '../core/setup';
 import { getBankTradeError } from '../core/game';
 import {
     getBankTradeRates,
@@ -34,6 +35,9 @@ export const BUILD_LABELS: Record<BuildType, string> = {
     city: 'شهر',
 };
 export const PHASE_LABELS = {
+    'setup-roll': 'تاس تعیین آغازکننده',
+    'setup-settlement': 'انتخاب آبادی آغازین',
+    'setup-road': 'انتخاب راه آغازین',
     roll: 'آغاز نوبت',
     robber: 'جابه‌جایی راهزن',
     actions: 'ساخت و تجارت',
@@ -64,10 +68,10 @@ export function sheetContent(session: GameSession): SheetContent {
     if (session.sheet?.kind === 'new-match')
         return {
             title: 'سفر تازه‌ای شروع کنیم؟',
-            body: `<p>با شروع بازی تازه، ذخیره سفر قبلی جایگزین می‌شه. اگه می‌خوای همون سفر رو ادامه بدی، برگرد و «ادامه بازی» رو بزن.</p>${button('برگشت', 'close-sheet', { className: 'button full-width' })}${button('شروع بازی تازه', 'confirm-new-match', { className: 'button button--primary full-width' })}`,
+            body: `<p>با شروع بازی تازه، ذخیره سفر قبلی جایگزین می‌شه. اگه می‌خوای همون سفر رو ادامه بدی، «ادامه سفر قبلی» رو بزن.</p>${button('ادامه سفر قبلی', session.state ? 'close-sheet' : 'resume-match', { className: 'button full-width' })}${button('شروع بازی تازه', 'confirm-new-match', { className: 'button button--primary full-width' })}`,
         };
     const state = session.state!;
-    const player = state.players[state.activePlayerIndex];
+    const player = session.humanPlayer!;
     const sheet = session.sheet!;
     if (sheet.kind === 'tutorial') return tutorialContent(session);
     if (sheet.kind === 'journal') return journalContent(session);
@@ -79,9 +83,24 @@ export function sheetContent(session: GameSession): SheetContent {
             body: `<p class="sheet-intro">${inspecting ? 'برای دیدن تولید و ساختمان‌های مجاور، یک خانه را انتخاب کنید.' : 'انتخاب محل فقط پیش‌نمایش است؛ تأیید نهایی روی صفحه بازی انجام می‌شود.'}</p><div class="target-list">${ids
                 .map((id, i) => {
                     const tile = state.board.tiles.find((candidate) => candidate.id === id);
-                    const label = tile
-                        ? `${tile.resource ? FA.resources[tile.resource] : FA.desert}${tile.number === null ? '' : ` • ${number(tile.number)}`} (${number(tile.q + 3)}، ${number(tile.r + 3)})`
-                        : `محل ${number(i + 1)}`;
+                    const vertex =
+                        !inspecting && session.placement?.kind !== 'road'
+                            ? state.board.vertices[id]
+                            : undefined;
+                    const surroundings = vertex
+                        ? state.board.tiles
+                              .filter((t) => vertex.tileIds.includes(t.id))
+                              .map(
+                                  (t) =>
+                                      `${t.resource ? FA.resources[t.resource] : FA.desert}${t.number === null ? '' : ` ${number(t.number)}`}`,
+                              )
+                              .join(' • ')
+                        : '';
+                    const label = vertex
+                        ? `محل ${number(i + 1)} • ${surroundings}`
+                        : tile
+                          ? `${tile.resource ? FA.resources[tile.resource] : FA.desert}${tile.number === null ? '' : ` • ${number(tile.number)}`} (${number(tile.q + 3)}، ${number(tile.r + 3)})`
+                          : `محل ${number(i + 1)}`;
                     return button(label, `${inspecting ? 'inspect' : 'preview-target'}:${id}`, {
                         className: 'button full-width',
                         pressed: !inspecting && session.placement?.targetId === id,
@@ -183,7 +202,7 @@ export function sheetContent(session: GameSession): SheetContent {
                 : `دو واحد ${FA.resources[port.resource]} برای یک واحد از هر منبع دیگر؛ این نرخ فقط برای پرداخت ${FA.resources[port.resource]} است.`;
         return {
             title: portName(port),
-            body: `<div class="port-detail-heading">${portIcon(port)}<span>${tradeRateLabel(getPortTradeRatio(port))}</span></div><p>${access}</p><dl class="detail-list"><div><dt>دسترسی بندر</dt><dd>${owner ? escape(owner.name) : 'هنوز بدون آبادی یا شهر'}</dd></div><div><dt>ساحل کنار بندر</dt><dd>${tile.resource ? FA.resources[tile.resource] : FA.desert}${tile.number === null ? '' : ` • ${number(tile.number)}`}</dd></div></dl><p class="footnote">با ساخت آبادی یا شهر در یکی از دو تقاطع متصل به اسکله، این نرخ فعال می‌شود. راه به‌تنهایی کافی نیست. شهر نرخ را بهتر نمی‌کند و راهزنِ زمین بندر را مسدود نمی‌کند.</p>${ownerId === player.id ? button('مبادله با این بندر', `trade-port:${port.id}`, { className: 'button button--primary full-width', disabled: state.phase !== 'actions' }) : '<p class="muted">برای استفاده از این بندر باید در یکی از دو تقاطع اسکله آبادی داشته باشید.</p>'}`,
+            body: `<div class="port-detail-heading">${portIcon(port)}<span>${tradeRateLabel(getPortTradeRatio(port))}</span></div><p>${access}</p><dl class="detail-list"><div><dt>دسترسی بندر</dt><dd>${owner ? escape(owner.name) : 'هنوز بدون آبادی یا شهر'}</dd></div><div><dt>ساحل کنار بندر</dt><dd>${tile.resource ? FA.resources[tile.resource] : FA.desert}${tile.number === null ? '' : ` • ${number(tile.number)}`}</dd></div></dl><p class="footnote">با ساخت آبادی یا شهر در یکی از دو تقاطع متصل به اسکله، این نرخ فعال می‌شود. راه به‌تنهایی کافی نیست. شهر نرخ را بهتر نمی‌کند و راهزنِ زمین بندر را مسدود نمی‌کند.</p>${ownerId === player.id ? button('مبادله با این بندر', `trade-port:${port.id}`, { className: 'button button--primary full-width', disabled: !session.isHumanTurn || state.phase !== 'actions' }) : '<p class="muted">برای استفاده از این بندر باید در یکی از دو تقاطع اسکله آبادی داشته باشید.</p>'}`,
         };
     }
     if (sheet.kind === 'player') {
@@ -205,6 +224,17 @@ export function sheetContent(session: GameSession): SheetContent {
             body: `<dl class="detail-list"><div><dt>شماره</dt><dd>${tile.number === null ? '—' : number(tile.number)}</dd></div><div><dt>احتمال تولید در هر تاس</dt><dd>${probability ? `${number(probability.outcomes)} از ${number(probability.total)}` : 'بدون تولید'}</dd></div><div><dt>راهزن</dt><dd>${tile.robber ? 'تولید این خانه مسدود است' : 'در این خانه نیست'}</dd></div></dl><h3>ساختمان‌های مجاور</h3>${adjacent.length ? `<ul class="plain-list">${adjacent.map((building) => `<li>${escape(state.players.find(({ id }) => id === building.ownerId)!.name)} • ${BUILD_LABELS[building.type]} • تولید ${number(building.type === 'city' ? 2 : 1)} واحد</li>`).join('')}</ul>` : '<p class="muted">ساختمانی در کنار این خانه نیست.</p>'}`,
         };
     }
+    if (sheet.kind === 'opponents')
+        return {
+            title: 'رقبای جزیره',
+            body: `<p class="sheet-intro">رقبا نوبت‌هاشون رو خودکار بازی می‌کنن. رنگ هرکدوم رو روی نقشه دنبال کن.</p><div class="results-list">${state.players
+                .filter((p) => p.id !== player.id)
+                .map((p) => {
+                    const summary = getPlayerSummary(state, p.id);
+                    return `<article><h3 style="color:#${p.color.toString(16).padStart(6, '0')}">${escape(p.name)}${state.players[state.activePlayerIndex].id === p.id && state.phase !== 'finished' ? ' • در حال بازی' : ''}</h3><p>${number(summary.score)} از ${number(state.victoryTarget)} امتیاز</p><p class="muted">${number(summary.settlements)} آبادی • ${number(summary.cities)} شهر • ${number(summary.roads)} راه</p></article>`;
+                })
+                .join('')}</div>`,
+        };
     if (sheet.kind === 'history')
         return {
             title: 'رویدادهای بازی',
@@ -234,6 +264,6 @@ export function sheetContent(session: GameSession): SheetContent {
     }
     return {
         title: 'راهنمای بازی',
-        body: `<p>بازی محلی برای سه یا چهار بازیکن است. در نوبت خود دستگاه را در اختیار بگیرید؛ منابع پایین صفحه متعلق به بازیکن فعال است.</p><ol class="help-list"><li>تاس را بیندازید. خانه‌های هم‌شماره برای آبادی‌های مجاور یک منبع و برای شهرها دو منبع تولید می‌کنند.</li><li>با تاس هفت، راهزن را به خانه دیگری ببرید. خانه دارای راهزن تولید ندارد؛ در این نسخه سرقت و دورریختن منابع وجود ندارد.</li><li>ساخت‌وساز را باز کنید تا هزینه و محل‌های مجاز را ببینید. محل را انتخاب و سپس ساخت را تأیید کنید.</li><li>در بانک، چهار منبع یکسان را با یک منبع دیگر مبادله کنید. آبادی یا شهر کنار بندر عمومی نرخ ۳ به ۱ می‌دهد؛ بندر تخصصی فقط منبع نشان‌داده‌شده را با نرخ ۲ به ۱ می‌پذیرد. ساخت راه کافی نیست. پس از ساخت آبادی بندری، همان نوبت می‌توانید از نرخ آن استفاده کنید.</li><li>پس از انجام کارها، پایان نوبت را بزنید. رسیدن به ${number(state.victoryTarget)} امتیاز بازی را تمام می‌کند.</li></ol><p>راه باید به شبکه شما وصل باشد؛ ساختمان حریف ادامه راه را قطع می‌کند. بین آبادی‌ها یک تقاطع خالی لازم است. شهر فقط آبادی خودتان را ارتقا می‌دهد.</p><p class="footnote">برای جزئیات خانه آن را لمس کنید. برای انتخاب دقیق‌تر از فهرست محل‌ها استفاده کنید؛ محل انتخاب‌شده را پیش از تأیید بررسی کنید.</p>${button('دفتر سفر آناهیتا', 'open:journal', { className: 'button button--primary full-width' })}${button('رویدادهای بازی', 'open:history', { className: 'button full-width' })}${button('بررسی خانه‌های جزیره', 'open:inspect', { className: 'button full-width' })}${button('دیدن هزینه‌های ساخت', 'open:build', { className: 'button full-width' })}`,
+        body: `<p>تو با سه رقیب خودکار بازی می‌کنی. منابع پایین صفحه و اطلاعات بالای صفحه همیشه مال توئه. بعد از پایان نوبتت، رقبا به‌ترتیب بازی می‌کنن؛ لازم نیست گوشی رو به کسی بدی.</p><h3>جانمایی آغازین</h3><p>بالاترین تاس، شروع‌کننده رو مشخص می‌کنه. هرکس یک آبادی و یک راه کنار هم می‌ذاره؛ دور دوم از نفر آخر به عقب برمی‌گردیم. فاصلهٔ آبادی‌ها همیشه لازمه. جانمایی رایگانه و فقط آبادی دوم منابع آغازین می‌ده.</p><ol class="help-list"><li>تاس را بیندازید. خانه‌های هم‌شماره برای آبادی‌های مجاور یک منبع و برای شهرها دو منبع تولید می‌کنند.</li><li>با تاس هفت، راهزن را به خانه دیگری ببرید. خانه دارای راهزن تولید ندارد؛ در این نسخه سرقت و دورریختن منابع وجود ندارد.</li><li>ساخت‌وساز را باز کنید تا هزینه و محل‌های مجاز را ببینید. محل را انتخاب و سپس ساخت را تأیید کنید.</li><li>در بانک، چهار منبع یکسان را با یک منبع دیگر مبادله کنید. آبادی یا شهر کنار بندر عمومی نرخ ۳ به ۱ می‌دهد؛ بندر تخصصی فقط منبع نشان‌داده‌شده را با نرخ ۲ به ۱ می‌پذیرد. ساخت راه کافی نیست. پس از ساخت آبادی بندری، همان نوبت می‌توانید از نرخ آن استفاده کنید.</li><li>پس از انجام کارها، پایان نوبت را بزنید. رسیدن به ${number(state.victoryTarget)} امتیاز بازی را تمام می‌کند.</li></ol><p>راه باید به شبکه شما وصل باشد؛ ساختمان حریف ادامه راه را قطع می‌کند. بین آبادی‌ها یک تقاطع خالی لازم است. شهر فقط آبادی خودتان را ارتقا می‌دهد.</p><p class="footnote">برای جزئیات خانه آن را لمس کنید. برای انتخاب دقیق‌تر از فهرست محل‌ها استفاده کنید؛ محل انتخاب‌شده را پیش از تأیید بررسی کنید.</p>${button('دفتر سفر آناهیتا', 'open:journal', { className: 'button button--primary full-width' })}${button('رویدادهای بازی', 'open:history', { className: 'button full-width' })}${button('بررسی خانه‌های جزیره', 'open:inspect', { className: 'button full-width' })}${button('وضعیت من', `player:${player.id}`, { className: 'button full-width' })}${button('رقبای جزیره', 'open:opponents', { className: 'button full-width' })}${button('دیدن هزینه‌های ساخت', 'open:build', { className: 'button full-width', disabled: !session.isHumanTurn || isSetup(state) })}`,
     };
 }

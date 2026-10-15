@@ -154,3 +154,7 @@ Runtime WebP exports now reduce download size for all image groups, with origina
 ## Platform icons
 
 Sunmark retains the existing gold sun-rosette/griffin victory emblem as its app mark; the naming change does not replace or repaint source art. Installable-app icons live in `public/icons/` as PNG platform exports, separate from the optimized in-game image inventory under `public/assets/`. `scripts/export-pwa-icons.py` derives them from the preserved victory emblem and its reviewed crop, without new artwork or baked text. App icons are 192/512 pixels, the maskable icon is 512 with safe padding, and the Apple touch icon is 180. These packaged sizes intentionally differ from full-resolution WebP runtime illustrations. Run `npm run pwa:icons` to regenerate; see [PWA_RELEASE.md](PWA_RELEASE.md).
+
+## Player avatars
+
+`ui/playerAvatarArt.ts` draws four original stone seals (human, Atlas, ASIMO, Sophia) as Phaser Graphics. `ui/playerIdentity.ts` derives their stable identity from seat/human ownership; colors remain runtime data. No avatar bitmaps, manufacturer logos, network images, or per-color copies are shipped. The name entry and header labels remain runtime text.

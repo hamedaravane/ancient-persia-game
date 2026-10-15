@@ -1,6 +1,11 @@
 import type { ResourceType } from '../core/types';
 import { FA } from './messages.fa';
 import { ART, DICE_FACES, type ArtFrame, type ArtName } from '../assets';
+import type { AvatarId } from './playerIdentity';
+
+export function playerAvatar(avatar: AvatarId): string {
+    return `<span class="player-avatar" data-avatar="${avatar}" aria-hidden="true"></span>`;
+}
 
 export const number = (value: number): string => value.toLocaleString('fa-IR');
 export const escape = (text: string): string =>

@@ -40,6 +40,8 @@ test('both menu choices start four seats and the menu stays at two buttons even 
     for (const guided of [false, true]) {
         const session = new GameSession();
         session.requestPlay(guided);
+        expect(session.sheet?.kind).toBe('player-name');
+        session.confirmPlayerName();
         expect(session.state!.players).toHaveLength(4);
         expect(session.humanPlayer?.id).toBe(session.state!.players[0].id);
         expect(session.tutorial.enabled).toBe(guided);
@@ -57,7 +59,7 @@ test('both menu choices start four seats and the menu stays at two buttons even 
     }
 });
 
-test('human input cannot roll, build, trade, select, or end a bot turn; header remains human-only', () => {
+test('human input cannot roll, build, trade, select, or end a bot turn; personal status remains human-owned', () => {
     const session = opponentTurn();
     const before = session.state!;
     session.primary();
@@ -77,7 +79,8 @@ test('human input cannot roll, build, trade, select, or end a bot turn; header r
     expect(session.humanPlayer!.id).toBe(before.players[0].id);
     const header = humanHeader(session);
     expect(header).toContain(before.players[0].name);
-    expect(header).not.toContain(before.players[1].name);
+    expect(header).toContain(before.players[1].name);
+    expect(header).toContain('class="header-rivals"');
     expect(header).not.toContain('dice-result');
     expect(session.history.at(-1)?.player).toBe(before.players[1].name);
     const hand = humanHand(session);

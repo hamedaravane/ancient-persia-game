@@ -108,6 +108,8 @@ export class InterfaceScene extends Scene {
         listen('scroll', this.invalidate);
         listen('focusin', this.invalidate);
         listen('focusout', this.invalidate);
+        document.addEventListener('selectionchange', this.invalidate);
+        this.cleanup.push(() => document.removeEventListener('selectionchange', this.invalidate));
         listen('toggle', this.invalidate);
         listen('keydown', (event) => {
             const key = (event as KeyboardEvent).key;

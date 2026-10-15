@@ -1,5 +1,8 @@
 import type { GameObjects } from 'phaser';
 import { canvasDisplay } from '../rendering/display';
+import { headerBackdrop } from './headerModel';
+import { drawPlayerAvatar } from './playerAvatarArt';
+import type { AvatarId } from './playerIdentity';
 import {
     drawDie,
     drawRosette,
@@ -25,13 +28,42 @@ export function drawComponent(
     const disabled = el instanceof HTMLButtonElement && el.disabled;
     const selected = el.getAttribute('aria-pressed') === 'true';
     if (has('match-bar')) {
-        drawSurface(g, box, 'inset', { radius: 4, flat: true });
+        const display = canvasDisplay(g.scene);
+        drawSurface(g, headerBackdrop(box, display.width), 'inset', { radius: 0, flat: true });
         g.lineStyle(1, UI_INK.gold, 0.4).lineBetween(
             box.x + 14,
             box.y + box.height - 1,
             box.x + box.width - 14,
             box.y + box.height - 1,
         );
+    } else if (has('player-avatar')) {
+        drawPlayerAvatar(g, box, el.dataset.avatar as AvatarId, owner);
+    } else if (has('header-self')) {
+        if (has('is-active'))
+            g.fillStyle(owner).fillRoundedRect(box.x + box.width - 2, box.y + 10, 2, 28, 1);
+    } else if (has('rival-card')) {
+        drawSurface(g, box, 'inset', {
+            radius: 5,
+            flat: true,
+            accent: has('is-active') ? owner : undefined,
+            pressed: pressed === el,
+        });
+        const target = Number(el.dataset.target) || 6;
+        const score = Number(el.dataset.score) || 0;
+        const spacing = (box.width - 16) / target;
+        for (let i = 0; i < target; i++)
+            g.fillStyle(i < score ? owner : 0x59605c).fillRect(
+                box.x + box.width - 8 - (i + 1) * spacing,
+                box.y + box.height - 3,
+                Math.max(1, spacing - 2),
+                2,
+            );
+    } else if (has('name-entry')) {
+        drawSurface(g, box, 'inset', { radius: 8, flat: true });
+        if (el.matches(':focus-within')) {
+            g.lineStyle(2, UI_INK.gold).strokeRoundedRect(box.x, box.y, box.width, box.height, 8);
+            drawNameSelection(g, el, box);
+        }
     } else if (has('resource-hand')) {
         drawSurface(g, { ...box, y: box.y - 5, height: box.height + 8 }, 'inset', {
             radius: 22,
@@ -225,10 +257,37 @@ export function drawComponent(
                 !has('context-button') &&
                 el.tagName !== 'SUMMARY' &&
                 !has('button--end-turn') &&
-                !has('button--tutorial')
+                !has('button--tutorial') &&
+                !has('header-self') &&
+                !has('rival-card')
                 ? 0x314956
                 : 0xffedb8,
         ).strokeRoundedRect(box.x - 2, box.y - 2, box.width + 4, box.height + 4, 16);
+}
+
+/** Browser ranges retain Persian shaping; Phaser paints the invisible native input's selection. */
+function drawNameSelection(g: GameObjects.Graphics, el: HTMLElement, box: UiBox): void {
+    const input = el.querySelector('input');
+    const text = el.querySelector('.name-entry-value')?.firstChild;
+    if (!input || document.activeElement !== input || !text) return;
+    const length = text.textContent?.length ?? 0;
+    const start = Math.min(input.selectionStart ?? 0, length);
+    const end = Math.min(input.selectionEnd ?? start, length);
+    const range = document.createRange();
+    range.setStart(text, start);
+    range.setEnd(text, end);
+    const parent = el.getBoundingClientRect();
+    const rect = range.getBoundingClientRect();
+    const left = Math.max(box.x + 14, box.x + rect.left - parent.left);
+    const right = Math.min(box.x + box.width - 14, box.x + rect.right - parent.left);
+    const top = rect.height ? box.y + rect.top - parent.top : box.y + 12;
+    const height = rect.height || 28;
+    if (end > start) {
+        if (right > left) g.fillStyle(UI_INK.gold, 0.25).fillRect(left, top, right - left, height);
+    } else {
+        const x = rect.height ? Math.min(box.x + box.width - 14, left) : box.x + box.width - 14;
+        g.lineStyle(1.5, UI_INK.gold).lineBetween(x, top, x, top + height);
+    }
 }
 
 function drawPieceSymbol(g: GameObjects.Graphics, box: UiBox, kind: string): void {

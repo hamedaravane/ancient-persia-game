@@ -92,6 +92,8 @@ test('Tutorial requests a fresh opening instead of silently resuming reviewed gu
     expect(tutorial.savedMatch).toEqual(saved);
     expect(tutorial.sheet).toEqual({ kind: 'new-match', count: 4, guided: true });
     tutorial.confirmNewMatch();
+    expect(tutorial.sheet?.kind).toBe('player-name');
+    tutorial.confirmPlayerName();
     expect(tutorial.state?.phase).toBe('setup-roll');
     expect(tutorial.state?.players).toHaveLength(4);
     expect(Object.values(tutorial.state!.board.vertices).every((v) => !v.building)).toBe(true);
@@ -144,6 +146,7 @@ test('returning to the menu preserves the match; replacing it needs explicit con
     expect(restored.state).toEqual(before);
     session.requestStart(4, true);
     session.confirmNewMatch();
+    session.confirmPlayerName();
     expect(session.state?.players).toHaveLength(4);
     expect(session.tutorial.enabled).toBe(true);
 });

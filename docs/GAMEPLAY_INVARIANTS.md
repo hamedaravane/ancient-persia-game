@@ -19,7 +19,7 @@ These invariants are enforced by the pure TypeScript rules in `src/game/core/` a
 - A trade pays exactly the validated 4:1 bank, 3:1 general-port, or matching-payment-resource 2:1 specialist rate and receives one unit of a different resource. Ownership and rates derive from authoritative board state; discounts never stack.
 - Newly built ports can be used immediately in the action phase. The land robber does not change port rates or access.
 - Only the active player can take an action during the action phase. The session additionally rejects human action/draft input during a bot turn; bot commands cannot execute on the human seat or after victory.
-- A fixed human seat owns the header, resource hand, and resource feedback regardless of the active seat. Bot activity never swaps the displayed hand.
+- A fixed human seat owns the personal header row, resource hand, and resource feedback regardless of the active seat. The header’s opponent scoreboard projects only public scores, identities, and turn status; bot activity never swaps the displayed hand or reveals exact opponent inventories.
 - Bot turns follow the normal seat order and shared validated rule commands. A stale scheduled command cannot affect a replaced/resumed state. Open dialogs, hidden pages, menu return, and teardown suspend/cancel automatic play.
 - Human tutorial practice is earned only by human commands; bot rolls, builds, trades, and robber moves cannot earn it.
 - Only the active player can roll while the game is waiting for the roll.

@@ -39,6 +39,8 @@ export class GameHud {
         this.boardViewport = parent.querySelector('.board-canvas')!;
         this.sheet = new BottomSheet(parent, () => session.closeSheet());
         parent.addEventListener('click', this.onClick);
+        parent.addEventListener('input', this.onInput);
+        document.addEventListener('selectionchange', this.syncNameInput);
         document.addEventListener('keydown', this.onKeyDown);
         this.unsubscribe = session.subscribe(() => this.render());
         this.unsubscribePlatform = app.subscribe(() => this.render());
@@ -205,6 +207,11 @@ export class GameHud {
         if (action === 'resume-match') this.session.resumeSaved();
         if (action === 'restart-match') this.session.requestStart(4);
         if (action === 'confirm-new-match') this.session.confirmNewMatch();
+        if (action === 'confirm-player-name') {
+            const input = this.parent.querySelector<HTMLInputElement>('#player-name');
+            if (input) this.session.playerNameDraft = input.value;
+            this.session.confirmPlayerName();
+        }
         if (action === 'open-app') this.session.openSheet({ kind: 'app' });
         if (action === 'app-install') void this.app.install();
         if (action === 'app-retry') this.app.retry();
@@ -277,7 +284,33 @@ export class GameHud {
             if (this.app.updateReady) this.session.openSheet({ kind: 'update' });
         }
     };
+    private onInput = (event: Event): void => {
+        const input = event.target;
+        if (!(input instanceof HTMLInputElement) || input.dataset.action !== 'player-name') return;
+        this.session.playerNameDraft = input.value;
+        this.syncNameInput();
+    };
+    private syncNameInput = (): void => {
+        const input = this.parent.querySelector<HTMLInputElement>('#player-name');
+        const value = input?.parentElement?.querySelector<HTMLElement>('.name-entry-value');
+        if (!input || !value) return;
+        const text = input.value || 'اسمت رو بنویس…';
+        if (value.textContent !== text) value.textContent = text;
+        value.classList.toggle('is-empty', !input.value);
+        value.scrollLeft = input.scrollLeft;
+    };
     private onKeyDown = (event: KeyboardEvent): void => {
+        if (
+            event.key === 'Enter' &&
+            !event.isComposing &&
+            this.session.sheet?.kind === 'player-name' &&
+            event.target instanceof HTMLInputElement &&
+            !this.app.updating
+        ) {
+            event.preventDefault();
+            this.session.playerNameDraft = event.target.value;
+            this.session.confirmPlayerName();
+        }
         if (event.key === 'Escape' && !this.session.sheet && this.session.placement)
             this.session.cancelPlacement();
     };
@@ -287,6 +320,8 @@ export class GameHud {
         this.sizeObserver.disconnect();
         this.sheet.destroy();
         this.parent.removeEventListener('click', this.onClick);
+        this.parent.removeEventListener('input', this.onInput);
+        document.removeEventListener('selectionchange', this.syncNameInput);
         document.removeEventListener('keydown', this.onKeyDown);
     }
 }

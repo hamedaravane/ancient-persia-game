@@ -118,38 +118,159 @@ h3 {
 
 .match-screen {
     --hand-height: 60px;
+    --header-height: 104px;
     display: grid;
     height: 100%;
     padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
         env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
     grid-template-rows:
-        48px minmax(0, 1fr) 48px var(--hand-height)
+        var(--header-height) minmax(0, 1fr) 48px var(--hand-height)
         52px 52px 4px;
 }
 .match-bar {
+    display: grid;
+    grid-template-rows: 48px 48px;
+    gap: 4px;
+    padding: 2px 10px;
+    min-width: 0;
+}
+.header-personal {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding-inline: 14px 8px;
     min-width: 0;
+}
+.header-self {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+    height: 48px;
+    padding: 0 4px;
+    border: 0;
+    background: transparent;
+    color: #f3ead8;
+    text-align: start;
+}
+.player-avatar {
+    display: block;
+    flex: 0 0 36px;
+    width: 36px;
+    height: 36px;
 }
 .turn-heading {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 3px;
     min-width: 0;
-    font-size: 14px;
 }
-.turn-heading > span:first-child,
-.phase-label {
+.human-name {
+    display: flex;
+    gap: 4px;
+    align-items: baseline;
+    font-size: 14px;
+    line-height: 18px;
+}
+.human-name bdi {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
 }
-.phase-label {
-    font-size: 11px;
+.bot-label {
+    flex-shrink: 0;
+    font-size: 10px;
+    color: #c0c7bd;
+}
+.human-score {
     color: var(--gold);
+    font-size: 11px;
+    line-height: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.phase-label {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 10px;
+    line-height: 12px;
+    color: #c0c7bd;
+}
+.header-rivals {
+    display: grid;
+    grid-template-columns: repeat(var(--rival-count, 3), minmax(0, 1fr));
+    gap: 6px;
+    min-width: 0;
+}
+.rival-card {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 0;
+    height: 48px;
+    padding: 4px 6px 7px;
+    border: 0;
+    background: #252b2d;
+    color: #f3ead8;
+    text-align: start;
+}
+.rival-card .player-avatar {
+    flex-basis: 26px;
+    width: 26px;
+    height: 26px;
+}
+.rival-copy {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    line-height: 17px;
+}
+.rival-name {
+    display: flex;
+    gap: 3px;
+    align-items: baseline;
+    font-size: 12px;
+}
+.rival-name bdi {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.rival-score {
+    display: flex;
+    gap: 4px;
+    align-items: baseline;
+    font-size: 12px;
+    white-space: nowrap;
+}
+.rival-score > span {
+    font-size: 10px;
+    color: #c0c7bd;
+}
+.rival-card.is-active .rival-score > span {
+    color: #ffe2a0;
+}
+@media (max-width: 359px) {
+    .rival-card {
+        gap: 4px;
+        padding-inline: 4px;
+    }
+    .rival-card .player-avatar {
+        flex-basis: 24px;
+        width: 24px;
+        height: 24px;
+    }
+    .rival-name,
+    .rival-score {
+        font-size: 11px;
+    }
+    .rival-score > span,
+    .rival-name .bot-label {
+        font-size: 9px;
+    }
 }
 .dice-result {
     display: flex;
@@ -1073,13 +1194,6 @@ h3 {
 }
 
 /* One human seat: the board keeps the space formerly occupied by the player strip. */
-.human-score {
-    color: var(--gold);
-    font-size: 12px;
-}
-.human-color {
-    font-size: 12px;
-}
 .menu-actions {
     display: grid;
     gap: 12px;
@@ -1093,4 +1207,56 @@ h3 {
 }
 .menu-panel > .footnote + .footnote {
     margin-top: 12px;
+}
+
+/* Native keyboard/IME input remains transparent; Phaser paints its mirror and caret. */
+.name-label {
+    display: block;
+    font-size: 14px;
+    color: #f3ead8;
+}
+.name-entry {
+    position: relative;
+    width: 100%;
+    height: 52px;
+}
+.name-entry input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    padding: 10px 14px;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #f3ead8;
+    caret-color: #ffe2a0;
+    font: inherit;
+    font-size: 16px;
+    line-height: 28px;
+}
+.name-entry input::placeholder {
+    color: #c0c7bd;
+    opacity: 1;
+}
+
+.name-entry-value {
+    position: absolute;
+    inset: 10px 14px;
+    display: block;
+    overflow: hidden;
+    white-space: pre;
+    font-size: 16px;
+    line-height: 28px;
+    pointer-events: none;
+    color: #f3ead8;
+}
+.name-entry-value.is-empty {
+    color: #c0c7bd;
+}
+.rival-detail-heading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
 }

@@ -20,6 +20,7 @@ import {
     color,
     escape,
     number,
+    playerAvatar,
     resourceIcon,
     resourceValue,
 } from './components';
@@ -28,6 +29,7 @@ import type { GameSession } from './session';
 import type { SheetContent } from './bottomSheet';
 import { journalContent, tutorialContent } from '../tutorial/markup';
 import { ownedPortsMarkup, portDirectory, portIcon, portName, tradeRateLabel } from './ports';
+import { avatarForSeat, PLAYER_NAME_LIMIT } from './playerIdentity';
 
 export const BUILD_LABELS: Record<BuildType, string> = {
     road: 'راه',
@@ -65,6 +67,16 @@ export function costRow(option: BuildOption): string {
 }
 
 export function sheetContent(session: GameSession): SheetContent {
+    if (session.sheet?.kind === 'player-name')
+        return {
+            title: 'با چه اسمی وارد جزیره می‌شی؟',
+            preserveInput: true,
+            body: `<p class="sheet-intro">تو در برابر سه ربات بازی می‌کنی. اسمت کنار آواتار و امتیازت دیده می‌شه.</p>
+                <label class="name-label" for="player-name">اسم تو</label>
+                <div class="name-entry"><input id="player-name" data-action="player-name" name="player-name" type="text" dir="auto" maxlength="${PLAYER_NAME_LIMIT}" value="${escape(session.playerNameDraft)}" placeholder="اسمت رو بنویس…" autocomplete="nickname" enterkeyhint="go" aria-describedby="name-hint"><span class="name-entry-value${session.playerNameDraft ? '' : ' is-empty'}" dir="auto" aria-hidden="true">${escape(session.playerNameDraft || 'اسمت رو بنویس…')}</span></div>
+                <p id="name-hint" class="footnote">تا ${number(PLAYER_NAME_LIMIT)} حرف؛ اگه خالی بذاری، «بازیکن» صدات می‌کنیم.</p>
+                ${button('ورود به جزیره', 'confirm-player-name', { className: 'button button--primary full-width' })}`,
+        };
     if (session.sheet?.kind === 'new-match')
         return {
             title: 'سفر تازه‌ای شروع کنیم؟',
@@ -231,7 +243,11 @@ export function sheetContent(session: GameSession): SheetContent {
                 .filter((p) => p.id !== player.id)
                 .map((p) => {
                     const summary = getPlayerSummary(state, p.id);
-                    return `<article><h3 style="color:#${p.color.toString(16).padStart(6, '0')}">${escape(p.name)}${state.players[state.activePlayerIndex].id === p.id && state.phase !== 'finished' ? ' • در حال بازی' : ''}</h3><p>${number(summary.score)} از ${number(state.victoryTarget)} امتیاز</p><p class="muted">${number(summary.settlements)} آبادی • ${number(summary.cities)} شهر • ${number(summary.roads)} راه</p></article>`;
+                    const avatar = avatarForSeat(
+                        state.players.indexOf(p),
+                        state.players.indexOf(player),
+                    );
+                    return `<article style="--owner:${color(p.color)}"><div class="rival-detail-heading">${playerAvatar(avatar)}<h3>${escape(p.name)} <span class="bot-label">ربات</span>${state.players[state.activePlayerIndex].id === p.id && state.phase !== 'finished' ? ' • در حال بازی' : ''}</h3></div><p>${number(summary.score)} از ${number(state.victoryTarget)} امتیاز</p><p class="muted">${number(summary.settlements)} آبادی • ${number(summary.cities)} شهر • ${number(summary.roads)} راه</p></article>`;
                 })
                 .join('')}</div>`,
         };

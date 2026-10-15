@@ -14,7 +14,7 @@ The board and rule state live in Phaser-independent TypeScript under `src/game/c
 
 The main menu has exactly **بازی** (Play) and **آموزش** (Tutorial), in honey and green stone. Both use the same four-player match; Tutorial enables Anahita’s guided journey. Play resumes an unfinished save, while starting a replacement requires confirmation. Anahita introduces rules through contextual Persian dialogue, six supplied expressions, phase-aware objectives, and a replayable lesson journal. Help → **دفتر سفر آناهیتا** can enable, pause, or review guidance during any match. Narrative progress belongs to the current match and survives closing/reopening through its local save. See [TUTORIAL_DESIGN.md](TUTORIAL_DESIGN.md) for research, lesson flow, and implementation boundaries.
 
-1. Choose Play or Tutorial; one human faces three automatic opponents.
+1. Choose Play or Tutorial; a new match asks for your name before one human faces three visibly labeled robot opponents. The compact header shows your identity, public standings, and the acting seat; Play resumes saved identity/progress.
 2. Roll for the starter, then choose two starting settlement/road pairs in clockwise/reverse order on the empty 19-hex board. Each second settlement grants its adjacent resources once. See [OPENING_SETUP.md](OPENING_SETUP.md).
 3. At the start of each turn, the active player rolls two dice.
 4. Matching numbered tiles produce one resource for each adjacent settlement and two for each adjacent city, unless the robber blocks that tile.

@@ -6,6 +6,8 @@ export interface SheetContent {
     body: string;
     narrator?: { portrait: ArtName; key: string };
     footer?: string;
+    /** Keep a native edit session intact when unrelated platform state changes. */
+    preserveInput?: boolean;
 }
 
 /** Native modal provides focus trapping and makes the covered interface inert. */
@@ -59,6 +61,12 @@ export class BottomSheet {
             return;
         }
         const wasOpen = this.dialog.open;
+        if (wasOpen && content.preserveInput && this.dialog.querySelector('input')) return;
+        const activeInput =
+            document.activeElement instanceof HTMLInputElement ? document.activeElement : null;
+        const selection = activeInput
+            ? ([activeInput.selectionStart, activeInput.selectionEnd] as const)
+            : null;
         const focusAction = wasOpen
             ? (document.activeElement as HTMLElement | null)?.dataset.action
             : undefined;
@@ -78,11 +86,12 @@ export class BottomSheet {
             const [, , width, height] = ART[portrait].frame;
             this.dialog.innerHTML = `<div class="narrator-stage" aria-hidden="true" style="--portrait-ratio:${width / height}">${artSprite(portrait, 320, 'narrator-hero')}</div><section class="narrator-panel">${header}${body}<footer class="narrator-footer">${content.footer ?? ''}</footer></section>`;
         } else this.dialog.innerHTML = `${header}${body}`;
+        const nameInput = this.dialog.querySelector<HTMLInputElement>('#player-name');
         if (!wasOpen) {
             this.dialog.showModal();
-            this.dialog
-                .querySelector<HTMLElement>('[data-action="tutorial-next"]')
-                ?.focus({ preventScroll: true });
+            (
+                nameInput ?? this.dialog.querySelector<HTMLElement>('[data-action="tutorial-next"]')
+            )?.focus({ preventScroll: true });
         }
         if (wasOpen) {
             const restored = [...this.dialog.querySelectorAll<HTMLElement>('[data-action]')].find(
@@ -90,11 +99,13 @@ export class BottomSheet {
             );
             (narrationChanged
                 ? this.dialog.querySelector<HTMLElement>('[data-action="tutorial-next"]')
-                : (restored ?? this.dialog.querySelector<HTMLElement>('button'))
+                : (restored ?? nameInput ?? this.dialog.querySelector<HTMLElement>('button'))
             )?.focus({
                 preventScroll: true,
             });
             this.dialog.querySelector('.sheet-body')!.scrollTop = narrationChanged ? 0 : scrollTop;
+            if (nameInput && selection && selection[0] !== null && selection[1] !== null)
+                nameInput.setSelectionRange(selection[0], selection[1]);
         }
     }
     destroy(): void {

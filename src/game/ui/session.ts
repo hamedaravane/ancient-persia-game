@@ -28,6 +28,7 @@ import { number } from './components';
 import { TutorialDirector } from '../tutorial/director';
 import type { LessonId } from '../tutorial/lessons.fa';
 import type { MatchStore, SavedMatch } from '../persistence/matchStore';
+import { BOT_NAMES, playerName } from './playerIdentity';
 
 export type Sheet =
     | {
@@ -46,7 +47,7 @@ export type Sheet =
       }
     | { kind: 'player' | 'tile' | 'port'; id: string }
     | { kind: 'app' | 'update' }
-    | { kind: 'new-match'; count: 3 | 4; guided: boolean };
+    | { kind: 'new-match' | 'player-name'; count: 3 | 4; guided: boolean };
 export interface Placement {
     kind: BuildType | 'robber';
     targetId: string | null;
@@ -76,6 +77,7 @@ export class GameSession {
     error: string | null = null;
     history: MatchEvent[] = [];
     savedMatch: SavedMatch | null = null;
+    playerNameDraft = '';
 
     constructor(private store?: MatchStore) {
         this.savedMatch = store?.read() ?? null;
@@ -93,11 +95,25 @@ export class GameSession {
     }
     requestStart(count: 3 | 4, guided = false): void {
         if (this.savedMatch) this.openSheet({ kind: 'new-match', count, guided });
-        else this.start(count, guided);
+        else this.requestName(count, guided);
     }
     confirmNewMatch(): void {
         if (this.sheet?.kind !== 'new-match') return;
-        this.start(this.sheet.count, this.sheet.guided);
+        this.requestName(this.sheet.count, this.sheet.guided);
+    }
+    private requestName(count: 3 | 4, guided: boolean): void {
+        const saved = this.savedMatch;
+        const previous =
+            this.humanPlayer?.name ??
+            saved?.state.players.find(
+                (p) => p.id === (saved.humanPlayerId ?? saved.state.players[0].id),
+            )?.name;
+        this.playerNameDraft = previous && previous !== 'شما' ? previous : '';
+        this.openSheet({ kind: 'player-name', count, guided });
+    }
+    confirmPlayerName(): void {
+        if (this.sheet?.kind !== 'player-name') return;
+        this.start(this.sheet.count, this.sheet.guided, this.playerNameDraft);
     }
     resumeSaved(): void {
         if (this.state || !this.savedMatch) return;
@@ -246,8 +262,8 @@ export class GameSession {
         if (this.history.length > 100) this.history.shift();
     }
 
-    start(count: 3 | 4, guided = false): void {
-        this.gameState = createGame(['شما', 'داریوش', 'آرتین', 'روژان'].slice(0, count));
+    start(count: 3 | 4, guided = false, name = 'بازیکن'): void {
+        this.gameState = createGame([playerName(name), ...BOT_NAMES].slice(0, count));
         this.controlledPlayerId = this.gameState.players[0].id;
         this.sheet = null;
         this.placement = this.requiredPlacement();

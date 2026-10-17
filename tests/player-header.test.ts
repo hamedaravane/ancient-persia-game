@@ -11,11 +11,11 @@ import { completeSessionSetup } from './helpers/setup';
 afterEach(() => vi.restoreAllMocks());
 
 test.each([false, true])(
-    'new entry asks for a name before creating a board (guided %s)',
+    'new full match asks for a name before creating a board (guided %s)',
     (guided) => {
         const session = new GameSession();
         const random = vi.spyOn(Math, 'random');
-        session.requestPlay(guided);
+        session.requestStart(4, guided);
         expect(random).not.toHaveBeenCalled();
         expect(session.state).toBeNull();
         expect(session.sheet).toEqual({ kind: 'player-name', count: 4, guided });
@@ -45,7 +45,7 @@ test('canceling name entry leaves the saved match untouched and Play resumes its
     const expected = structuredClone(session.state);
     const saved = raw;
     session.returnToMenu();
-    session.requestPlay(true);
+    session.requestStart(4, true);
     session.confirmNewMatch();
     expect(session.sheet?.kind).toBe('player-name');
     expect(session.playerNameDraft).toBe('آرین');
@@ -68,7 +68,7 @@ test('names retain Persian joining, are bounded, and cannot inject markup or bid
     expect(humanHeader(session)).toContain('&lt;img src=x&gt;');
     expect(humanHeader(session)).not.toContain('<img');
     session.returnToMenu();
-    session.requestPlay(true);
+    session.requestStart(4, true);
     session.confirmNewMatch();
     expect(sheetContent(session).body).not.toContain('value="<img');
 });

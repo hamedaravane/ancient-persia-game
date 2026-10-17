@@ -6,7 +6,7 @@ import {
     getPortOwnerId,
     getPortTradeRatio,
 } from '../core/ports';
-import { BUILD_TYPES, type BuildType } from '../core/building';
+import { BUILD_TYPES } from '../core/building';
 import {
     getBuildOption,
     getPlayerSummary,
@@ -30,13 +30,17 @@ import type { SheetContent } from './bottomSheet';
 import { journalContent, tutorialContent } from '../tutorial/markup';
 import { ownedPortsMarkup, portDirectory, portIcon, portName, tradeRateLabel } from './ports';
 import { domesticContent, tradeTabs } from './domesticSheet';
+import {
+    BUILD_LABELS,
+    BUILD_PURPOSE,
+    buildInventory,
+    locationReason,
+    missingLabel,
+    tradeBuildFeedback,
+} from './buildFeedback';
+export { BUILD_LABELS } from './buildFeedback';
 import { avatarForSeat, PLAYER_NAME_LIMIT } from './playerIdentity';
 
-export const BUILD_LABELS: Record<BuildType, string> = {
-    road: 'راه',
-    settlement: 'آبادی',
-    city: 'شهر',
-};
 export const PHASE_LABELS = {
     'setup-roll': 'تاس تعیین آغازکننده',
     'setup-settlement': 'انتخاب آبادی آغازین',
@@ -48,17 +52,17 @@ export const PHASE_LABELS = {
 };
 
 export function buildReason(option: BuildOption, session: GameSession): string {
+    if (!session.isHumanTurn) return 'ساخت در نوبت خودتان، پس از تاس ممکن است.';
     if (option.reason === 'wrong-phase')
         return session.state?.phase === 'robber'
             ? 'ابتدا راهزن را جابه‌جا کنید.'
             : 'ابتدا تاس را بیندازید.';
-    if (option.reason === 'no-legal-targets') return 'محل مجازی برای این ساخت‌وساز ندارید.';
+    if (option.reason === 'no-legal-targets') return locationReason(option);
     if (option.reason === 'game-finished') return FA.errors['game-finished'];
-    if (option.reason === 'insufficient-resources')
-        return `کمبود: ${RESOURCE_TYPES.filter((r) => option.missing[r])
-            .map((r) => `${number(option.missing[r])} ${FA.resources[r]}`)
-            .join('، ')}`;
-    return `${number(option.legalTargetIds.length)} محل مجاز • انتخاب محل روی صفحه`;
+    const shortage = RESOURCE_TYPES.some((r) => option.missing[r])
+        ? `کمبود: ${missingLabel(option.missing)} • `
+        : 'منابع کافی است • ';
+    return `${shortage}${locationReason(option)}`;
 }
 
 export function costRow(option: BuildOption): string {
@@ -139,10 +143,10 @@ export function sheetContent(session: GameSession): SheetContent {
             title: 'ساخت‌وساز',
             body: `<p class="sheet-intro">${escape(player.name)} • منابع فقط پس از تأیید محل پرداخت می‌شوند.</p>
             <div class="build-list">${BUILD_TYPES.map((type) => {
-                const option = getBuildOption(state, type);
+                const option = getBuildOption(state, type, player.id);
                 return `<article class="build-card"><div class="row-between"><h3><span class="piece-symbol piece-symbol--${type}" aria-hidden="true"></span>${BUILD_LABELS[type]}</h3><span class="muted">ساخته‌شده: ${number(built[type])}</span></div>
-                    ${costRow(option)}<p class="${option.reason ? 'availability' : 'muted'}">${buildReason(option, session)}</p>
-                    ${button('انتخاب محل', `build:${type}`, { disabled: option.reason !== null })}</article>`;
+                    ${buildInventory(option, player.resources)}<p class="muted">${BUILD_PURPOSE[type]}</p><p class="${option.reason ? 'availability' : 'muted'}">${buildReason(option, session)}</p>${session.practice && session.practice.stage !== type ? '<p class="availability">در این قدم تمرین، فقط سازهٔ خواسته‌شده را می‌سازیم.</p>' : ''}
+                    ${button('انتخاب محل', `build:${type}`, { disabled: option.reason !== null || (!!session.practice && session.practice.stage !== type) })}</article>`;
             }).join(
                 '',
             )}</div><p class="footnote">تعداد قطعات در این نسخه محدود نیست. شهر جایگزین آبادی شما می‌شود و یک امتیاز می‌افزاید.</p>`,
@@ -155,18 +159,19 @@ export function sheetContent(session: GameSession): SheetContent {
             session.give && session.receive
                 ? getBankTradeError(state, session.give, session.receive, ratio)
                 : null;
-        const hint =
-            state.phase !== 'actions'
-                ? state.phase === 'robber'
-                    ? 'ابتدا راهزن را جابه‌جا کنید.'
-                    : state.phase === 'finished'
-                      ? FA.errors['game-finished']
-                      : 'ابتدا تاس را بیندازید.'
-                : error
-                  ? FA.errors[error]
-                  : !session.give || !session.receive
-                    ? 'هر دو سوی مبادله را انتخاب کنید.'
-                    : 'مبادله آماده تأیید است.';
+        const hint = session.practice
+            ? 'تمرین: پس از ساخت راه، ۴ چوب بده و ۱ پشم بگیر؛ انتخاب‌های دیگر فقط برای مقایسه‌اند.'
+            : state.phase !== 'actions'
+              ? state.phase === 'robber'
+                  ? 'ابتدا راهزن را جابه‌جا کنید.'
+                  : state.phase === 'finished'
+                    ? FA.errors['game-finished']
+                    : 'ابتدا تاس را بیندازید.'
+              : error
+                ? FA.errors[error]
+                : !session.give || !session.receive
+                  ? 'هر دو سوی مبادله را انتخاب کنید.'
+                  : 'مبادله آماده تأیید است.';
         const selector = (side: 'give' | 'receive', title: string) =>
             `<section class="trade-side" aria-label="${title}"><h3>${title} <span class="muted">${side === 'give' && !session.give ? 'نرخ هر منبع روی کارت' : `${number(side === 'give' ? ratio : 1)} واحد`}</span></h3><div class="resource-selector">${RESOURCE_TYPES.map(
                 (r) => {
@@ -196,11 +201,11 @@ export function sheetContent(session: GameSession): SheetContent {
         if (session.give && session.receive) {
             const give = session.give,
                 receive = session.receive;
-            review = `<section class="trade-review" aria-label="مرور مبادله"><p>می‌دهید: ${resourceValue(give, ratio)} ${FA.resources[give]}</p><p>می‌گیرید: ${resourceValue(receive, 1)} ${FA.resources[receive]}</p><p class="muted">نرخ ${tradeRateLabel(ratio)} • ${source}</p>${!error ? `<p class="muted">دارایی پس از مبادله: ${FA.resources[give]} ${number(player.resources[give] - ratio)}، ${FA.resources[receive]} ${number(player.resources[receive] + 1)}</p>` : ''}</section>`;
+            review = `<section class="trade-review" aria-label="مرور مبادله"><p>می‌دهید: ${resourceValue(give, ratio)} ${FA.resources[give]}</p><p>می‌گیرید: ${resourceValue(receive, 1)} ${FA.resources[receive]}</p><p class="muted">نرخ ${tradeRateLabel(ratio)} • ${source}</p>${!error ? `<p class="muted">دارایی پس از مبادله: ${FA.resources[give]} ${number(player.resources[give] - ratio)}، ${FA.resources[receive]} ${number(player.resources[receive] + 1)}</p>${tradeBuildFeedback(session, { ...player.resources, [give]: player.resources[give] - ratio, [receive]: player.resources[receive] + 1 })}` : ''}</section>`;
         }
         return {
             title: 'بانک و بندرها',
-            body: `${tradeTabs(session, false)}<div class="trade-intro">${artSprite('bank', 64)}<p class="sheet-intro">${escape(player.name)} • بهترین نرخ هر منبع با بندرهای شما محاسبه می‌شود.</p></div>${ownedPortsMarkup(state.board, player.id)}${selector('give', 'می‌دهید')}${rateChoices}${selector('receive', 'می‌گیرید')}${review}<p class="availability" role="status">${hint}</p>${button('تأیید مبادله', 'confirm-trade', { className: 'button button--primary full-width', disabled: !session.give || !session.receive || error !== null })}${portDirectory(state)}`,
+            body: `${tradeTabs(session, false)}<div class="trade-intro">${artSprite('bank', 64)}<p class="sheet-intro">${escape(player.name)} • بهترین نرخ هر منبع با بندرهای شما محاسبه می‌شود.</p></div>${ownedPortsMarkup(state.board, player.id)}${selector('give', 'می‌دهید')}${rateChoices}${selector('receive', 'می‌گیرید')}${review}<p class="availability" role="status">${hint}</p>${button('تأیید مبادله', 'confirm-trade', { className: 'button button--primary full-width', disabled: !session.give || !session.receive || error !== null || (!!session.practice && (session.practice.stage !== 'trade' || session.give !== 'wood' || session.receive !== 'wool' || ratio !== 4)) })}${portDirectory(state)}`,
         };
     }
     if (sheet.kind === 'port') {
@@ -280,8 +285,13 @@ export function sheetContent(session: GameSession): SheetContent {
                 )}</div>${button('دفتر سفر آناهیتا', 'open:journal', { className: 'button full-width' })}${button('دیدن صفحه نهایی', 'close-sheet', { className: 'button full-width' })}${button(FA.newGame, 'new-game', { className: 'button button--primary full-width' })}`,
         };
     }
+    if (session.practice)
+        return {
+            title: 'راهنمای تمرین',
+            body: `<p>این صفحهٔ تمرین جدا از بازی اصلی است؛ تاس و دارایی آماده‌اند و رقبا حرکت نمی‌کنند. با دکمهٔ اصلی قدم بعدی را انجام بده: تاس، ساخت راه، بانک برای پشم، ساخت آبادی. مسیر روشن یک نمونه است، نه بهترین حرکت. امتیازت از ۱ به ۲ می‌رسد؛ هدف بازی واقعی ۶ امتیاز است.</p>${button('بازگشت به تمرین', 'close-sheet', { className: 'button button--primary full-width' })}${button('خروج از تمرین و بازگشت به منو', 'new-game', { className: 'button full-width' })}`,
+        };
     return {
         title: 'راهنمای بازی',
-        body: `<p>تو با سه رقیب خودکار بازی می‌کنی. برای معاملهٔ توافقی، «معامله» رو باز کن؛ بعد از تاس، هر معامله باید با صاحب نوبت باشه و هر دو طرف منابع بدهند. منابع پایین صفحه و اطلاعات بالای صفحه همیشه مال توئه. بعد از پایان نوبتت، رقبا به‌ترتیب بازی می‌کنن؛ لازم نیست گوشی رو به کسی بدی.</p><h3>جانمایی آغازین</h3><p>بالاترین تاس، شروع‌کننده رو مشخص می‌کنه. هرکس یک آبادی و یک راه کنار هم می‌ذاره؛ دور دوم از نفر آخر به عقب برمی‌گردیم. فاصلهٔ آبادی‌ها همیشه لازمه. جانمایی رایگانه و فقط آبادی دوم منابع آغازین می‌ده.</p><ol class="help-list"><li>تاس را بیندازید. خانه‌های هم‌شماره برای آبادی‌های مجاور یک منبع و برای شهرها دو منبع تولید می‌کنند.</li><li>با تاس هفت، راهزن را به خانه دیگری ببرید. خانه دارای راهزن تولید ندارد؛ در این نسخه سرقت و دورریختن منابع وجود ندارد.</li><li>ساخت‌وساز را باز کنید تا هزینه و محل‌های مجاز را ببینید. محل را انتخاب و سپس ساخت را تأیید کنید.</li><li>در بانک، چهار منبع یکسان را با یک منبع دیگر مبادله کنید. آبادی یا شهر کنار بندر عمومی نرخ ۳ به ۱ می‌دهد؛ بندر تخصصی فقط منبع نشان‌داده‌شده را با نرخ ۲ به ۱ می‌پذیرد. ساخت راه کافی نیست. پس از ساخت آبادی بندری، همان نوبت می‌توانید از نرخ آن استفاده کنید.</li><li>پس از انجام کارها، پایان نوبت را بزنید. رسیدن به ${number(state.victoryTarget)} امتیاز بازی را تمام می‌کند.</li></ol><p>راه باید به شبکه شما وصل باشد؛ ساختمان حریف ادامه راه را قطع می‌کند. بین آبادی‌ها یک تقاطع خالی لازم است. شهر فقط آبادی خودتان را ارتقا می‌دهد.</p><p class="footnote">برای جزئیات خانه آن را لمس کنید. برای انتخاب دقیق‌تر از فهرست محل‌ها استفاده کنید؛ محل انتخاب‌شده را پیش از تأیید بررسی کنید.</p>${button('دفتر سفر آناهیتا', 'open:journal', { className: 'button button--primary full-width' })}${button('رویدادهای بازی', 'open:history', { className: 'button full-width' })}${button('بررسی خانه‌های جزیره', 'open:inspect', { className: 'button full-width' })}${button('وضعیت من', `player:${player.id}`, { className: 'button full-width' })}${button('رقبای جزیره', 'open:opponents', { className: 'button full-width' })}${button('دیدن هزینه‌های ساخت', 'open:build', { className: 'button full-width', disabled: !session.isHumanTurn || isSetup(state) })}`,
+        body: `<p>هدف رسیدن به ${number(state.victoryTarget)} امتیاز است: هر آبادی ۱ و هر شهر ۲ امتیاز دارد. تاس از زمین‌های کنار ساختمان‌ها منابع می‌دهد؛ منابع هزینهٔ ساخت هستند. راه به محل آبادی تازه دسترسی می‌دهد و معامله کمبود ساخت بعدی را جبران می‌کند.</p><p>تو با سه رقیب خودکار بازی می‌کنی. برای معاملهٔ توافقی، «معامله» رو باز کن؛ بعد از تاس، هر معامله باید با صاحب نوبت باشه و هر دو طرف منابع بدهند. منابع پایین صفحه و اطلاعات بالای صفحه همیشه مال توئه. بعد از پایان نوبتت، رقبا به‌ترتیب بازی می‌کنن؛ لازم نیست گوشی رو به کسی بدی.</p><h3>جانمایی آغازین</h3><p>بالاترین تاس، شروع‌کننده رو مشخص می‌کنه. هرکس یک آبادی و یک راه کنار هم می‌ذاره؛ دور دوم از نفر آخر به عقب برمی‌گردیم. فاصلهٔ آبادی‌ها همیشه لازمه. جانمایی رایگانه و فقط آبادی دوم منابع آغازین می‌ده.</p><ol class="help-list"><li>تاس را بیندازید. خانه‌های هم‌شماره برای آبادی‌های مجاور یک منبع و برای شهرها دو منبع تولید می‌کنند.</li><li>با تاس هفت، راهزن را به خانه دیگری ببرید. خانه دارای راهزن تولید ندارد؛ در این نسخه سرقت و دورریختن منابع وجود ندارد.</li><li>ساخت‌وساز را باز کنید تا هزینه و محل‌های مجاز را ببینید. محل را انتخاب و سپس ساخت را تأیید کنید.</li><li>در بانک، چهار منبع یکسان را با یک منبع دیگر مبادله کنید. آبادی یا شهر کنار بندر عمومی نرخ ۳ به ۱ می‌دهد؛ بندر تخصصی فقط منبع نشان‌داده‌شده را با نرخ ۲ به ۱ می‌پذیرد. ساخت راه کافی نیست. پس از ساخت آبادی بندری، همان نوبت می‌توانید از نرخ آن استفاده کنید.</li><li>پس از انجام کارها، پایان نوبت را بزنید. رسیدن به ${number(state.victoryTarget)} امتیاز بازی را تمام می‌کند.</li></ol><p>راه باید به شبکه شما وصل باشد؛ ساختمان حریف ادامه راه را قطع می‌کند. بین آبادی‌ها یک تقاطع خالی لازم است. شهر فقط آبادی خودتان را ارتقا می‌دهد.</p><p class="footnote">برای جزئیات خانه آن را لمس کنید. برای انتخاب دقیق‌تر از فهرست محل‌ها استفاده کنید؛ محل انتخاب‌شده را پیش از تأیید بررسی کنید.</p>${button('دفتر سفر آناهیتا', 'open:journal', { className: 'button button--primary full-width' })}${button('رویدادهای بازی', 'open:history', { className: 'button full-width' })}${button('بررسی خانه‌های جزیره', 'open:inspect', { className: 'button full-width' })}${button('وضعیت من', `player:${player.id}`, { className: 'button full-width' })}${button('رقبای جزیره', 'open:opponents', { className: 'button full-width' })}${button('دیدن هزینه‌های ساخت', 'open:build', { className: 'button full-width', disabled: isSetup(state) })}`,
     };
 }

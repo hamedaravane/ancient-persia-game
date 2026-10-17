@@ -7,6 +7,7 @@ export function tutorialContent(session: GameSession): SheetContent {
     const director = session.tutorial;
     const id = director.current!;
     const lesson = LESSONS[id];
+    const practice = session.practice;
     return {
         title: 'آناهیتا',
         narrator: { portrait: `anahita-${lesson.expression}`, key: id },
@@ -14,7 +15,7 @@ export function tutorialContent(session: GameSession): SheetContent {
             <div class="narrator-copy"><p class="eyebrow">${CHAPTERS[lesson.chapter]}</p><h3>${escape(lesson.title)}</h3><p>${escape(lesson.text)}</p></div>
             <p class="narrator-task">${escape(lesson.task)}</p>
         </article>`,
-        footer: `<div class="narrator-controls">${button(director.remaining > 1 ? 'بعدش چی؟' : 'بریم سراغش', 'tutorial-next', { className: 'button button--primary' })}${button('فعلاً بدون راهنما', 'tutorial-pause', { className: 'button button--quiet' })}</div><p class="footnote">اگه پنجره رو ببندی، راهنما متوقف می‌شه؛ از دفتر سفر می‌تونی برگردی.</p>`,
+        footer: `<div class="narrator-controls">${button(practice?.stage === 'complete' ? 'دیدن آبادی و امتیاز تازه' : director.remaining > 1 ? 'بعدش چی؟' : 'بریم سراغش', 'tutorial-next', { className: 'button button--primary' })}${button(practice ? 'خروج از تمرین' : 'فعلاً بدون راهنما', 'tutorial-pause', { className: 'button button--quiet' })}</div><p class="footnote">${practice ? 'این تمرین ذخیره نمی‌شود؛ با خروج، بازی اصلی محفوظ می‌ماند.' : 'اگه پنجره رو ببندی، راهنما متوقف می‌شه؛ از دفتر سفر می‌تونی برگردی.'}</p>`,
     };
 }
 

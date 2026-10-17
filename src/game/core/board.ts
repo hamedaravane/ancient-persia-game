@@ -23,7 +23,33 @@ const TERRAIN_BAG: TerrainType[] = [
     'mountain',
     'desert',
 ];
-const NUMBER_BAG = [2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 12];
+// CATAN Variable Setup A–R order; terrain is shuffled, tokens are not.
+export const NUMBER_SEQUENCE = [5, 2, 6, 3, 8, 10, 9, 12, 11, 4, 8, 10, 9, 4, 5, 6, 3, 11];
+
+/** Counterclockwise on the displayed island, from the upper-left corner inward. */
+export function numberSpiral(): Array<{ q: number; r: number }> {
+    const coordinates: Array<{ q: number; r: number }> = [];
+    const directions = [
+        [-1, 1],
+        [0, 1],
+        [1, 0],
+        [1, -1],
+        [0, -1],
+        [-1, 0],
+    ];
+    for (let radius = BOARD_RADIUS; radius > 0; radius--) {
+        let q = 0;
+        let r = -radius;
+        for (const [dq, dr] of directions) {
+            for (let step = 0; step < radius; step++) {
+                coordinates.push({ q, r });
+                q += dq;
+                r += dr;
+            }
+        }
+    }
+    return [...coordinates, { q: 0, r: 0 }];
+}
 
 function shuffle<T>(items: T[], random: RandomSource): T[] {
     const result = [...items];
@@ -56,8 +82,6 @@ export function createBoard(random: RandomSource = Math.random): Board {
     }
 
     const terrains = shuffle(TERRAIN_BAG, random);
-    const numbers = shuffle(NUMBER_BAG, random);
-    let numberIndex = 0;
     const tiles: HexTile[] = coordinates.map(({ q, r }, index) => {
         const terrain = terrains[index];
         const terrainResources = {
@@ -76,7 +100,7 @@ export function createBoard(random: RandomSource = Math.random): Board {
             y: 1.5 * r,
             terrain,
             resource,
-            number: resource === null ? null : numbers[numberIndex++],
+            number: null,
             robber: false,
             vertexIds: [],
             edgeIds: [],
@@ -88,6 +112,12 @@ export function createBoard(random: RandomSource = Math.random): Board {
 
         return tile;
     });
+
+    let numberIndex = 0;
+    for (const { q, r } of numberSpiral()) {
+        const tile = tiles.find((tile) => tile.q === q && tile.r === r)!;
+        if (tile.resource !== null) tile.number = NUMBER_SEQUENCE[numberIndex++];
+    }
 
     const vertices: Record<string, BoardVertex> = {};
     const edges: Record<string, BoardEdge> = {};

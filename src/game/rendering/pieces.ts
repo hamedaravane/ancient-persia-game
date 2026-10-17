@@ -1,3 +1,4 @@
+import { SETTLEMENT, CITY, CITY_INSET } from './pieceShapes';
 import type { GameObjects, Scene } from 'phaser';
 
 export type BuildingKind = 'settlement' | 'city';
@@ -46,44 +47,6 @@ const STONE = {
     shadow: 0x101820,
     cue: 0xffe1a0,
 } as const;
-
-// Original floor plans, centered on the intersection; no image tracing or facades.
-const SETTLEMENT: Polygon = [
-    [-8, -10],
-    [8, -10],
-    [10.5, -7.5],
-    [10.5, 7],
-    [8, 9],
-    [3.5, 9],
-    [3.5, 11],
-    [-3.5, 11],
-    [-3.5, 9],
-    [-8, 9],
-    [-10.5, 7],
-    [-10.5, -7.5],
-];
-const CITY: Polygon = [
-    [-12.5, -12.5],
-    [-5.5, -12.5],
-    [-5.5, -9.5],
-    [5.5, -9.5],
-    [5.5, -12.5],
-    [12.5, -12.5],
-    [12.5, -5.5],
-    [9.5, -5.5],
-    [9.5, 5.5],
-    [12.5, 5.5],
-    [12.5, 12.5],
-    [5.5, 12.5],
-    [5.5, 9.5],
-    [-5.5, 9.5],
-    [-5.5, 12.5],
-    [-12.5, 12.5],
-    [-12.5, 5.5],
-    [-9.5, 5.5],
-    [-9.5, -5.5],
-    [-12.5, -5.5],
-];
 
 function chamfered(width: number, height: number, cut: number, x = 0, y = 0): Polygon {
     const l = x - width / 2,
@@ -207,7 +170,7 @@ export class PieceView {
         const surface = road
             ? chamfered(Math.max(2, length - thickness * 0.8), Math.max(1, thickness - 3.5), 0.7)
             : options.kind === 'city'
-              ? chamfered(14, 14, 1.5)
+              ? CITY_INSET
               : chamfered(14, 13, 1.8, 0, -0.5);
         path(stone.fillStyle(paint(STONE.inset)), transform(surface)).fillPath();
         const face = surface.map(([x, y]) => [x * 0.86, y * 0.86] as const);
@@ -223,13 +186,15 @@ export class PieceView {
         this.bevel(bevel, transform(outline), paint(STONE.light), paint(STONE.shade), 1.15);
 
         if (!road && options.kind === 'city') {
-            // Four large stone corner pads establish a stepped compound at 25 px.
-            for (const x of [-9, 9])
-                for (const y of [-9, 9]) {
-                    const pad = transform(chamfered(4.5, 4.5, 0.7, x, y));
-                    path(stone.fillStyle(paint(STONE.shade)), pad).fillPath();
-                    this.bevel(bevel, pad, paint(STONE.light), paint(STONE.inset), 0.85);
-                }
+            // Broad end pads stay within the L-shaped wings, leaving its open quarter clear.
+            for (const [x, y] of [
+                [-7, -7],
+                [7, 7],
+            ]) {
+                const pad = transform(chamfered(4.5, 4.5, 0.7, x, y));
+                path(stone.fillStyle(paint(STONE.shade)), pad).fillPath();
+                this.bevel(bevel, pad, paint(STONE.light), paint(STONE.inset), 0.85);
+            }
         } else if (!road) {
             // One broad threshold on the small dwelling; no facade or pitched roof.
             const threshold = transform([

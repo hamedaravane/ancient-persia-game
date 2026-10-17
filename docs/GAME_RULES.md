@@ -1,13 +1,13 @@
 # MVP rules
 
-This document records the playable single-player MVP. New games have exactly four seats: one human and three local bots in fixed clockwise seat order. Play and Tutorial share these rules; Tutorial adds contextual narration. Legacy three-player saves retain their existing board/player count, with seat one controlled by the human. Online multiplayer, additional economic and scoring systems remain out of scope until designed.
+This document records the playable single-player MVP. New games have exactly four seats: one human and three local bots in fixed clockwise seat order. Ordinary matches use these rules. The menu Tutorial is a separate, disposable practice exercise; contextual narration can also be enabled in an ordinary match through Help. Legacy three-player saves retain their existing board/player count, with seat one controlled by the human. Online multiplayer, additional economic and scoring systems remain out of scope until designed.
 
 ## Board setup
 
 - Generate a radius-two hex board containing 19 tiles.
 - Tile counts: four forests, three mesas, four wheat fields, four pastures, three mountains, and one desert.
 - Terrain-to-resource mapping: forest → wood, mesa → brick, wheat field → wheat, pasture → wool, mountain → stone. Desert produces nothing.
-- Shuffle the terrain and number-token bags for each new game. The 18 productive numbers are `2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 12`.
+- Follow CATAN Variable Setup: shuffle the 19 terrain tiles, then place the 18 number tokens in the fixed A–R sequence `5, 2, 6, 3, 8, 10, 9, 12, 11, 4, 8, 10, 9, 4, 5, 6, 3, 11`. Start at the upper-left corner of the displayed island, spiral counterclockwise around the outer ring, continue into the inner ring and then the center, and skip the desert without consuming a token. Number tokens are never shuffled independently. This keeps red tokens (6 and 8) off adjacent hexes for every desert position. Existing saved boards retain their original distribution.
 - The robber starts on the desert.
 - Nine ports occupy fixed, separated coastal edges: four general ports and one specialist for each of wood, brick, wheat, wool, and stone. Shuffle the port types using the same supplied random source as the board. Each port connects to exactly the two endpoints of its coastal edge.
 - The board begins without player pieces. Each player rolls two dice to choose the highest roller as starter; these rolls do not produce resources or activate seven. Tied highest players reroll among themselves (Sunmark's explicit tie-resolution policy).
@@ -62,3 +62,7 @@ These domestic rules follow [CATAN's official Rules & Almanac, Domestic Trade, p
 - Each settlement is worth one victory point. Each city is worth two. Roads are worth zero.
 - All starting settlements count toward victory points.
 - The first player to reach six points wins immediately; no further action or turn change is allowed.
+
+## Beginner practice
+
+The menu Tutorial enters a clearly labeled, deterministic practice board with one preplaced settlement/road, prepared resources, inactive opponents, and a disclosed production roll. The player rolls, receives actual terrain production, pays for a sample road to a new legal settlement site, exchanges four wood for a missing wool, and pays for a settlement that changes their score from one to two. Every performed action uses the ordinary core validators and costs. The sample route illustrates connectivity and distance, without recommending an optimal move. Practice cannot end turns, build other pieces, or execute a different trade; alternative bank selections remain inspectable for comparison. It never saves over a match. Completion or exit returns to the menu; Play resumes the existing save or starts normal empty-board setup. This explicit teaching scenario does not change ordinary random dice or grant resources in a real match.

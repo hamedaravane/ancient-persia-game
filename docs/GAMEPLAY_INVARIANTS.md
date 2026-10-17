@@ -2,6 +2,8 @@
 
 These invariants are enforced by the pure TypeScript rules in `src/game/core/` and must remain true in every resulting game state:
 
+- New ordinary boards use the official fixed A–R token sequence along a counterclockwise corner-to-center spiral, skipping the shuffled desert. They have no adjacent 6/8 tokens; saved boards are not renumbered.
+- The disposable beginner exercise never overwrites or mutates a saved match. Its staged roll/resources and idle opponents are explicit; performed production, payments, trades, placements, and scores still use the normal rules.
 - Every road has exactly one owner and occupies one valid board edge.
 - Every settlement or city has exactly one owner and occupies one valid board vertex.
 - An edge can contain at most one road; a vertex can contain at most one building.

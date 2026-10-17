@@ -131,7 +131,12 @@ export class TutorialDirector {
                 if (action.kind === 'roll') {
                     this.practiced.add('roll');
                     if (state.phase !== 'robber') {
-                        this.practiced.add('production');
+                        if (
+                            transition.production.some(
+                                (grant) => grant.playerId === player.id && grant.amount > 0,
+                            )
+                        )
+                            this.practiced.add('production');
                         this.offer('production');
                         if (!transition.production.some((grant) => grant.playerId === player.id))
                             this.offer('no-income');

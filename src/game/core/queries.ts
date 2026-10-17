@@ -10,8 +10,12 @@ export interface BuildOption {
     reason: 'wrong-phase' | 'game-finished' | 'insufficient-resources' | 'no-legal-targets' | null;
 }
 
-export function getBuildOption(state: GameState, type: BuildType): BuildOption {
-    const player = state.players[state.activePlayerIndex];
+export function getBuildOption(
+    state: GameState,
+    type: BuildType,
+    playerId = state.players[state.activePlayerIndex].id,
+): BuildOption {
+    const player = state.players.find((p) => p.id === playerId)!;
     const cost = BUILD_COSTS[type];
     const missing = Object.fromEntries(
         RESOURCE_TYPES.map((resource) => [
@@ -26,7 +30,7 @@ export function getBuildOption(state: GameState, type: BuildType): BuildOption {
     const reason =
         state.phase === 'finished'
             ? 'game-finished'
-            : state.phase !== 'actions'
+            : state.phase !== 'actions' || state.players[state.activePlayerIndex].id !== playerId
               ? 'wrong-phase'
               : RESOURCE_TYPES.some((resource) => missing[resource] > 0)
                 ? 'insufficient-resources'

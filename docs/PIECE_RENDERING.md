@@ -5,7 +5,7 @@ Settlement, city, and road pieces use original, direct top-down floor-plan geome
 ## Visual design
 
 - **Settlement:** a compact chamfered stone structure with one broad threshold and one ownership inset; default footprint 21 × 21 board pixels.
-- **City:** a wider stepped compound with four large corner pads and a central ownership inset; default footprint 25 × 25. Its concave silhouette differs from the settlement in full grayscale, without relying on size or color alone.
+- **City:** a wider L-shaped compound with two end pads and an L-shaped ownership inset; default footprint 25 × 25. A 14 × 14 open quarter cuts deeply into its outline, replacing the former shallow corner notches that read as another square at mobile size. Its concave silhouette differs from the settlement in full grayscale, without relying on size or color alone.
 - **Road:** a chamfered stone bar with a continuous ownership strip, restrained end caps, and two joints; default length 28 and thickness 8. Board integration centers it on the edge with endpoint clearance, shrinking its length proportionally on smaller boards.
 - Warm neutral stone, a dark keyline, a short contact shadow, and broad bevel strokes provide material character. There are no perspective side walls, pitched roofs, fine texture, or tiny ornament.
 - Geometry rotates in the renderer. Bevel-edge normals are evaluated after rotation, so upper-left lighting and world-axis shadow offsets remain consistent across road orientations.
@@ -89,3 +89,5 @@ The demo canvas resizes to its actual CSS width using `Scale.NONE`; actual-size 
 Original piece paintings are preserved byte-for-byte under `art/reference/pieces/`; see [the reference README](../art/reference/README.md). Their prior oblique perspective, fine detail, and magenta ownership areas were unsuitable for small, arbitrary-color orthographic rendering. They are no longer copied from `public/` into the production build. Other artwork, including the robber, terrain, and resource icons, is unchanged.
 
 Verification uses the repository typecheck/build and focused recording checks for arbitrary-color/material separation, all-layer grayscale, shared anchors, road dimensions at all six directed edge angles, world-space lighting, text-free pieces, state reset, redraw allocation, and disposal. Recording checks validate drawing commands, not browser rasterization. Interactive device review remains with the user; no browser is launched as part of this task.
+
+`rendering/pieceShapes.ts` shares the original contours between the board renderer and HUD symbols. Binary silhouette tests in `tests/piece-shapes.test.ts` sample 21/25 CSS-pixel sizes without any color/shading and verify a broad shape difference and that the city inset cannot fill its open quarter. These checks do not establish device rasterization quality; use the existing actual-size/grayscale gallery for user visual review.

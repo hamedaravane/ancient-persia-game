@@ -2,11 +2,15 @@
 
 ## Implemented experience
 
-The menu’s **آموزش** button starts the same four-seat single-player match as Play: one human and three bots, with **سفر با آناهیتا** enabled. Tutorial always starts from the opening welcome and empty-board setup; it asks before replacing an existing save. Play resumes an unfinished guided match with its narrator memory intact. This starts an ordinary match with a narrative companion enabled. It uses the same generated board, starting pieces, dice, costs, legal targets, bank, ports, and six-point victory as an unguided match. Bots use ordinary validated actions; both modes now include player-chosen opening settlements/roads, with no staged resource gifts or forced production rolls.
+The menu’s **آموزش** button opens a short, disposable practice board. Its opening explains the connected model: reach **6 points** through settlements (1) and cities (2); buildings receive resources from adjacent matching dice tiles; resources pay for construction; roads expand access to new settlement sites; trading fills a specific construction shortage. The exercise visibly identifies its prepared dice/resources, single preplaced settlement/road, and idle opponents. It never replaces a saved match or asks for a replacement confirmation.
+
+The player performs four steps through existing controls and core commands: roll and receive wood from adjacent terrain; pay one wood/brick to extend a sample road; exchange four wood for the missing wool while retaining construction wood; pay for a legal settlement and see their score increase from 1 to 2. A fixed route is a teaching example, explicitly not an optimal-move recommendation. Road copy also explains occupying routes to limit opponents and the building-interruption rule. A city lesson connects its two points and doubled production to the same loop. The primary button opens each next workspace; the persistent strip identifies the step. Previews never pay or score. Other constructions/trades and end-turn are blocked within practice, while alternative bank selections show their construction impact. There is no time limit.
+
+`tutorial/practice.ts` owns the deterministic fixture and step descriptions; `GameSession` isolates its lifecycle, performs core actions, and advances only on successful commands. Normal tutorial observation is suspended for the exercise. Bots are disabled, `save()` leaves the existing match unchanged, and completion/exit returns to the menu. Practice is deliberately not resumed after reload; Play resumes the untouched saved match or requests a name for a real new match. Real matches retain normal setup, random dice, bots and costs. Help → **دفتر سفر آناهیتا** still enables the contextual companion for an ordinary match, with persisted narrative memory.
 
 Anahita invites the human into an island story built from their actual decisions. Her voice uses contemporary colloquial Persian: intimate, confident, observant, and lightly teasing. She consistently addresses the human as «تو». After the human ends a turn, she explains that rivals play automatically while the phone and resource hand remain the human’s. Bot actions never count as the human’s practice. The ending stays valid if a bot wins. The player remains the decision-maker.
 
-There are 31 short Persian conversations across five chapters. Each has an expression, a title, one explanatory paragraph, and an actionable next step. Runtime text lives in `src/game/tutorial/lessons.fa.ts`. Examples:
+There are contextual Persian conversations plus five practice conversations across five chapters. Each has an expression, a title, one explanatory paragraph, and an actionable next step. Runtime text lives in `src/game/tutorial/lessons.fa.ts`. Examples:
 
 - Greeting: «بالاخره رسیدی... من آناهیتام. این جزیره هنوز کلی قصهٔ نگفته داره.»
 - Trading: «انبارت پر از یه چیزه و درست همونی رو که می‌خوای نداری؟ بیا یه معامله کنیم.»
@@ -16,10 +20,10 @@ These are fictional character lines, not historical claims about the supplied de
 
 ## Voice and narrative continuity
 
-The 31 conversations form a loose dramatic arc that remains valid in a random local match: arrival and two starting lights, discovering how the island answers, leaving a mark through roads and settlements, opening trade opportunities, confronting the robber, and looking back at the decisions that shaped the final board. The ending recalls the two starting settlements. These recurring images supply continuity without inventing quests, enemies, hidden rewards, historical events, or a guaranteed sequence of actions.
+The contextual conversations form a loose dramatic arc that remains valid in a random local match: arrival and two starting lights, discovering how the island answers, leaving a mark through roads and settlements, opening trade opportunities, confronting the robber, and looking back at the decisions that shaped the final board. The ending recalls the two starting settlements. These recurring images supply continuity without inventing quests, enemies, hidden rewards, historical events, or a guaranteed sequence of actions.
 
 - Use spoken forms such as «رو»، «یه»، «اگه»، «می‌تونی» and «توئه», with readable Persian spelling and half-spaces. Keep familiar mechanic names, precise quantities, and actual button labels clear.
-- Give each conversation one brief emotional beat, followed by its concrete mechanic and a direct next step. Current dialogue paragraphs are roughly 25–42 whitespace-separated words. Tasks, journal copy, menu invitation, and Continue/Pause wording use the same contemporary register.
+- Give each conversation one brief emotional beat, followed by its concrete mechanic and a direct next step. Use concise paragraphs; the practice introduction also connects the overall objective and mechanics. Tasks, journal copy, menu invitation, and Continue/Pause wording use the same contemporary register.
 - Convey understated allure through invitation, curiosity, close attention, and gentle teasing: «بیا نزدیک‌تر»، «یه راز کوچیک بهت بگم» and «از این بلندپروازیت خوشم میاد». Vary these touches; avoid inserting a flirt or compliment into every lesson.
 - Let dramatic language follow the moment: quiet reassurance for no income, caution before confirmation, tension around seven, delight after construction. Never replace a cost, restriction, or consequence with a metaphor.
 - Keep copy compatible with replay and single-player play. A success line requires a confirmed result, and the ending refers to the winner without assuming the reader personally won. Do not turn probabilistic production into a promise or imply that moving the robber makes the desert productive.
@@ -90,10 +94,14 @@ The six original PNG masters total 12,199,151 bytes and are preserved byte-for-b
 
 The user performs interactive testing. At 390 × 844 and a compact size, review reading and body scrolling, portrait loading and expression changes, keyboard focus and Escape, returning to a previewed target, preserved bank choices, handoff clarity, and journal navigation. Node tests do not validate appearance or native-modal behavior.
 
-This flow follows real random matches. It does not guarantee a city, trade, port acquisition, or seven in a fixed number of turns. The journal permits immediate review of rare situations without claiming they were practiced. A timed or solo training campaign would need separately designed legal scenarios and explicit practice-state lifecycle; it should not quietly alter ordinary-match rules.
+Contextual guidance follows real random matches and cannot guarantee a city, trade, port acquisition, or seven in a fixed number of turns. The separate practice exercise guarantees the foundational production/road/trade/settlement/score loop without changing ordinary matches. Journal replay reviews content without claiming an action was practiced. Production practice is earned only when the human actually receives a production grant.
 
 Opening-specific scheduling, official references, save validation, and tests are documented in [OPENING_SETUP.md](OPENING_SETUP.md).
 
 ## Domestic negotiation
 
 The `domestic` conversation introduces player-to-player trading when its workspace opens, including invitations during bot turns. `domestic-done` follows a confirmed exchange involving the human; bot-to-bot deals do not earn practice. Narration restores the interrupted trade/receipt and uses existing supplied expressions. See [DOMESTIC_TRADING.md](DOMESTIC_TRADING.md).
+
+## Beginner regression checks
+
+`tests/practice.test.ts` executes the complete command sequence, immutable previews, actual production/payment/score changes, bot/extra-action guards, exit, and save preservation. `tests/build-feedback.test.ts` checks exact shortages, topology/phase reasons, human-only inventories during opponent turns, and trades that either fix a wool shortage or introduce a wood shortage. `tests/board-generation.test.ts` checks the independent spiral fixture, token order, terrain counts, deterministic generation, and red-token separation for all 19 desert positions. Device rendering, reading length, and completion by first-time players remain user review tasks.

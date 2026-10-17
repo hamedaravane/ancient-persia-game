@@ -1,3 +1,5 @@
+import { getBankTradeRatio } from '../core/ports';
+import { PRACTICE_TASKS } from '../tutorial/practice';
 import { LESSONS, type LessonId } from '../tutorial/lessons.fa';
 import { BUILD_TYPES } from '../core/building';
 import { isSetup } from '../core/setup';
@@ -93,8 +95,29 @@ export class GameHud {
             state.setup.settlements.length >= state.players.length;
         this.updatePart('.match-bar', humanHeader(this.session));
         const storageWarning = this.session.saveStatus === 'unavailable' && !placement;
+        const availableBuilds = BUILD_TYPES.filter(
+            (type) =>
+                !getBuildOption(state, type, human.id).reason &&
+                (!this.session.practice || this.session.practice.stage === type),
+        );
+        const bankReady = RESOURCE_TYPES.some(
+            (r) => human.resources[r] >= getBankTradeRatio(state.board, human.id, r),
+        );
+        const hasCards = RESOURCE_TYPES.some((r) => human.resources[r] > 0);
+        const partnerHasCards = state.players.some(
+            (p) => p.id !== human.id && RESOURCE_TYPES.some((r) => p.resources[r] > 0),
+        );
+        const tradeHint = bankReady
+            ? 'بانک آمادهٔ مبادله است'
+            : hasCards && partnerHasCards
+              ? 'می‌توانی پیشنهاد معامله بدهی'
+              : 'برای معامله منابع کافی نیست';
+        const actionHint = availableBuilds.length
+            ? `قابل ساخت: ${availableBuilds.map((type) => BUILD_LABELS[type]).join('، ')}؛ ${tradeHint}؛ یا پایان نوبت.`
+            : `ساخت آماده نیست؛ کمبود و محل را در ساخت ببین. ${tradeHint}؛ یا پایان نوبت.`;
         const hint =
             this.session.error ||
+            (this.session.practice ? PRACTICE_TASKS[this.session.practice.stage] : '') ||
             (storageWarning ? 'ذخیره خودکار فعال نیست؛ برای جزئیات بزن.' : '') ||
             (!humanTurn && state.phase !== 'finished'
                 ? this.session.notice ||
@@ -118,19 +141,21 @@ export class GameHud {
                       ? FA.normalRoll
                       : this.session.tutorial.enabled
                         ? this.session.tutorial.objective({ state, placement })
-                        : this.session.notice || FA.buildHint);
+                        : actionHint);
         this.updatePart(
             '.context-line',
             button(
                 `<span>${escape(hint)}</span><span aria-hidden="true">≡</span>`,
                 storageWarning
                     ? 'open-app'
-                    : this.session.tutorial.enabled
-                      ? 'open:journal'
-                      : 'open:history',
+                    : this.session.practice
+                      ? 'open:help'
+                      : this.session.tutorial.enabled
+                        ? 'open:journal'
+                        : 'open:history',
                 {
                     className: 'context-button',
-                    label: `${hint}؛ ${storageWarning ? 'جزئیات ذخیره بازی' : this.session.tutorial.enabled ? 'دفتر سفر آناهیتا' : 'دیدن رویدادها'}`,
+                    label: `${hint}؛ ${storageWarning ? 'جزئیات ذخیره بازی' : this.session.practice ? 'راهنمای تمرین' : this.session.tutorial.enabled ? 'دفتر سفر آناهیتا' : 'دیدن رویدادها'}`,
                 },
             ),
         );
@@ -142,28 +167,37 @@ export class GameHud {
                 ? `<div class="placement-cost"><span>${placement.kind === 'road' ? 'راه کنار آبادی تازه' : second ? 'آبادی دوم' : 'آبادی اول'}</span><span class="muted">جانمایی آغازین • بدون هزینه</span></div>${button('پاک‌کردن انتخاب', 'cancel-placement', { className: 'button button--quiet', disabled: !placement.targetId })}`
                 : placement
                   ? `<div class="placement-cost"><span>${placement.kind === 'robber' ? 'جابه‌جایی راهزن' : `هزینه ${BUILD_LABELS[placement.kind]}`}</span>${placement.kind === 'robber' ? '<span class="muted">خانه فعلی قابل انتخاب نیست</span>' : costRow(getBuildOption(state, placement.kind))}</div>${button(placement.kind === 'robber' ? 'پاک‌کردن انتخاب' : 'لغو', 'cancel-placement', { className: 'button button--quiet', disabled: placement.kind === 'robber' && !placement.targetId })}`
-                  : `${button('<span class="piece-symbol piece-symbol--settlement" aria-hidden="true"></span>ساخت‌وساز', 'open:build', { className: 'button dock-button', disabled: opening || !humanTurn || state.phase === 'finished' })}${button(`${artSprite('bank', 28)}معامله`, 'open:domestic', { className: 'button dock-button', disabled: state.phase !== 'actions' })}`,
+                  : `${button(`<span class="piece-symbol piece-symbol--settlement" aria-hidden="true"></span>ساخت • ${number(availableBuilds.length)} آماده`, 'open:build', { className: 'button dock-button', disabled: opening || state.phase === 'finished' })}${button(`${artSprite('bank', 28)}معامله`, this.session.practice ? 'open:trade' : 'open:domestic', { className: 'button dock-button', disabled: state.phase !== 'actions' || (!!this.session.practice && this.session.practice.stage !== 'trade') })}`,
         );
         const primaryLabel =
-            !humanTurn && state.phase !== 'finished'
-                ? 'منتظر نوبت تو…'
-                : placement
-                  ? placement.kind === 'robber'
-                      ? 'تأیید جابه‌جایی راهزن'
-                      : opening
-                        ? `تأیید ${placement.kind === 'road' ? 'راه آغازین' : second ? 'آبادی دوم' : 'آبادی اول'}`
-                        : `تأیید ساخت ${BUILD_LABELS[placement.kind]}`
-                  : state.phase === 'setup-roll'
-                    ? 'تاس تعیین آغازکننده'
-                    : state.phase === 'roll'
-                      ? FA.roll
-                      : state.phase === 'finished'
-                        ? 'نتیجه بازی'
-                        : FA.endTurn;
+            this.session.practice && !placement && this.session.practice.stage !== 'roll'
+                ? (
+                      {
+                          road: 'بازکردن ساخت راه',
+                          trade: 'بازکردن بانک؛ دریافت پشم',
+                          settlement: 'بازکردن ساخت آبادی',
+                          complete: 'تمرین تمام شد؛ بازگشت به منو',
+                      } as const
+                  )[this.session.practice.stage]
+                : !humanTurn && state.phase !== 'finished'
+                  ? 'منتظر نوبت تو…'
+                  : placement
+                    ? placement.kind === 'robber'
+                        ? 'تأیید جابه‌جایی راهزن'
+                        : opening
+                          ? `تأیید ${placement.kind === 'road' ? 'راه آغازین' : second ? 'آبادی دوم' : 'آبادی اول'}`
+                          : `تأیید ساخت ${BUILD_LABELS[placement.kind]}`
+                    : state.phase === 'setup-roll'
+                      ? 'تاس تعیین آغازکننده'
+                      : state.phase === 'roll'
+                        ? FA.roll
+                        : state.phase === 'finished'
+                          ? 'نتیجه بازی'
+                          : FA.endTurn;
         this.updatePart(
             '.primary-row',
             button(primaryLabel, 'primary', {
-                className: `button button--primary${state.phase === 'actions' && !placement ? ' button--end-turn' : ''}`,
+                className: `button button--primary${state.phase === 'actions' && !placement && !this.session.practice ? ' button--end-turn' : ''}`,
                 disabled:
                     (!humanTurn && state.phase !== 'finished') ||
                     (!!placement && !placement.targetId),

@@ -1,3 +1,4 @@
+import { SETTLEMENT, CITY } from '../rendering/pieceShapes';
 import type { GameObjects } from 'phaser';
 import { canvasDisplay } from '../rendering/display';
 import { headerBackdrop } from './headerModel';
@@ -308,9 +309,15 @@ function drawPieceSymbol(g: GameObjects.Graphics, box: UiBox, kind: string): voi
     if (kind === 'road') {
         g.fillRoundedRect(x + 3, y + 2, w - 6, Math.max(2, h - 4), 2);
     } else {
-        g.fillRect(x + w * 0.2, y + h * 0.2, w * 0.6, h * 0.6);
-        g.fillStyle(UI_INK.gold).fillRect(x + w * 0.4, y + h * 0.5, w * 0.2, h * 0.35);
-        if (kind === 'city')
-            g.fillStyle(0x283e55).fillRect(x + w * 0.65, y + h * 0.1, w * 0.25, h * 0.5);
+        const polygon = kind === 'city' ? CITY : SETTLEMENT;
+        const scale = (Math.min(w, h) * 0.8) / (kind === 'city' ? 25 : 21);
+        g.beginPath();
+        polygon.forEach(([px, py], index) => {
+            const dx = x + w / 2 + px * scale;
+            const dy = y + h / 2 + py * scale;
+            if (index === 0) g.moveTo(dx, dy);
+            else g.lineTo(dx, dy);
+        });
+        g.closePath().fillPath();
     }
 }

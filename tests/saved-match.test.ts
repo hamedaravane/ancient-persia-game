@@ -68,7 +68,7 @@ test('Anahita remembers acknowledged dialogue, pending dialogue, and paused guid
     expect(paused.tutorial.current).toBeNull();
 });
 
-test('Tutorial requests a fresh opening instead of silently resuming reviewed guided progress', () => {
+test('Tutorial opens disposable practice without replacing reviewed guided progress', () => {
     const { session, reload } = fixture();
     const readDialogue = () => {
         while (session.sheet?.kind === 'tutorial') session.continueTutorial();
@@ -88,19 +88,14 @@ test('Tutorial requests a fresh opening instead of silently resuming reviewed gu
 
     const tutorial = reload();
     tutorial.requestPlay(true);
-    expect(tutorial.state).toBeNull();
+    expect(tutorial.practice?.stage).toBe('roll');
+    expect(tutorial.state?.phase).toBe('roll');
     expect(tutorial.savedMatch).toEqual(saved);
-    expect(tutorial.sheet).toEqual({ kind: 'new-match', count: 4, guided: true });
-    tutorial.confirmNewMatch();
-    expect(tutorial.sheet?.kind).toBe('player-name');
-    tutorial.confirmPlayerName();
-    expect(tutorial.state?.phase).toBe('setup-roll');
-    expect(tutorial.state?.players).toHaveLength(4);
-    expect(Object.values(tutorial.state!.board.vertices).every((v) => !v.building)).toBe(true);
-    expect(Object.values(tutorial.state!.board.edges).every((e) => !e.road)).toBe(true);
-    expect(tutorial.tutorial.current).toBe('welcome');
-    expect(tutorial.sheet?.kind).toBe('tutorial');
-    expect(tutorial.tutorial.seen.size).toBe(0);
+    expect(tutorial.tutorial.current).toBe('practice-intro');
+    tutorial.returnToMenu();
+    const afterPractice = reload();
+    afterPractice.requestPlay();
+    expect(afterPractice.state).toEqual(saved!.state);
 });
 
 test('unconfirmed construction and trade drafts never pay resources or resume automatically', () => {

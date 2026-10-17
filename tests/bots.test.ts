@@ -36,12 +36,18 @@ afterEach(() => {
     vi.useRealTimers();
 });
 
-test('both menu choices start four seats and the menu stays at two buttons even with saves/updates', () => {
+test('menu keeps Play and Tutorial; practice pauses bots and does not create a save', () => {
     for (const guided of [false, true]) {
         const session = new GameSession();
         session.requestPlay(guided);
-        expect(session.sheet?.kind).toBe('player-name');
-        session.confirmPlayerName();
+        if (!guided) {
+            expect(session.sheet?.kind).toBe('player-name');
+            session.confirmPlayerName();
+        } else {
+            expect(session.practice?.stage).toBe('roll');
+            expect(session.botReady).toBe(false);
+            expect(session.savedMatch).toBeNull();
+        }
         expect(session.state!.players).toHaveLength(4);
         expect(session.humanPlayer?.id).toBe(session.state!.players[0].id);
         expect(session.tutorial.enabled).toBe(guided);
@@ -54,8 +60,8 @@ test('both menu choices start four seats and the menu stays at two buttons even 
         expect(menu).toContain('data-action="tutorial"');
         expect(menu).not.toContain('data-action="open-app"');
         session.requestPlay();
-        expect(session.state!.players).toHaveLength(4);
-        expect(session.sheet?.kind).toBe(guided ? 'tutorial' : undefined);
+        if (guided) expect(session.sheet?.kind).toBe('player-name');
+        else expect(session.state!.players).toHaveLength(4);
     }
 });
 

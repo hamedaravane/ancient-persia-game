@@ -13,16 +13,17 @@ export function humanHeader(session: GameSession): string {
     const standings = headerPlayers(state, human.id);
     const own = standings.find((p) => p.human)!;
     const active = state.players[state.activePlayerIndex];
-    const phase =
-        state.phase === 'finished'
-            ? PHASE_LABELS.finished
-            : session.isHumanTurn
-              ? PHASE_LABELS[state.phase]
-              : state.phase === 'setup-roll'
-                ? `تاس آغازین ${active.name}`
-                : isSetup(state)
-                  ? `جانمایی ${active.name}`
-                  : `نوبت ${active.name}`;
+    const phase = session.practice
+        ? 'صفحهٔ تمرین • بدون حرکت رقبا'
+        : state.phase === 'finished'
+          ? PHASE_LABELS.finished
+          : session.isHumanTurn
+            ? PHASE_LABELS[state.phase]
+            : state.phase === 'setup-roll'
+              ? `تاس آغازین ${active.name}`
+              : isSetup(state)
+                ? `جانمایی ${active.name}`
+                : `نوبت ${active.name}`;
     const roll =
         state.phase === 'setup-roll'
             ? state.setup?.lastRoll?.playerId === human.id

@@ -1,3 +1,4 @@
+import { tradeBuildFeedback } from './buildFeedback';
 import { getPlayerSummary } from '../core/queries';
 import { previewTrade } from '../core/tradePreview';
 import { bundleSize } from '../core/domesticTrade';
@@ -95,7 +96,7 @@ export function domesticContent(session: GameSession): SheetContent {
             title: 'تأیید نهایی معامله',
             key: `trade-review-${review.id}`,
             focusAction: error ? `deal-withdraw:${review.id}` : `deal-finish:${review.id}`,
-            body: `${tabs}<p class="sheet-intro">با ${escape(partner.name)} • هر دو طرف با همین پیشنهاد موافقید. هنوز هیچ منبعی جابه‌جا نشده.</p>${summary(own.give, own.want)}${paymentWarning(session, own.give)}<h3>دارایی تو قبل ← بعد</h3><dl class="detail-list">${balances}</dl>${error ? '<p class="availability">یکی از طرف‌ها دیگر منابع کافی نداره؛ این پیشنهاد رو لغو کن و دوباره بساز.</p>' : ''}`,
+            body: `${tabs}<p class="sheet-intro">با ${escape(partner.name)} • هر دو طرف با همین پیشنهاد موافقید. هنوز هیچ منبعی جابه‌جا نشده.</p>${summary(own.give, own.want)}${paymentWarning(session, own.give)}<h3>دارایی تو قبل ← بعد</h3><dl class="detail-list">${balances}</dl>${!error ? tradeBuildFeedback(session, previewTrade(human.resources, own.give, own.want).after) : ''}${error ? '<p class="availability">یکی از طرف‌ها دیگر منابع کافی نداره؛ این پیشنهاد رو لغو کن و دوباره بساز.</p>' : ''}`,
             footer: `${button('تأیید نهایی و جابه‌جایی منابع', `deal-finish:${review.id}`, { className: 'button button--primary full-width', disabled: !!error })}${button('لغو این معامله', `deal-withdraw:${review.id}`, { className: 'button full-width' })}`,
         };
     }
@@ -134,7 +135,7 @@ export function domesticContent(session: GameSession): SheetContent {
             context,
             key: 'trade-compose',
             title: market.parentId ? 'پیشنهاد متقابل تو' : 'معامله با بازیکن‌ها',
-            body: `${tabs}${rules}<p class="sheet-intro">${session.isHumanTurn ? 'پیشنهادت رو به یک ربات یا هر سه بفرست؛ انتخاب نهایی با توئه.' : `نوبت ${escape(active.name)} است؛ فقط با همین بازیکن می‌تونی معامله کنی.`}</p><div class="deal-targets" role="group" aria-label="طرف معامله">${all}${targets}</div><p class="footnote">منابع و تعدادها رو انتخاب کن. یک منبع نمی‌تونه در هر دو طرف معامله باشه؛ نسبت معامله توافقیه.</p><div class="deal-editor-head"><span>منبع</span><span>تو می‌دی</span><span>تو می‌گیری</span></div>${editor}${paymentWarning(session, market.give)}<p class="availability" role="status">${escape(market.draftError ?? 'پیشنهاد آمادهٔ ارساله؛ هنوز چیزی جابه‌جا نمی‌شه.')}</p>`,
+            body: `${tabs}${rules}<p class="sheet-intro">${session.isHumanTurn ? 'پیشنهادت رو به یک ربات یا هر سه بفرست؛ انتخاب نهایی با توئه.' : `نوبت ${escape(active.name)} است؛ فقط با همین بازیکن می‌تونی معامله کنی.`}</p><div class="deal-targets" role="group" aria-label="طرف معامله">${all}${targets}</div><p class="footnote">منابع و تعدادها رو انتخاب کن. یک منبع نمی‌تونه در هر دو طرف معامله باشه؛ نسبت معامله توافقیه.</p><div class="deal-editor-head"><span>منبع</span><span>تو می‌دی</span><span>تو می‌گیری</span></div>${editor}${paymentWarning(session, market.give)}${tradeBuildFeedback(session, previewTrade(human.resources, market.give, market.want).after)}<p class="availability" role="status">${escape(market.draftError ?? 'پیشنهاد آمادهٔ ارساله؛ هنوز چیزی جابه‌جا نمی‌شه.')}</p>`,
             footer: `${summary(market.give, market.want)}${button(market.parentId ? 'ارسال پیشنهاد متقابل' : 'ارسال پیشنهاد', 'deal-send', { className: 'button button--primary full-width', disabled: !!market.draftError })}`,
         };
     }

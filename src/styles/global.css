@@ -416,8 +416,11 @@ h3 {
 }
 .context-button > span:first-child {
     overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    max-height: 36px;
 }
 .context-button > span:last-child {
     font-size: 18px;
@@ -1417,4 +1420,21 @@ h3 {
 }
 .sheet-footer > * + * {
     margin-top: 8px;
+}
+
+.build-inventory {
+    font-size: 14px;
+    line-height: 24px;
+}
+.build-inventory > div {
+    display: grid;
+    grid-template-columns: minmax(56px, 1.4fr) repeat(3, minmax(36px, 1fr));
+    gap: 4px;
+    padding-block: 2px;
+}
+.build-inventory > div:first-child {
+    font-size: 12px;
+}
+.trade-build-feedback p {
+    margin-block: 8px;
 }

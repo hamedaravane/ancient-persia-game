@@ -1,0 +1,118 @@
+import { afterEach, expect, test, vi } from 'vitest';
+import { GameSession } from '../src/game/ui/session';
+import { sheetContent } from '../src/game/ui/sheets';
+import { humanHeader } from '../src/game/ui/humanHud';
+import { MatchStore } from '../src/game/persistence/matchStore';
+
+const actions = (markup: string) => [...markup.matchAll(/data-action="([^"]+)"/g)].map((m) => m[1]);
+afterEach(() => vi.restoreAllMocks());
+function pausedSession() {
+    vi.spyOn(Math, 'random').mockReturnValue(0.5);
+    const session = new GameSession();
+    session.start(4, false);
+    session.openSheet({ kind: 'help' });
+    return session;
+}
+
+test('pause menu has five focused actions, one tutorial entry, and no inline rulebook or lesson list', () => {
+    const session = pausedSession();
+    const before = structuredClone(session.state);
+    const content = sheetContent(session);
+    expect(content.title).toBe('بازی متوقف است');
+    expect(actions(content.body)).toEqual(['open:journal', 'open:review', 'new-game', 'open-app']);
+    expect(actions(content.footer!)).toEqual(['resume-game']);
+    expect(content.focusAction).toBe('resume-game');
+    expect(content.body).toContain('آناهیتا خاموش است');
+    expect(content.body).not.toMatch(
+        /help-list|journal-chapter|lesson:|open:build|open:opponents|player:/,
+    );
+    expect(humanHeader(session)).toContain('منوی توقف بازی');
+    expect(session.botReady).toBe(false);
+    expect(session.state).toEqual(before);
+    session.closeSheet();
+    expect(session.sheet).toBeNull();
+    expect(session.state).toEqual(before);
+});
+
+test('tutorial hub gives disabled Anahita a clearly named enable button and keeps rules behind a separate screen', () => {
+    const session = pausedSession();
+    session.openSheet({ kind: 'journal' });
+    let content = sheetContent(session);
+    expect(content.body).toContain('روشن‌کردن آناهیتا');
+    expect(actions(content.body)).toContain('tutorial-resume');
+    expect(actions(content.body)).toContain('open:rules');
+    session.setTutorialEnabled(true);
+    expect(session.tutorial.enabled).toBe(true);
+    while (session.sheet?.kind === 'tutorial') session.continueTutorial();
+    session.openSheet({ kind: 'help' });
+    expect(sheetContent(session).body).toContain('آناهیتا روشن است');
+    session.openSheet({ kind: 'journal' });
+    content = sheetContent(session);
+    expect(actions(content.body)).toContain('tutorial-pause');
+    session.setTutorialEnabled(false);
+    session.openSheet({ kind: 'rules' });
+    content = sheetContent(session);
+    expect(content.title).toBe('قوانین بازی');
+    expect(content.body).toContain('help-list');
+    expect(actions(content.footer!)).toEqual(['open:journal']);
+});
+
+test('review retains keyboard inspection and history; restarting a live match requires confirmation', () => {
+    const session = pausedSession();
+    const before = session.state;
+    session.openSheet({ kind: 'review' });
+    const content = sheetContent(session);
+    expect(actions(content.body)).toEqual(['open:history', 'open:inspect', 'restart-match']);
+    expect(actions(content.footer!)).toEqual(['open:help']);
+    for (const kind of ['history', 'inspect'] as const) {
+        session.openSheet({ kind });
+        expect(actions(sheetContent(session).footer!)).toEqual(['open:help']);
+    }
+    session.requestStart(4);
+    expect(session.sheet?.kind).toBe('new-match');
+    expect(session.state).toBe(before);
+    session.closeSheet();
+    expect(session.state).toBe(before);
+});
+
+test('new matches enable Anahita by default and saved opt-outs survive resume', () => {
+    let raw: string | null = null;
+    const storage = {
+        getItem: () => raw,
+        setItem: (_key: string, value: string) => {
+            raw = value;
+        },
+    };
+    const session = new GameSession(new MatchStore(storage));
+    session.requestPlay();
+    expect(session.sheet).toMatchObject({ kind: 'player-name', guided: true });
+    session.confirmPlayerName();
+    expect(session.tutorial.enabled).toBe(true);
+    expect(session.sheet?.kind).toBe('tutorial');
+    session.setTutorialEnabled(false);
+    session.returnToMenu();
+    const resumed = new GameSession(new MatchStore(storage));
+    resumed.requestPlay();
+    expect(resumed.tutorial.enabled).toBe(false);
+    resumed.openSheet({ kind: 'help' });
+    expect(sheetContent(resumed).body).toContain('آناهیتا خاموش است');
+    const direct = new GameSession();
+    direct.start(4);
+    expect(direct.tutorial.enabled).toBe(true);
+});
+
+test('practice pause menu has a single relevant help entry and update availability stays visible', () => {
+    const session = new GameSession();
+    session.requestPlay(true);
+    while (session.sheet?.kind === 'tutorial') session.continueTutorial();
+    session.openSheet({ kind: 'help' });
+    const content = sheetContent(session, true);
+    expect(actions(content.body)).toEqual(['open:rules', 'open:review', 'new-game', 'open-app']);
+    expect(content.body).toContain('به‌روزرسانی بازی');
+    expect(content.body).not.toContain('ادامه این بازی');
+    session.openSheet({ kind: 'review' });
+    expect(actions(sheetContent(session).body)).not.toContain('restart-match');
+    session.openSheet({ kind: 'rules' });
+    expect(sheetContent(session).title).toBe('راهنمای تمرین');
+    expect(session.savedMatch).toBeNull();
+});

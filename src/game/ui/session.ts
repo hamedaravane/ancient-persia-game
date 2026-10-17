@@ -40,6 +40,8 @@ export type Sheet =
               | 'domestic'
               | 'history'
               | 'help'
+              | 'rules'
+              | 'review'
               | 'results'
               | 'end-turn'
               | 'targets'
@@ -129,9 +131,9 @@ export class GameSession {
         this.record('صفحهٔ تمرین • تاس و دارایی آماده؛ ذخیرهٔ بازی اصلی محفوظ است.');
         this.emit();
     }
-    requestStart(count: 3 | 4, guided = false): void {
+    requestStart(count: 3 | 4, guided = true): void {
         if (this.practice) return;
-        if (this.savedMatch) this.openSheet({ kind: 'new-match', count, guided });
+        if (this.state || this.savedMatch) this.openSheet({ kind: 'new-match', count, guided });
         else this.requestName(count, guided);
     }
     confirmNewMatch(): void {
@@ -323,7 +325,7 @@ export class GameSession {
         if (this.history.length > 100) this.history.shift();
     }
 
-    start(count: 3 | 4, guided = false, name = 'بازیکن'): void {
+    start(count: 3 | 4, guided = true, name = 'بازیکن'): void {
         this.practice = null;
         this.gameState = createGame([playerName(name), ...BOT_NAMES].slice(0, count));
         this.controlledPlayerId = this.gameState.players[0].id;

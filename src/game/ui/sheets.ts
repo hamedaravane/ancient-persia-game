@@ -1,4 +1,3 @@
-import { isSetup } from '../core/setup';
 import { getBankTradeError } from '../core/game';
 import {
     getBankTradeRates,
@@ -28,6 +27,7 @@ import {
 import { FA } from './messages.fa';
 import type { GameSession } from './session';
 import type { SheetContent } from './bottomSheet';
+import { pauseMenuContent, gameReviewContent, pauseMenuBack } from './pauseMenu';
 import { journalContent, tutorialContent } from '../tutorial/markup';
 import { ownedPortsMarkup, portDirectory, portIcon, portName, tradeRateLabel } from './ports';
 import { domesticContent, tradeTabs } from './domesticSheet';
@@ -72,7 +72,7 @@ export function costRow(option: BuildOption): string {
         .join('')}</span>`;
 }
 
-export function sheetContent(session: GameSession): SheetContent {
+export function sheetContent(session: GameSession, updateReady = false): SheetContent {
     if (session.sheet?.kind === 'player-name')
         return {
             title: 'با چه اسمی وارد جزیره می‌شی؟',
@@ -91,6 +91,8 @@ export function sheetContent(session: GameSession): SheetContent {
     const state = session.state!;
     const player = session.humanPlayer!;
     const sheet = session.sheet!;
+    if (sheet.kind === 'help') return pauseMenuContent(session, updateReady);
+    if (sheet.kind === 'review') return gameReviewContent(session);
     if (sheet.kind === 'domestic') return domesticContent(session);
     if (sheet.kind === 'tutorial') return tutorialContent(session);
     if (sheet.kind === 'journal') return journalContent(session);
@@ -99,6 +101,8 @@ export function sheetContent(session: GameSession): SheetContent {
         const ids = inspecting ? state.board.tiles.map((tile) => tile.id) : session.targets;
         return {
             title: inspecting ? 'بررسی خانه‌های جزیره' : 'انتخاب محل روی جزیره',
+            key: inspecting ? 'island-inspection' : 'placement-targets',
+            footer: inspecting ? pauseMenuBack() : undefined,
             body: `<p class="sheet-intro">${inspecting ? 'برای دیدن تولید و ساختمان‌های مجاور، یک خانه را انتخاب کنید.' : 'انتخاب محل فقط پیش‌نمایش است؛ تأیید نهایی روی صفحه بازی انجام می‌شود.'}</p><div class="target-list">${ids
                 .map((id, i) => {
                     const tile = state.board.tiles.find((candidate) => candidate.id === id);
@@ -262,6 +266,8 @@ export function sheetContent(session: GameSession): SheetContent {
     if (sheet.kind === 'history')
         return {
             title: 'رویدادهای بازی',
+            key: 'game-history',
+            footer: pauseMenuBack(),
             body: `<ol class="history-list">${[...session.history]
                 .reverse()
                 .map(
@@ -289,10 +295,14 @@ export function sheetContent(session: GameSession): SheetContent {
     if (session.practice)
         return {
             title: 'راهنمای تمرین',
+            key: 'practice-rules',
+            footer: pauseMenuBack(),
             body: `<p>این صفحهٔ تمرین جدا از بازی اصلی است؛ تاس و دارایی آماده‌اند و رقبا حرکت نمی‌کنند. با دکمهٔ اصلی قدم بعدی را انجام بده: تاس، ساخت راه، بانک برای پشم، ساخت آبادی. مسیر روشن یک نمونه است، نه بهترین حرکت. امتیازت از ۱ به ۲ می‌رسد؛ هدف بازی واقعی ۶ امتیاز است.</p>${button('بازگشت به تمرین', 'close-sheet', { className: 'button button--primary full-width' })}${button('خروج از تمرین و بازگشت به منو', 'new-game', { className: 'button full-width' })}`,
         };
     return {
-        title: 'راهنمای بازی',
-        body: `<p>هدف رسیدن به ${number(state.victoryTarget)} امتیاز است: هر آبادی ۱ و هر شهر ۲ امتیاز دارد. تاس از زمین‌های کنار ساختمان‌ها منابع می‌دهد؛ منابع هزینهٔ ساخت هستند. راه به محل آبادی تازه دسترسی می‌دهد و معامله کمبود ساخت بعدی را جبران می‌کند.</p><p>تو با سه رقیب خودکار بازی می‌کنی. برای معاملهٔ توافقی، «معامله» رو باز کن؛ بعد از تاس، هر معامله باید با صاحب نوبت باشه و هر دو طرف منابع بدهند. منابع پایین صفحه و اطلاعات بالای صفحه همیشه مال توئه. بعد از پایان نوبتت، رقبا به‌ترتیب بازی می‌کنن؛ لازم نیست گوشی رو به کسی بدی.</p><h3>جانمایی آغازین</h3><p>بالاترین تاس، شروع‌کننده رو مشخص می‌کنه. هرکس یک آبادی و یک راه کنار هم می‌ذاره؛ دور دوم از نفر آخر به عقب برمی‌گردیم. فاصلهٔ آبادی‌ها همیشه لازمه. جانمایی رایگانه و فقط آبادی دوم منابع آغازین می‌ده.</p><ol class="help-list"><li>تاس را بیندازید. خانه‌های هم‌شماره برای آبادی‌های مجاور یک منبع و برای شهرها دو منبع تولید می‌کنند.</li><li>با تاس هفت، اهریمن را به خانه دیگری ببرید. خانه دارای اهریمن تولید ندارد؛ در این نسخه سرقت و دورریختن منابع وجود ندارد.</li><li>ساخت‌وساز را باز کنید تا هزینه و محل‌های مجاز را ببینید. محل را انتخاب و سپس ساخت را تأیید کنید.</li><li>در بانک، چهار منبع یکسان را با یک منبع دیگر مبادله کنید. آبادی یا شهر کنار بندر عمومی نرخ ۳ به ۱ می‌دهد؛ بندر تخصصی فقط منبع نشان‌داده‌شده را با نرخ ۲ به ۱ می‌پذیرد. ساخت راه کافی نیست. پس از ساخت آبادی بندری، همان نوبت می‌توانید از نرخ آن استفاده کنید.</li><li>پس از انجام کارها، پایان نوبت را بزنید. رسیدن به ${number(state.victoryTarget)} امتیاز بازی را تمام می‌کند.</li></ol><p>راه باید به شبکه شما وصل باشد؛ ساختمان حریف ادامه راه را قطع می‌کند. بین آبادی‌ها یک تقاطع خالی لازم است. شهر فقط آبادی خودتان را ارتقا می‌دهد.</p><p class="footnote">برای جزئیات خانه آن را لمس کنید. برای انتخاب دقیق‌تر از فهرست محل‌ها استفاده کنید؛ محل انتخاب‌شده را پیش از تأیید بررسی کنید.</p>${button('دفتر سفر آناهیتا', 'open:journal', { className: 'button button--primary full-width' })}${button('رویدادهای بازی', 'open:history', { className: 'button full-width' })}${button('بررسی خانه‌های جزیره', 'open:inspect', { className: 'button full-width' })}${button('وضعیت من', `player:${player.id}`, { className: 'button full-width' })}${button('رقبای جزیره', 'open:opponents', { className: 'button full-width' })}${button('دیدن هزینه‌های ساخت', 'open:build', { className: 'button full-width', disabled: isSetup(state) })}`,
+        title: 'قوانین بازی',
+        key: 'game-rules',
+        footer: button('بازگشت به آموزش', 'open:journal', { className: 'button full-width' }),
+        body: `<p>هدف رسیدن به ${number(state.victoryTarget)} امتیاز است: هر آبادی ۱ و هر شهر ۲ امتیاز دارد. تاس از زمین‌های کنار ساختمان‌ها منابع می‌دهد؛ منابع هزینهٔ ساخت هستند. راه به محل آبادی تازه دسترسی می‌دهد و معامله کمبود ساخت بعدی را جبران می‌کند.</p><p>تو با سه رقیب خودکار بازی می‌کنی. برای معاملهٔ توافقی، «معامله» رو باز کن؛ بعد از تاس، هر معامله باید با صاحب نوبت باشه و هر دو طرف منابع بدهند. منابع پایین صفحه و اطلاعات بالای صفحه همیشه مال توئه. بعد از پایان نوبتت، رقبا به‌ترتیب بازی می‌کنن؛ لازم نیست گوشی رو به کسی بدی.</p><h3>جانمایی آغازین</h3><p>بالاترین تاس، شروع‌کننده رو مشخص می‌کنه. هرکس یک آبادی و یک راه کنار هم می‌ذاره؛ دور دوم از نفر آخر به عقب برمی‌گردیم. فاصلهٔ آبادی‌ها همیشه لازمه. جانمایی رایگانه و فقط آبادی دوم منابع آغازین می‌ده.</p><ol class="help-list"><li>تاس را بیندازید. خانه‌های هم‌شماره برای آبادی‌های مجاور یک منبع و برای شهرها دو منبع تولید می‌کنند.</li><li>با تاس هفت، اهریمن را به خانه دیگری ببرید. خانه دارای اهریمن تولید ندارد؛ در این نسخه سرقت و دورریختن منابع وجود ندارد.</li><li>ساخت‌وساز را باز کنید تا هزینه و محل‌های مجاز را ببینید. محل را انتخاب و سپس ساخت را تأیید کنید.</li><li>در بانک، چهار منبع یکسان را با یک منبع دیگر مبادله کنید. آبادی یا شهر کنار بندر عمومی نرخ ۳ به ۱ می‌دهد؛ بندر تخصصی فقط منبع نشان‌داده‌شده را با نرخ ۲ به ۱ می‌پذیرد. ساخت راه کافی نیست. پس از ساخت آبادی بندری، همان نوبت می‌توانید از نرخ آن استفاده کنید.</li><li>پس از انجام کارها، پایان نوبت را بزنید. رسیدن به ${number(state.victoryTarget)} امتیاز بازی را تمام می‌کند.</li></ol><p>راه باید به شبکه شما وصل باشد؛ ساختمان حریف ادامه راه را قطع می‌کند. بین آبادی‌ها یک تقاطع خالی لازم است. شهر فقط آبادی خودتان را ارتقا می‌دهد.</p><p class="footnote">برای جزئیات خانه آن را لمس کنید. برای انتخاب دقیق‌تر از فهرست محل‌ها استفاده کنید؛ محل انتخاب‌شده را پیش از تأیید بررسی کنید.</p>`,
     };
 }

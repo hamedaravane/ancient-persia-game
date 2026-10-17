@@ -8,7 +8,7 @@ import { FA } from '../src/game/ui/messages.fa';
 function fixture() {
     vi.spyOn(Math, 'random').mockReturnValue(0.5);
     const session = new GameSession();
-    session.start(3);
+    session.start(3, false);
     completeSessionSetup(session);
     const state = session.state!;
     state.phase = 'actions';

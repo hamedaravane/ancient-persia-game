@@ -50,7 +50,7 @@ test('menu keeps Play and Tutorial; practice pauses bots and does not create a s
         }
         expect(session.state!.players).toHaveLength(4);
         expect(session.humanPlayer?.id).toBe(session.state!.players[0].id);
-        expect(session.tutorial.enabled).toBe(guided);
+        expect(session.tutorial.enabled).toBe(true);
         session.returnToMenu();
         const app = new AppPlatform();
         app.updateReady = true;
@@ -144,7 +144,7 @@ test('stale scheduled steps and a destroyed runner cannot alter a new match', ()
     session.returnToMenu();
     vi.advanceTimersByTime(100);
     expect(session.state).toBeNull();
-    session.start(4);
+    session.start(4, false);
     const next = session.state;
     session.advanceBot(stale);
     expect(session.state).toBe(next);
@@ -265,7 +265,7 @@ test('resume preserves the human seat during a bot turn, and legacy saves keep t
         },
     };
     const session = new GameSession(new MatchStore(storage));
-    session.start(4);
+    session.start(4, false);
     completeSessionSetup(session);
     session.state!.phase = 'actions';
     session.state!.lastRoll = [4, 4];
@@ -288,7 +288,7 @@ test('resume preserves the human seat during a bot turn, and legacy saves keep t
 
 test('a three-seat legacy save keeps its pieces and resumes a bot robber move without rerolling', () => {
     const session = new GameSession();
-    session.start(3);
+    session.start(3, false);
     completeSessionSetup(session);
     const state = session.state!;
     state.activePlayerIndex = 1;

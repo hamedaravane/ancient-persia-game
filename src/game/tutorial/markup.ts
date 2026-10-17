@@ -1,5 +1,6 @@
 import { artSprite, button, escape, number } from '../ui/components';
 import type { GameSession } from '../ui/session';
+import { pauseMenuBack } from '../ui/pauseMenu';
 import type { SheetContent } from '../ui/bottomSheet';
 import { CHAPTERS, LESSONS, type LessonId } from './lessons.fa';
 
@@ -15,17 +16,20 @@ export function tutorialContent(session: GameSession): SheetContent {
             <div class="narrator-copy"><p class="eyebrow">${CHAPTERS[lesson.chapter]}</p><h3>${escape(lesson.title)}</h3><p>${escape(lesson.text)}</p></div>
             <p class="narrator-task">${escape(lesson.task)}</p>
         </article>`,
-        footer: `<div class="narrator-controls">${button(practice?.stage === 'complete' ? 'دیدن آبادی و امتیاز تازه' : director.remaining > 1 ? 'بعدش چی؟' : 'بریم سراغش', 'tutorial-next', { className: 'button button--primary' })}${button(practice ? 'خروج از تمرین' : 'فعلاً بدون راهنما', 'tutorial-pause', { className: 'button button--quiet' })}</div><p class="footnote">${practice ? 'این تمرین ذخیره نمی‌شود؛ با خروج، بازی اصلی محفوظ می‌ماند.' : 'اگه پنجره رو ببندی، راهنما متوقف می‌شه؛ از دفتر سفر می‌تونی برگردی.'}</p>`,
+        footer: `<div class="narrator-controls">${button(practice?.stage === 'complete' ? 'دیدن آبادی و امتیاز تازه' : director.remaining > 1 ? 'بعدش چی؟' : 'بریم سراغش', 'tutorial-next', { className: 'button button--primary' })}${button(practice ? 'خروج از تمرین' : 'خاموش‌کردن آناهیتا', 'tutorial-pause', { className: 'button button--quiet' })}</div><p class="footnote">${practice ? 'این تمرین ذخیره نمی‌شود؛ با خروج، بازی اصلی محفوظ می‌ماند.' : 'بستن پنجره، آناهیتا رو خاموش می‌کنه. برای روشن‌کردن: منوی سه‌نقطه ← آموزش و آناهیتا.'}</p>`,
     };
 }
 
-export function journalContent(session: GameSession): { title: string; body: string } {
+export function journalContent(session: GameSession): SheetContent {
     const director = session.tutorial;
     return {
-        title: 'دفتر سفر آناهیتا',
-        body: `<div class="journal-intro">${artSprite('anahita-calm', 76, 'narrator-portrait')}<p class="sheet-intro">هر قدممون یه خاطره‌ست. تا اینجا ${number(director.seen.size)} از ${number(Object.keys(LESSONS).length)} گفت‌وگو رو مرور کردیم و ${number(director.practiced.size)} مفهوم رو توی بازی تمرین کردیم.</p></div>
-        ${button(director.enabled ? 'فعلاً بدون راهنما' : 'ادامهٔ همراهی آناهیتا', director.enabled ? 'tutorial-pause' : 'tutorial-resume', { className: 'button button--primary full-width' })}
-        <p class="footnote">خوندن یه گفت‌وگو با انجام‌دادن کارش فرق داره. هر درس سرِ وقتش می‌رسه؛ لازم نیست برای ادامهٔ بازی همه رو تموم کنی. این دفتر فقط تا پایان همین بازی پیشرفتمون رو نگه می‌داره.</p>
+        title: 'آموزش و آناهیتا',
+        key: 'tutorial-hub',
+        footer: pauseMenuBack(),
+        body: `<div class="journal-intro">${artSprite('anahita-calm', 76, 'narrator-portrait')}<div><h3>آناهیتا ${director.enabled ? 'روشن' : 'خاموش'} است</h3><p class="sheet-intro">${director.enabled ? 'در طول بازی، قدم‌به‌قدم همراهت هستم.' : 'برای برگشتن راهنمایی‌های من، «روشن‌کردن آناهیتا» رو بزن.'}</p></div></div>
+        ${button(director.enabled ? 'خاموش‌کردن آناهیتا' : 'روشن‌کردن آناهیتا', director.enabled ? 'tutorial-pause' : 'tutorial-resume', { className: `button${director.enabled ? '' : ' button--primary'} full-width` })}
+        ${button('قوانین بازی', 'open:rules', { className: 'button full-width' })}
+        <h3>دفتر درس‌ها</h3><p class="footnote">${number(director.seen.size)} گفت‌وگو مرور شد • ${number(director.practiced.size)} مفهوم تمرین شد. برای مرور، یک درس رو انتخاب کن.</p>
         ${CHAPTERS.map(
             (chapter, index) =>
                 `<section class="journal-chapter"><h3>${chapter}</h3><div class="target-list">${(

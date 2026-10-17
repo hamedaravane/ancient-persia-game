@@ -45,7 +45,7 @@ export function button(
     return `<button type="button" data-action="${escape(action)}" class="${options.className ?? 'button'}"${options.ownerColor !== undefined ? ` style="--owner:${color(options.ownerColor)}"` : ''}${options.disabled ? ' disabled' : ''}${options.label ? ` aria-label="${escape(options.label)}"` : ''}${options.pressed !== undefined ? ` aria-pressed="${options.pressed}"` : ''}>${label}</button>`;
 }
 
-/** Uses the original resource atlas without creating duplicate image assets. */
+/** Reserves a square for the shared code-drawn resource emblem. */
 export function resourceIcon(resource: ResourceType): string {
     return `<span class="resource-icon resource-icon--${resource}" aria-hidden="true"></span>`;
 }

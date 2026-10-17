@@ -1,5 +1,3 @@
-import type { ResourceType } from './core/types';
-
 /** Runtime texture rectangles in image pixels. Original art masters are preserved separately. */
 export interface ArtFrame {
     file: string;
@@ -13,8 +11,7 @@ export const assetUrl = (file: string): string => `${import.meta.env.BASE_URL}as
 /** Full-image textures without a cropped ART frame. */
 export const TEXTURE_FILES = {
     menuBackground: 'backgrounds/main-menu.webp',
-    resources: 'resources/resources.webp',
-} as const satisfies { menuBackground: string; resources: string };
+} as const satisfies { menuBackground: string };
 
 export const ART = {
     'anahita-calm': {
@@ -47,7 +44,6 @@ export const ART = {
         source: [1024, 1536],
         frame: [0, 0, 1024, 1536],
     },
-    number: { file: 'board/tokens/number.webp', source: [1254, 1254], frame: [95, 75, 1065, 1075] },
     corner: {
         file: 'ui/ornaments/ornaments.webp',
         source: [1254, 1254],
@@ -70,17 +66,6 @@ export const ART = {
 } as const satisfies Record<string, ArtFrame>;
 
 export type ArtName = keyof typeof ART;
-
-/** Same inspected resource crops used by the DOM hand; shared by port symbols. */
-export const RESOURCE_FRAMES: Readonly<
-    Record<ResourceType, readonly [number, number, number, number]>
-> = {
-    wood: [44, 164, 476, 404],
-    brick: [544, 164, 440, 404],
-    wheat: [984, 88, 428, 492],
-    wool: [244, 608, 484, 392],
-    stone: [768, 584, 496, 420],
-};
 
 // The supplied RGB sheet contains a baked checkerboard. Clip inside the painted
 // silhouette instead of treating the background as alpha or altering the source.

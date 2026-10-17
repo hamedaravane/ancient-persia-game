@@ -7,7 +7,7 @@ import { boardToClient, boardToScreen, clientToBoard, fitBoard } from '../src/ga
 function fixture() {
     vi.spyOn(Math, 'random').mockReturnValue(0.5);
     const session = new GameSession();
-    session.start(3);
+    session.start(3, false);
     completeSessionSetup(session);
     return session;
 }

@@ -33,14 +33,14 @@ function actionPhase(session: GameSession) {
     expect(session.state!.phase).toBe('actions');
 }
 
-test('the ordinary-roll lesson follows completed guided setup without changing state; normal entry stays quiet', () => {
+test('the ordinary-roll lesson follows completed guided setup without changing state; explicit opt-out stays quiet', () => {
     const session = start();
     const before = structuredClone(session.state);
     expect(readDialogue(session)).toEqual(['roll']);
     expect(session.state).toEqual(before);
     expect(session.tutorial.practiced.has('setup')).toBe(true);
     expect(session.tutorial.practiced.has('roll')).toBe(false);
-    session.start(4);
+    session.start(4, false);
     expect(session.sheet).toBeNull();
     expect(session.tutorial.enabled).toBe(false);
     expect(session.tutorial.seen.size).toBe(0);

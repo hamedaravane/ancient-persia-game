@@ -69,7 +69,7 @@ export function humanHeader(session: GameSession): string {
             label: `${human.name}، شما؛ ${number(own.score)} از ${number(state.victoryTarget)} امتیاز؛ رتبه ${number(own.rank)}؛ ${phase}؛ وضعیت من`,
         },
     );
-    return `<div class="header-personal">${self}${dice}${button('⋯', 'open:help', { className: 'icon-button', label: 'راهنما و وضعیت بازی' })}</div><nav class="header-rivals" style="--rival-count:${standings.length - 1}" aria-label="امتیاز و نوبت رقبا">${rivals}</nav>`;
+    return `<div class="header-personal">${self}${dice}${button('⋯', 'open:help', { className: 'icon-button', label: 'منوی توقف بازی' })}</div><nav class="header-rivals" style="--rival-count:${standings.length - 1}" aria-label="امتیاز و نوبت رقبا">${rivals}</nav>`;
 }
 
 /** Passive production changes this inventory even on an opponent's roll. */

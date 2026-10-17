@@ -45,7 +45,7 @@ test('iPhone instructions and offline/update availability reflect capabilities a
     app.updateReady = true;
     expect(appContent(app, session).body).toContain('Add to Home Screen');
     expect(offlineLabel(app)).not.toContain('آماده برای');
-    session.start(3);
+    session.start(3, false);
     expect(appContent(app, session).body).not.toMatch(/data-action="app-update"[^>]*disabled/);
     expect(updateContent(app, session).body).toContain('انتخاب‌های تأییدنشده');
     app.offline = 'ready';
@@ -247,7 +247,7 @@ test('accepting an update saves confirmed setup and narrator progress before act
 
 test('a failed save keeps an unfinished match open; menu updates remain possible', async () => {
     const session = new GameSession(new MatchStore(null));
-    session.start(4);
+    session.start(4, false);
     const app = new AppPlatform();
     app.updateReady = true;
     app.activateUpdate = vi.fn(async () => {});

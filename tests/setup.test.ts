@@ -275,7 +275,7 @@ test('human choices are previewed and confirmed; reload between second settlemen
         },
     };
     let session = new GameSession(new MatchStore(storage));
-    session.start(4);
+    session.start(4, false);
     rollSession(session);
     const before = session.state!;
     const chosen = session.targets.at(-1)!;
@@ -322,7 +322,7 @@ test('human choices are previewed and confirmed; reload between second settlemen
 
 test('bots can win the starter roll while the human still chooses both of their own pairs', () => {
     const session = new GameSession();
-    session.start(4);
+    session.start(4, false);
     rollSession(session, 2);
     expect(session.state!.startingPlayerIndex).toBe(2);
     expect(session.isHumanTurn).toBe(false);
@@ -438,7 +438,7 @@ test('a saved opening contest resumes the next actor without rerolling already r
         },
     };
     const session = new GameSession(new MatchStore(storage));
-    session.start(4);
+    session.start(4, false);
     const random = vi.spyOn(Math, 'random').mockReturnValue(0.99);
     session.primary();
     random.mockImplementation(() => {

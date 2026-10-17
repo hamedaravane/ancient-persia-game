@@ -107,7 +107,7 @@ test('public standings show ties, the acting bot, and all four distinct avatars 
 
 test('finished standings identify the winner and no longer show an active turn', () => {
     const session = new GameSession();
-    session.start(4);
+    session.start(4, false);
     session.state!.phase = 'finished';
     session.state!.winnerId = session.state!.players[2].id;
     expect(headerPlayers(session.state!, session.humanPlayer!.id).some((p) => p.active)).toBe(
@@ -123,7 +123,7 @@ test('avatars remain distinct for legacy three-seat saves and a human in a diffe
         expect(new Set(avatars).size).toBe(4);
     }
     const session = new GameSession();
-    session.start(3);
+    session.start(3, false);
     expect(humanHeader(session).match(/class="rival-card/g)).toHaveLength(2);
     expect(humanHeader(session)).toContain('--rival-count:2');
 });

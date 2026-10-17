@@ -3,6 +3,8 @@ import type { Board, Port, TradeRatio } from '../core/types';
 import { boardToScreen, type BoardLayout } from '../ui/layout';
 import { UI_FONT_FAMILY } from '../ui/typography';
 import { createSharpText } from './sharpText';
+import { harborArt } from './harborArt';
+import { drawVectorArt } from './vectorArt';
 
 // CSS-sized markers stay readable as the island fits short/narrow viewports.
 export const PORT_OFFSET = 20;
@@ -52,36 +54,27 @@ export function createPortMarker(
         // Stop short of the coastal intersection so a building stays unobstructed.
         const endX = (dx * Math.max(0, length - 10)) / length;
         const endY = (dy * Math.max(0, length - 10)) / length;
-        docks.lineStyle(4, 0x1d3441, 0.8).lineBetween(0, 0, endX, endY);
-        docks.lineStyle(2, 0xc9b38b, 0.9).lineBetween(0, 0, endX, endY);
+        docks.lineStyle(5, 0x1d3441, 0.8).lineBetween(0, 0, endX, endY);
+        docks.lineStyle(3, 0xb79b6d, 0.95).lineBetween(0, 0, endX, endY);
+        const dockLength = Math.hypot(endX, endY);
+        if (dockLength > 0) {
+            const nx = (-endY / dockLength) * 1.5,
+                ny = (endX / dockLength) * 1.5;
+            for (let step = 5; step < dockLength; step += 3) {
+                const px = (endX * step) / dockLength,
+                    py = (endY * step) / dockLength;
+                docks
+                    .lineStyle(0.65, 0x635c43, 0.85)
+                    .lineBetween(px - nx, py - ny, px + nx, py + ny);
+            }
+            docks.fillStyle(0xe6cf9f).fillCircle(endX, endY, 1.7);
+        }
     }
     const water = scene.add.ellipse(0, 1, 38, 38, 0x83c6c2, 0.15);
     const shadow = scene.add.ellipse(1, 3, 33, 32, 0x0d2733, 0.4);
     const stone = scene.add.graphics();
-    const points = [
-        [-10, -16],
-        [8, -16],
-        [15, -9],
-        [16, 7],
-        [9, 16],
-        [-9, 15],
-        [-16, 7],
-        [-15, -8],
-    ];
-    stone
-        .fillStyle(0xc4ac7d)
-        .lineStyle(1.2, 0x293d43)
-        .beginPath()
-        .moveTo(...(points[0] as [number, number]));
-    for (const [x, y] of points.slice(1)) stone.lineTo(x, y);
-    stone.closePath().fillPath().strokePath();
-    stone.lineStyle(1.3, 0xffe5ac).lineBetween(-10, -15, 8, -15).lineBetween(-14, -8, -15, 6);
-    stone
-        .fillStyle(0x182e3d)
-        .lineStyle(ownerColor === undefined ? 1 : 2, ownerColor ?? 0x8f784e)
-        .fillRoundedRect(-12, -13, 24, 27, 4)
-        .strokeRoundedRect(-12, -13, 24, 27, 4);
-    root.add([water, shadow, docks, stone]);
+    drawVectorArt(stone, harborArt(ownerColor), 0, 0, PORT_RADIUS);
+    root.add([water, docks, shadow, stone]);
     if (port.resource !== null && scene.textures.exists('art-resources')) {
         const icon = scene.add.image(0, -6, 'art-resources', port.resource);
         icon.setScale(14 / Math.max(icon.width, icon.height));

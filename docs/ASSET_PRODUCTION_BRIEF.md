@@ -221,7 +221,7 @@ A spritesheet is unnecessary unless the effect visibly deforms. If one is commis
 
 Keep all five existing objects: bundled wood, bricks, tied wheat, wool bundle, and stone. The implementation calls the fifth resource `stone`; do not replace it with shiny metallic ore or introduce a sixth resource. Preserve the same order and icon proportions in the hand, costs, trade selectors, and flights.
 
-If optimization becomes useful, derive a compact atlas or individual approximately 96–128-pixel exports from the existing artwork with consistent optical scale and documented frames. That is an export task, not a repaint. The current Phaser renderer references the shared `RESOURCE_FRAMES` metadata, so swapping an atlas requires an intentional metadata/frame update. The base paintings should remain available outside the runtime tree if a smaller runtime set is introduced later.
+The current renderer now uses code-drawn material emblems and one generated 640 × 128 atlas with five square frames, replacing the supplied runtime resource atlas at the user's request. `RESOURCE_FRAMES` has been retired. The original resource painting and historical crops remain under `art/reference/` and in `scripts/image-exports.json`; see [PROCEDURAL_BOARD_ART.md](PROCEDURAL_BOARD_ART.md). This supersedes the earlier resource-export proposal.
 
 ### Coast and ocean
 

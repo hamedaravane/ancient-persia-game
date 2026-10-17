@@ -11,7 +11,7 @@ import { FA } from './messages.fa';
 import { BUILD_LABELS, costRow, sheetContent } from './sheets';
 import { type GameSession } from './session';
 import type { AppPlatform } from '../../pwa/app';
-import { appContent, saveLabel, updateContent } from '../../pwa/markup';
+import { appContent, updateContent } from '../../pwa/markup';
 import { applyUpdate } from '../../pwa/updateFlow';
 import { menuContent } from './menu';
 import { humanHeader, humanHand } from './humanHud';
@@ -155,7 +155,7 @@ export class GameHud {
                         : 'open:history',
                 {
                     className: 'context-button',
-                    label: `${hint}؛ ${storageWarning ? 'جزئیات ذخیره بازی' : this.session.practice ? 'راهنمای تمرین' : this.session.tutorial.enabled ? 'دفتر سفر آناهیتا' : 'دیدن رویدادها'}`,
+                    label: `${hint}؛ ${storageWarning ? 'جزئیات ذخیره بازی' : this.session.practice ? 'راهنمای تمرین' : this.session.tutorial.enabled ? 'آموزش و آناهیتا' : 'دیدن رویدادها'}`,
                 },
             ),
         );
@@ -225,10 +225,7 @@ export class GameHud {
         if (!this.session.sheet) return null;
         if (this.session.sheet.kind === 'update') return updateContent(this.app, this.session);
         if (this.session.sheet.kind === 'app') return appContent(this.app, this.session);
-        const content = sheetContent(this.session);
-        if (this.session.sheet.kind === 'help')
-            content.body += `${this.session.saveStatus === 'unavailable' ? `<p class="availability">${escape(saveLabel(this.session))}</p>` : ''}${button(this.app.updateReady ? 'نسخه تازه و برنامه آفلاین' : 'نصب و بازی آفلاین', 'open-app', { className: 'button full-width' })}${button('ذخیره و بازگشت به منو', 'new-game', { className: 'button full-width' })}${button('شروع بازی تازه', 'restart-match', { className: 'button full-width' })}`;
-        return content;
+        return sheetContent(this.session, this.app.updateReady);
     }
 
     private onClick = (event: MouseEvent): void => {
@@ -265,6 +262,8 @@ export class GameHud {
                 'trade',
                 'domestic',
                 'help',
+                'rules',
+                'review',
                 'history',
                 'targets',
                 'inspect',
@@ -278,6 +277,8 @@ export class GameHud {
                     | 'trade'
                     | 'domestic'
                     | 'help'
+                    | 'rules'
+                    | 'review'
                     | 'history'
                     | 'targets'
                     | 'inspect'
@@ -296,7 +297,7 @@ export class GameHud {
         if (action === 'trade-rate' && [2, 3, 4].includes(Number(value)))
             this.session.chooseTradeRatio(Number(value) as TradeRatio);
         if (action === 'player') this.session.openSheet({ kind: 'player', id: value });
-        if (action === 'close-sheet') this.session.closeSheet();
+        if (action === 'close-sheet' || action === 'resume-game') this.session.closeSheet();
         if (action === 'build' && BUILD_TYPES.some((type) => type === value))
             this.session.chooseBuild(value as (typeof BUILD_TYPES)[number]);
         if (

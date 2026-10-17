@@ -10,15 +10,6 @@
       "frames": {}
     },
     {
-      "file": "board/tokens/number.webp",
-      "group": "tokens",
-      "size": [1254, 1254],
-      "source_sha256": "1badbf7f4f7253c8104127fc7f7b8fb0e27bb19d85b8cd0bdcd4847f9b89c08b",
-      "frames": {
-        "token": [95, 75, 1065, 1075]
-      }
-    },
-    {
       "file": "characters/anahita/calm.webp",
       "group": "anahita",
       "size": [1086, 1448],
@@ -105,19 +96,6 @@
       "frames": {}
     },
     {
-      "file": "resources/resources.webp",
-      "group": "resources",
-      "size": [1448, 1086],
-      "source_sha256": "cebe50ae7f24953bee669d00623e41017c5384f884a032cccaf8a755bb0825dd",
-      "frames": {
-        "wood": [44, 164, 476, 404],
-        "brick": [544, 164, 440, 404],
-        "wheat": [984, 88, 428, 492],
-        "wool": [244, 608, 484, 392],
-        "stone": [768, 584, 496, 420]
-      }
-    },
-    {
       "file": "ui/emblems/victory.webp",
       "group": "ui",
       "size": [1254, 1254],
@@ -197,6 +175,28 @@
       "source_sha256": "fdb8072aece0139962f9624e23c224c34c7d676d40c71f22703b37d510572557",
       "frames": {
         "bank": [15, 80, 1225, 1095]
+      }
+    },
+    {
+      "file": "board/tokens/number.webp",
+      "group": "tokens",
+      "size": [1254, 1254],
+      "source_sha256": "1badbf7f4f7253c8104127fc7f7b8fb0e27bb19d85b8cd0bdcd4847f9b89c08b",
+      "frames": {
+        "token": [95, 75, 1065, 1075]
+      }
+    },
+    {
+      "file": "resources/resources.webp",
+      "group": "resources",
+      "size": [1448, 1086],
+      "source_sha256": "cebe50ae7f24953bee669d00623e41017c5384f884a032cccaf8a755bb0825dd",
+      "frames": {
+        "wood": [44, 164, 476, 404],
+        "brick": [544, 164, 440, 404],
+        "wheat": [984, 88, 428, 492],
+        "wool": [244, 608, 484, 392],
+        "stone": [768, 584, 496, 420]
       }
     }
   ]

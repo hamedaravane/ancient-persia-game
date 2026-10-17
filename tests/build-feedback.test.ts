@@ -8,7 +8,7 @@ import { completeSessionSetup } from './helpers/setup';
 
 function ready() {
     const session = new GameSession();
-    session.start(4);
+    session.start(4, false);
     completeSessionSetup(session);
     session.state!.phase = 'actions';
     session.state!.lastRoll = [2, 3];

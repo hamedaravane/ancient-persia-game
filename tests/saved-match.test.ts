@@ -12,7 +12,7 @@ function fixture() {
         },
     };
     const session = new GameSession(new MatchStore(storage));
-    session.start(3);
+    session.start(3, false);
     completeSessionSetup(session);
     return { storage, session, values, reload: () => new GameSession(new MatchStore(storage)) };
 }
@@ -177,7 +177,7 @@ test.each([
 
 test('storage denial and quota errors keep play usable and expose the missing persistence', () => {
     const denied = new GameSession(new MatchStore(null));
-    denied.start(3);
+    denied.start(3, false);
     completeSessionSetup(denied);
     expect(denied.saveStatus).toBe('unavailable');
     denied.primary();
@@ -190,7 +190,7 @@ test('storage denial and quota errors keep play usable and expose the missing pe
             },
         }),
     );
-    expect(() => failing.start(3)).not.toThrow();
+    expect(() => failing.start(3, false)).not.toThrow();
     expect(failing.saveStatus).toBe('unavailable');
     failing.returnToMenu();
     failing.resumeSaved();

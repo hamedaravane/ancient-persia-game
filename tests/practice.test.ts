@@ -140,6 +140,8 @@ test('closing the practice narrator exits without saving; starting a real match 
     session.requestPlay();
     expect(session.sheet?.kind).toBe('player-name');
     session.confirmPlayerName();
+    expect(session.tutorial.enabled).toBe(true);
+    while (session.sheet?.kind === 'tutorial') session.continueTutorial();
     const source = vi.spyOn(Math, 'random').mockReturnValue(0.99);
     session.primary();
     expect(source).toHaveBeenCalledTimes(2);

@@ -10,7 +10,7 @@ The user requested CATAN-style ports and maritime bank trading. The implemented 
 
 ## Board presentation
 
-`rendering/ports.ts` creates original top-down stone islets, without new external artwork. Each 32-pixel octagonal body has a navy inset, warm bevel, contact shadow, and a 38-pixel water halo. An ownership-colored rim accepts arbitrary player colors. Specialist emblems use the existing resource sheet; general ports have broad procedural exchange arrows. Ratios are runtime Persian text.
+`rendering/ports.ts` creates original top-down stone islets, without new external artwork. Each 32-pixel octagonal body has a navy inset, warm bevel, contact shadow, and a 38-pixel water halo. An ownership-colored rim accepts arbitrary player colors. The rim has ashlar joints and bronze mooring fittings; dock links have individual planks. Specialist emblems use the shared code-generated resource atlas; general ports have broad procedural exchange arrows. Ratios are runtime Persian text.
 
 The marker center sits 20 CSS pixels along the coastal edge's outward normal. Two dock links connect it toward the edge endpoints, stopping short to leave player buildings visible. Ports render below terrain and pieces. `fitBoard()` reserves 40 pixels on each side for the offshore offset and halo; the map remains centered, fitted, and free of zoom/panning controls. The reference 390 × 428 board camera has a land footprint near 310 × 286 pixels.
 

@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync } from 'node:fs';
 import { expect, test } from 'vitest';
-import { ART, DICE_FACES, RESOURCE_FRAMES, TEXTURE_FILES } from '../src/game/assets';
+import { ART, DICE_FACES, TEXTURE_FILES } from '../src/game/assets';
 
 interface ExportedAsset {
     file: string;
@@ -34,8 +34,7 @@ test('every runtime image is a smaller WebP backed by an unchanged full-resoluti
 
 test('loader textures and atlas crops agree with the verified full-resolution exports', () => {
     const byFile = new Map(manifest.assets.map((asset) => [asset.file, asset]));
-    for (const file of [TEXTURE_FILES.menuBackground, TEXTURE_FILES.resources])
-        expect(byFile.has(file)).toBe(true);
+    for (const file of Object.values(TEXTURE_FILES)) expect(byFile.has(file)).toBe(true);
     for (const art of [...Object.values(ART), ...DICE_FACES]) {
         const asset = byFile.get(art.file);
         expect(asset).toBeDefined();
@@ -43,13 +42,10 @@ test('loader textures and atlas crops agree with the verified full-resolution ex
         const frames = [[0, 0, ...asset!.size], ...Object.values(asset!.frames)];
         expect(frames).toContainEqual(art.frame);
     }
-    const resources = byFile.get(TEXTURE_FILES.resources)!;
-    for (const [name, frame] of Object.entries(RESOURCE_FRAMES))
-        expect(resources.frames[name]).toEqual(frame);
 });
 
-test('retired terrain, robber and bank paintings retain verified masters outside runtime packaging', () => {
-    expect(manifest.references).toHaveLength(8);
+test('retired terrain, robber, bank, token and resource paintings retain verified masters outside runtime packaging', () => {
+    expect(manifest.references).toHaveLength(10);
     for (const asset of manifest.references) {
         const master = readFileSync(
             new URL(`../art/reference/${asset.file.replace(/\.webp$/, '.png')}`, import.meta.url),

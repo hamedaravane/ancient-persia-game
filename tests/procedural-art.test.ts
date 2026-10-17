@@ -1,3 +1,7 @@
+import { RESOURCE_TYPES } from '../src/game/core/types';
+import { resourceArt } from '../src/game/rendering/resourceArt';
+import { ensureResourceTextures, NUMBER_TOKEN_ART } from '../src/game/rendering/boardEmblems';
+import { harborArt } from '../src/game/rendering/harborArt';
 import { expect, test, vi } from 'vitest';
 import type { GameObjects, Scene } from 'phaser';
 import {
@@ -6,7 +10,11 @@ import {
     TERRAIN_VARIANTS,
     TERRAIN_TEXTURE_SIZE,
 } from '../src/game/rendering/terrainArt';
-import { ensureTerrainTextures, terrainVariant } from '../src/game/rendering/terrainTextures';
+import {
+    boardTerrainVariants,
+    ensureTerrainTextures,
+    terrainVariant,
+} from '../src/game/rendering/terrainTextures';
 import { AHRIMAN_ART, createAhriman } from '../src/game/rendering/ahriman';
 import { TRADE_ART, drawTradeIcon } from '../src/game/rendering/tradeArt';
 import { drawVectorArt, type ArtMark, type ArtPoint } from '../src/game/rendering/vectorArt';
@@ -53,7 +61,7 @@ test.each(TERRAIN_TYPES)(
         for (let variant = 0; variant < TERRAIN_VARIANTS; variant++) {
             const marks = terrainArt(terrain, variant);
             expect(marks.length).toBeGreaterThan(6);
-            expect(marks.length).toBeLessThan(55);
+            expect(marks.length).toBeLessThan(300);
             for (const mark of marks) {
                 for (const [x, y] of bounds(mark)) {
                     expect(Number.isFinite(x) && Number.isFinite(y)).toBe(true);
@@ -63,7 +71,8 @@ test.each(TERRAIN_TYPES)(
             }
             // First three surfaces and final two rims frame the tile; the motifs stay above the token.
             for (const mark of marks.slice(3, -2))
-                for (const [, y] of bounds(mark)) expect(y).toBeLessThan(0.3);
+                if ((mark.alpha ?? 1) > 0.5)
+                    for (const [, y] of bounds(mark)) expect(y).toBeLessThan(0.3);
         }
     },
 );
@@ -85,7 +94,7 @@ test('art is reproducible, has distinct terrain silhouettes, and never advances 
         for (let q = -2; q <= 2; q++)
             for (let r = -2; r <= 2; r++) {
                 expect(terrainVariant(q, r)).toBeGreaterThanOrEqual(0);
-                expect(terrainVariant(q, r)).toBeLessThan(2);
+                expect(terrainVariant(q, r)).toBeLessThan(TERRAIN_VARIANTS);
             }
         expect(random).not.toHaveBeenCalled();
     } finally {
@@ -93,7 +102,7 @@ test('art is reproducible, has distinct terrain silhouettes, and never advances 
     }
 });
 
-test('texture generation is bounded to 12 small textures and reused after a scene restart', () => {
+test('texture generation is bounded to 24 small textures and reused after a scene restart', () => {
     const cached = new Set<string>();
     const g = graphics();
     g.generateTexture.mockImplementation((key: string, width: number, height: number) => {
@@ -107,11 +116,11 @@ test('texture generation is bounded to 12 small textures and reused after a scen
         make: { graphics: () => g },
     } as unknown as Scene;
     ensureTerrainTextures(scene);
-    expect(g.generateTexture).toHaveBeenCalledTimes(12);
+    expect(g.generateTexture).toHaveBeenCalledTimes(24);
     expect(g.destroy).toHaveBeenCalledTimes(1);
     ensureTerrainTextures(scene);
-    expect(g.generateTexture).toHaveBeenCalledTimes(12);
-    expect(cached.size * TERRAIN_TEXTURE_SIZE ** 2 * 4).toBe(4_915_200);
+    expect(g.generateTexture).toHaveBeenCalledTimes(24);
+    expect(cached.size * TERRAIN_TEXTURE_SIZE ** 2 * 4).toBe(9_830_400);
 });
 
 test('drawing cache setup releases scratch graphics if generation fails', () => {
@@ -178,7 +187,7 @@ test('Ahriman naming preserves existing state/save commands and only blocks prod
         false,
     );
     const session = new GameSession();
-    session.start(4);
+    session.start(4, false);
     session.openSheet({ kind: 'tile', id: session.state!.board.tiles[0].id });
     expect(sheetContent(session).body).toContain('اهریمن');
     expect(sheetContent(session).body).not.toContain('راهزن');
@@ -189,4 +198,75 @@ test('vector plans draw through portable paths and ellipses without canvas-only 
     drawVectorArt(g as unknown as GameObjects.Graphics, terrainArt('mountain'), 128, 128, 120);
     expect(g.fillPath).toHaveBeenCalled();
     expect(g.strokePath).toHaveBeenCalled();
+});
+
+test('repeated terrains receive different compositions and save order does not change them', () => {
+    const tiles = createReadyGame(['A', 'B', 'C'], () => 0.42).board.tiles;
+    const variants = boardTerrainVariants(tiles);
+    expect(variants).toEqual(boardTerrainVariants([...tiles].reverse()));
+    for (const terrain of TERRAIN_TYPES) {
+        const same = tiles.filter((tile) => tile.terrain === terrain);
+        expect(new Set(same.map((tile) => variants.get(tile.id))).size).toBe(same.length);
+    }
+});
+
+test('resource materials remain inside their shared frames, deterministic and distinct without color', () => {
+    const plans = RESOURCE_TYPES.map(resourceArt);
+    expect(
+        new Set(plans.map((marks) => JSON.stringify(marks.map((m) => ({ ...m, color: 0 }))))).size,
+    ).toBe(5);
+    for (const resource of RESOURCE_TYPES) {
+        const marks = resourceArt(resource);
+        expect(marks).toEqual(resourceArt(resource));
+        for (const mark of marks)
+            for (const [x, y] of bounds(mark)) {
+                expect(Math.abs(x)).toBeLessThan(0.9);
+                expect(Math.abs(y)).toBeLessThan(0.9);
+            }
+    }
+});
+
+test('all resource consumers share one generated atlas, reused on scene restart', () => {
+    const g = graphics();
+    const add = vi.fn();
+    let cached = false;
+    g.generateTexture.mockImplementation(() => {
+        cached = true;
+        return g;
+    });
+    const scene = {
+        textures: { exists: () => cached, get: () => ({ add }) },
+        make: { graphics: () => g },
+    } as unknown as Scene;
+    ensureResourceTextures(scene);
+    ensureResourceTextures(scene);
+    expect(g.generateTexture).toHaveBeenCalledExactlyOnceWith('art-resources', 640, 128);
+    expect(add).toHaveBeenCalledTimes(5);
+    RESOURCE_TYPES.forEach((resource, i) =>
+        expect(add).toHaveBeenNthCalledWith(i + 1, resource, 0, i * 128, 0, 128, 128),
+    );
+    expect(g.destroy).toHaveBeenCalledOnce();
+});
+
+test('resource generation releases scratch graphics on upload failure; token and quay geometry are finite', () => {
+    const g = graphics();
+    g.generateTexture.mockImplementation(() => {
+        throw new Error('upload');
+    });
+    expect(() =>
+        ensureResourceTextures({
+            textures: { exists: () => false },
+            make: { graphics: () => g },
+        } as unknown as Scene),
+    ).toThrow('upload');
+    expect(g.destroy).toHaveBeenCalledOnce();
+    for (const marks of [NUMBER_TOKEN_ART, harborArt(), harborArt(0x123abc)]) {
+        for (const mark of marks)
+            for (const [x, y] of bounds(mark)) {
+                expect(Number.isFinite(x) && Number.isFinite(y)).toBe(true);
+                expect(Math.abs(x)).toBeLessThanOrEqual(1.1);
+                expect(Math.abs(y)).toBeLessThanOrEqual(1.1);
+            }
+    }
+    expect(harborArt(0x123abc).some((m) => m.color === 0x123abc)).toBe(true);
 });

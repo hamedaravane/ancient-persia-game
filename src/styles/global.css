@@ -476,21 +476,7 @@ h3 {
     vertical-align: middle;
     --icon-size: 32px;
 }
-.resource-icon--wood {
-    height: calc(var(--icon-size) * 0.84874);
-}
-.resource-icon--brick {
-    height: calc(var(--icon-size) * 0.91818);
-}
-.resource-icon--wheat {
-    width: calc(var(--icon-size) * 0.86992);
-}
-.resource-icon--wool {
-    height: calc(var(--icon-size) * 0.80992);
-}
-.resource-icon--stone {
-    height: calc(var(--icon-size) * 0.84677);
-}
+
 .action-dock {
     display: flex;
     align-items: center;
@@ -1437,4 +1423,36 @@ h3 {
 }
 .trade-build-feedback p {
     margin-block: 8px;
+}
+
+/* Compact pause navigation; all visible surfaces use the shared Graphics renderer. */
+.pause-menu {
+    display: grid;
+    gap: 16px;
+}
+.pause-section {
+    display: grid;
+    gap: 8px;
+}
+.pause-section h3 {
+    font-size: 12px;
+    line-height: 20px;
+    color: var(--muted);
+}
+.pause-option {
+    width: 100%;
+    min-height: 60px;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 12px;
+    text-align: start;
+}
+.pause-option-copy {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+.pause-option-copy small {
+    font-size: 12px;
+    line-height: 18px;
 }

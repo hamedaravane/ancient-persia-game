@@ -24,7 +24,7 @@ function fixture(persist = false) {
     };
     vi.spyOn(Math, 'random').mockReturnValue(0.5);
     const session = new GameSession(persist ? new MatchStore(storage) : undefined);
-    session.start(4);
+    session.start(4, false);
     completeSessionSetup(session);
     session.state!.phase = 'actions';
     session.state!.lastRoll = [3, 3];
@@ -434,7 +434,7 @@ test.each([17, 91])(
             return value / 4294967296;
         });
         const session = new GameSession();
-        session.start(4);
+        session.start(4, false);
         completeSessionSetup(session);
         let transitions = 0;
         for (let step = 0; step < 1800 && session.state!.phase !== 'finished'; step++) {

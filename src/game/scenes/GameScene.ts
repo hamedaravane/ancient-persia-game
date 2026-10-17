@@ -2,7 +2,7 @@ import { createAhriman, AHRIMAN_OFFSET_RATIO } from '../rendering/ahriman';
 import {
     ensureTerrainTextures,
     terrainTextureKey,
-    terrainVariant,
+    boardTerrainVariants,
 } from '../rendering/terrainTextures';
 import { TERRAIN_TEXTURE_RADIUS } from '../rendering/terrainArt';
 import { type GameObjects, Scene } from 'phaser';
@@ -16,7 +16,9 @@ import type { GameSession } from '../ui/session';
 import { UI_FONT_FAMILY } from '../ui/typography';
 import type { Motion } from '../ui/motion';
 import type { MatchTransition } from '../ui/transitions';
-import { ART, RESOURCE_FRAMES, TEXTURE_FILES, assetUrl } from '../assets';
+import { ART, assetUrl } from '../assets';
+import { ensureResourceTextures, NUMBER_TOKEN_ART } from '../rendering/boardEmblems';
+import { drawVectorArt } from '../rendering/vectorArt';
 import { createBuildingPiece, createRoadPiece } from '../rendering/pieces';
 import {
     createPortMarker,
@@ -57,18 +59,12 @@ export class GameScene extends Scene {
     }
 
     preload(): void {
-        for (const name of ['number', 'spark', 'dust'] as const)
+        for (const name of ['spark', 'dust'] as const)
             this.load.image(`art-${name}`, assetUrl(ART[name].file));
-        this.load.image('art-resources', assetUrl(TEXTURE_FILES.resources));
     }
     create(): void {
-        if (this.textures.exists('art-resources')) {
-            const texture = this.textures.get('art-resources');
-            for (const [resource, [x, y, width, height]] of Object.entries(RESOURCE_FRAMES)) {
-                if (!texture.has(resource)) texture.add(resource, 0, x, y, width, height);
-            }
-        }
-        for (const name of ['number', 'spark', 'dust'] as const) {
+        ensureResourceTextures(this);
+        for (const name of ['spark', 'dust'] as const) {
             const key = `art-${name}`;
             if (!this.textures.exists(key)) continue;
             const texture = this.textures.get(key);
@@ -220,15 +216,12 @@ export class GameScene extends Scene {
             .join('|');
         if (force || terrainSignature !== this.terrainSignature) {
             this.terrainObjects.removeAll(true);
+            const variants = boardTerrainVariants(state.board.tiles);
             for (const tile of state.board.tiles) {
                 const { x, y } = this.toScreen(tile);
                 this.terrainObjects.add(
                     this.add
-                        .image(
-                            x,
-                            y,
-                            terrainTextureKey(tile.terrain, terrainVariant(tile.q, tile.r)),
-                        )
+                        .image(x, y, terrainTextureKey(tile.terrain, variants.get(tile.id)!))
                         .setScale(this.layout.hexRadius / TERRAIN_TEXTURE_RADIUS),
                 );
             }
@@ -334,12 +327,9 @@ export class GameScene extends Scene {
             this.boardObjects.add(highlight);
         }
         if (tile.number !== null) {
-            if (this.textures.exists('art-number')) {
-                const token = this.add.image(x, y + radius * 0.48, 'art-number', 'crop');
-                token.setScale((26 * NUMBER_TOKEN_SCALE) / token.width);
-                this.boardObjects.add(token);
-            } else
-                this.circle(x, y + radius * 0.48, 12 * NUMBER_TOKEN_SCALE, 0xf0dfb7, 1, 0x392f25);
+            const token = this.add.graphics();
+            drawVectorArt(token, NUMBER_TOKEN_ART, x, y + radius * 0.48, 13 * NUMBER_TOKEN_SCALE);
+            this.boardObjects.add(token);
             this.text(
                 x,
                 y + radius * 0.48,

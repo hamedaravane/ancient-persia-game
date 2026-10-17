@@ -8,11 +8,9 @@ Put files loaded by the browser under `public/assets/`. Keep the directory tree 
 public/assets/
   backgrounds/
   characters/anahita/
-  board/tokens/
   dice/
   effects/
   fonts/
-  resources/
   ui/emblems/
   ui/ornaments/
 ```
@@ -43,9 +41,9 @@ Full-image paths live in `TEXTURE_FILES` and cropped illustrations in `ART` with
 
 ## Image export workflow
 
-There are **16 active runtime WebP images**, totaling **9,627,552 bytes**. The earlier full-library conversion produced 24 exports from 45,997,087 bytes of PNG masters, totaling 14,200,904 WebP bytes. Eight exports (terrain paintings, traveler and bank scale) are now replaced by procedural drawing and removed from runtime packaging, saving 4,573,352 compressed bytes. Their complete original PNG masters remain unchanged at matching paths under `art/reference/`. The procedural terrain cache uses 12 generated 320 × 320 textures; no terrain/marker/trade PNG/WebP is needed at runtime. See [PROCEDURAL_BOARD_ART.md](PROCEDURAL_BOARD_ART.md) for composition decisions and memory-budget limits.
+There are **14 active runtime WebP images**, totaling **8,201,868 bytes**. Ten former exports (six terrains, traveler, bank scale, number medallion and resource atlas) now use procedural drawing, saving 5,999,036 compressed bytes against the original 24 exports. Complete PNG masters remain unchanged at matching paths under `art/reference/`, with checksums and historical crops in the manifest's `references`. Terrain uses 24 generated 320 × 320 textures, resources one generated 640 × 128 atlas, and number medallions direct Graphics paths. See [PROCEDURAL_BOARD_ART.md](PROCEDURAL_BOARD_ART.md) for composition and memory budgets.
 
-The palace background, legacy dice sheet, and resource atlas use lossless WebP to satisfy the quality checks, and the other active images use quality 95. The retired pasture export previously used quality 100. Lossless mode is distinguished from the quality-100 lossy profile.
+The palace background and legacy dice sheet use lossless WebP to satisfy the quality checks, and the other active images use quality 95. The retired pasture export previously used quality 100. Lossless mode is distinguished from the quality-100 lossy profile.
 
 `scripts/image-exports.json` records active `assets` and retired `references`, including original dimensions, source SHA-256, and the documented atlas/illustration crops. Only active assets are exported; full inventory checks also verify retired masters. `scripts/optimize-images.py` regenerates exports from those masters using the local WebP encoder through Pillow. It requires Python 3 and Pillow >= 10.2 with WebP support; normal game development, builds, and deployment use the checked-in exports and do not need Python.
 
@@ -63,11 +61,11 @@ The quality profile starts at WebP quality 95, method 6, and tries 98, 100, then
 
 [Google's WebP documentation](https://developers.google.com/speed/webp/docs/cwebp) describes the encoding modes; [Pillow's WebP documentation](https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html#webp) describes the local encoder options. No hosted API, key, or runtime conversion is used.
 
-`tests/asset-exports.test.ts` checks packaging, source checksums, texture paths/dimensions, and agreement between renderer crops and the export manifest. The Python check decodes images for alpha and quality comparisons. The user retains interactive/device review; static source/export comparisons should include small icons, fine terrain detail, soft effects, and the menu background. Historical artwork outside the runtime inventory (procedural-piece and ocean references) remains unmodified PNG source art.
+`tests/asset-exports.test.ts` checks packaging, source checksums, texture paths/dimensions, and agreement between renderer crops and the export manifest. The Python check decodes images for alpha and quality comparisons. The user retains interactive/device review; static source/export comparisons should include small procedural icons, terrain detail, soft effects, and the menu background. Historical artwork outside the runtime inventory (procedural-piece and ocean references) remains unmodified PNG source art.
 
 ## Procedural interface materials
 
-The current stone UI is drawn with Phaser Graphics, with cut corners, broad chisel facets, recessed keylines, deterministic mineral flecks/patina, and shallow border seams. These are presentation geometry, not new PNG textures. Grain stays at the perimeter so text remains legible, and its local generator never uses `Math.random()` or the core random source. No runtime/source art is replaced or duplicated for this treatment. Stone is now the sole approved interface, using the same original Image frames. Semantic icon dimensions use a shared CSS `--icon-size`, preserving the frame aspect ratio at each placement size without transform or negative-margin offsets.
+The current stone UI is drawn with Phaser Graphics, with cut corners, broad chisel facets, recessed keylines, deterministic mineral flecks/patina, and shallow border seams. These are presentation geometry, not new PNG textures. Grain stays at the perimeter so text remains legible, and its local generator never uses `Math.random()` or the core random source. No runtime/source art is replaced or duplicated for this treatment. Stone is the sole approved interface; ornaments and victory art retain their original Image frames, while resource frames are generated from code. Semantic icon dimensions use a shared CSS `--icon-size`, preserving the frame aspect ratio at each placement size without transform or negative-margin offsets.
 
 ## Current files
 
@@ -82,27 +80,19 @@ The current stone UI is drawn with Phaser Graphics, with cut corners, broad chis
 - `dice/faces.webp`: preserved supplied six-face stone dice sheet. The match bar now draws its two confirmed dice with Phaser Graphics. Its front faces are ordered 1–3 across the top and 4–6 across the bottom. The source is **RGB with a baked checkerboard**, not transparent. The previous DOM implementation used inset silhouette clipping, trimming the painted edges and shadow. This documented art issue motivates clean procedural ivory dice in the new Graphics UI. A future transparent re-export could restore the painted version; the inspected original crops remain in the registry. The PNG source master remains unchanged under `art/reference/dice/`.
 - Settlements, cities, and roads use reusable Phaser Graphics components rather than runtime images. Their original paintings are preserved under `art/reference/pieces/`, outside the runtime tree. See [PIECE_RENDERING.md](PIECE_RENDERING.md) for dimensions, material layers, visual states, API, and the `?demo=pieces` gallery.
 - Ahriman is drawn by `rendering/ahriman.ts`; previews and movement use the same vector emblem. The former traveler PNG is preserved at `art/reference/pieces/robber/robber.png`, with checksum metadata in the manifest's `references` array. There is no marker image request.
-- `board/tokens/number.webp`: supplied stone medallion, used behind runtime Persian tile numbers at 28.6 pixels across with 15.4-pixel digits, both enlarged by 10%. The fallback circle is enlarged proportionally. The desert has no board label or number token; its name remains available in tile details. The illustrated frame is detailed at source size; its center is intentionally kept clear for digits.
+- Number medallions are code-drawn limestone and bronze using `NUMBER_TOKEN_ART` in `rendering/boardEmblems.ts`. Runtime Persian numbers retain their 15.4-pixel size. The original `board/tokens/number.png` remains under `art/reference/`; its WebP is retired. Desert has no token.
 - `ui/ornaments/ornaments.webp`: supplied corner, divider, and rosette sheet. Explicit source frames supply menu corners/crest/divider and small sheet-heading ornaments; there are no baked labels or separate player-color images.
 - `ui/emblems/victory.webp`: supplied griffin/rosette medallion, shown at 112 pixels wide in the results sheet with runtime winner/score text below it.
 - The trade scales are drawn by `rendering/tradeArt.ts` at dock/workspace sizes. `art/reference/ui/illustrations/bank.png` preserves the original painting; it is a retired reference, not an active export.
 - `effects/dust.webp`: short construction puff behind the building marker within its container.
 - `effects/spark.webp`: restrained road-placement sparkle over the confirmed edge.
 - `effects/glint.webp`: short glint over the victory medallion in the dialog's top layer.
-- `resources/resources.webp`: five transparent resource illustrations. Source frame rectangles are documented below. Phaser loads the sheet once and adds the shared `RESOURCE_FRAMES` crops from `assets.ts`. The Graphics interface hand, costs, selectors, production flights, and board ports reuse those Image frames without duplicate files. CSS sizes transparent semantic icon placeholders to the same proportions, at a maximum 32 pixels.
-
-| Resource | Source rectangle (`x`, `y`, `width`, `height`) |
-| -------- | ---------------------------------------------- |
-| Wood     | `44, 164, 476, 404`                            |
-| Brick    | `544, 164, 440, 404`                           |
-| Wheat    | `984, 88, 428, 492`                            |
-| Wool     | `244, 608, 484, 392`                           |
-| Stone    | `768, 584, 496, 420`                           |
+- Resource icons use `rendering/resourceArt.ts` and a generated shared atlas from `boardEmblems.ts`. Five square 128 × 128 frames in one 640 × 128 texture serve the hand, costs, selectors, flights and harbors. No resource bitmap is downloaded. Square semantic placeholders retain their existing maximum sizes. The original `art/reference/resources/resources.png` and crop metadata are preserved; its WebP is retired.
 
 The MVP maps forest to wood, mesa to brick, wheat to wheat, pasture to wool, and mountain to stone. Those rules are unchanged. The six 1254 × 1254 painted PNG masters are preserved as references; procedural point-up hexes now provide the terrain. Broad motifs sit above the token area. Stable axial-coordinate variants use no gameplay randomness. Number text remains a runtime overlay, and the desert has no number token. Roads, player-colored buildings and Ahriman render above the static terrain layer.
 The ocean and its coast are presentation only. `BackdropScene` switches between the menu Image and the match procedural ocean inside the full-shell Phaser canvas. The water caches an opaque shader pass in a capped 320 × 640 render target, updating at 30 Hz while active; stationary views reuse the cached surface. The fallback generates its small color field in code and uses Graphics wavelets. An inset board camera and full-shell interface scene share this canvas. Coast geometry is recreated when board state or viewport measurements change, and stays below the terrain. A ResizeObserver explicitly resizes the canvas with `Scale.NONE`; the island automatically fits the available width and height with a 40-pixel ocean margin for the coast and port markers. There is no interactive zoom or panning. Transparent semantic controls retain CSS-pixel touch dimensions; Graphics surfaces and runtime labels match their measured geometry.
 
-The art is retained from the existing project. Recheck resource crop rectangles against the source atlas if that image changes. The older dice sheet remains available. The original settlement/city/road paintings are reference art under `art/reference/pieces/`; the user's chosen replacement is original procedural Graphics geometry, so bitmap ownership masks are not required.
+The art is retained from the existing project. Retired resource crop rectangles remain only as historical manifest metadata. The older dice sheet remains available. The original settlement/city/road paintings are reference art under `art/reference/pieces/`; the user's chosen replacement is original procedural Graphics geometry, so bitmap ownership masks are not required.
 
 ## Supplied polish assets: frames and review
 
@@ -111,7 +101,7 @@ The supplied polish PNGs are preserved as masters under `art/reference/`. Active
 | Art key                            | Source rectangle (`x`, `y`, `width`, `height`)                  |
 | ---------------------------------- | --------------------------------------------------------------- |
 | Traveler (reference only)          | `380, 60, 610, 1130`                                            |
-| Number token                       | `95, 75, 1065, 1075`                                            |
+| Number token (reference only)      | `95, 75, 1065, 1075`                                            |
 | Corner ornament                    | `35, 390, 380, 400`                                             |
 | Divider ornament                   | `385, 575, 485, 110`                                            |
 | Rosette ornament                   | `930, 480, 310, 310`                                            |
@@ -128,7 +118,7 @@ Runtime WebP exports now reduce download size for all image groups, with origina
 
 ## Ports
 
-`src/game/rendering/ports.ts` draws nine small stone trading islets with Phaser Graphics, runtime ratio text, and resource emblems cropped from the existing resource atlas. No port PNGs or per-player asset copies are needed. Marker bodies are 32 pixels across, with a 38-pixel water halo and two links to the associated coastal edge endpoints. An arbitrary runtime ownership color accents the inset border. See [PORTS.md](PORTS.md) for geometry, access rules, and interaction.
+`src/game/rendering/ports.ts` draws nine small stone trading islets with Phaser Graphics, runtime ratio text, and resource emblems from the shared code-generated atlas. No port PNGs or per-player asset copies are needed. Marker bodies are 32 pixels across, with a 38-pixel water halo and two links to the associated coastal edge endpoints. An arbitrary runtime ownership color accents the inset border. See [PORTS.md](PORTS.md) for geometry, access rules, and interaction.
 
 ## Platform icons
 

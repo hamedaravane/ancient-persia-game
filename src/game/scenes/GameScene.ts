@@ -1,5 +1,12 @@
+import { createAhriman, AHRIMAN_OFFSET_RATIO } from '../rendering/ahriman';
+import {
+    ensureTerrainTextures,
+    terrainTextureKey,
+    terrainVariant,
+} from '../rendering/terrainTextures';
+import { TERRAIN_TEXTURE_RADIUS } from '../rendering/terrainArt';
 import { type GameObjects, Scene } from 'phaser';
-import type { GameState, HexTile, TerrainType } from '../core/types';
+import type { GameState, HexTile } from '../core/types';
 import { BoardInput } from '../rendering/boardInput';
 import { BoardEffects } from '../rendering/boardEffects';
 import { createBoardCoast } from '../rendering/boardCoast';
@@ -21,21 +28,12 @@ import { getPortOwnerId, getPortTradeRatio } from '../core/ports';
 import { configureDisplayCamera, logicalCameraSize } from '../rendering/display';
 import { createSharpText } from '../rendering/sharpText';
 
-const TERRAIN_COLORS: Record<TerrainType, number> = {
-    forest: 0x3f6149,
-    mesa: 0x94543a,
-    wheat: 0xb58b3d,
-    pasture: 0x617d5d,
-    mountain: 0x59626c,
-    desert: 0xb78f62,
-};
 const NUMBER_TOKEN_SCALE = 1.1;
-const ROBBER_SCALE = 1.2;
-// Leave room above the enlarged number token and below the tile's top corner.
-const ROBBER_OFFSET_RATIO = 0.45;
 
 /** Phaser presents state and previews; all eligibility and commands belong to core/session. */
 export class GameScene extends Scene {
+    private terrainObjects!: GameObjects.Container;
+    private terrainSignature = '';
     private boardObjects!: GameObjects.Container;
     private coast: GameObjects.Graphics | null = null;
     private layout: BoardLayout = fitBoard(390, 468);
@@ -46,7 +44,7 @@ export class GameScene extends Scene {
     private effects: BoardEffects;
     private pieces = new Map<string, GameObjects.Container>();
     private portPositions = new Map<string, PortLayout>();
-    private robberMarker: GameObjects.Container | null = null;
+    private ahrimanMarker: GameObjects.Container | null = null;
     private layoutListeners = new Set<() => void>();
 
     constructor(
@@ -59,9 +57,7 @@ export class GameScene extends Scene {
     }
 
     preload(): void {
-        for (const [terrain, file] of Object.entries(TEXTURE_FILES.terrains))
-            this.load.image(`terrain-${terrain}`, assetUrl(file));
-        for (const name of ['robber', 'number', 'spark', 'dust'] as const)
+        for (const name of ['number', 'spark', 'dust'] as const)
             this.load.image(`art-${name}`, assetUrl(ART[name].file));
         this.load.image('art-resources', assetUrl(TEXTURE_FILES.resources));
     }
@@ -72,13 +68,15 @@ export class GameScene extends Scene {
                 if (!texture.has(resource)) texture.add(resource, 0, x, y, width, height);
             }
         }
-        for (const name of ['robber', 'number', 'spark', 'dust'] as const) {
+        for (const name of ['number', 'spark', 'dust'] as const) {
             const key = `art-${name}`;
             if (!this.textures.exists(key)) continue;
             const texture = this.textures.get(key);
             const [x, y, width, height] = ART[name].frame;
             if (!texture.has('crop')) texture.add('crop', 0, x, y, width, height);
         }
+        ensureTerrainTextures(this);
+        this.terrainObjects = this.add.container();
         this.boardObjects = this.add.container();
         this.effects = new BoardEffects(this, this.motion);
         this.inputAdapter = new BoardInput(
@@ -172,14 +170,14 @@ export class GameScene extends Scene {
                     0xffdda0,
                 );
             }
-        } else if (action.kind === 'robber' && this.robberMarker) {
+        } else if (action.kind === 'robber' && this.ahrimanMarker) {
             const from = before.board.tiles.find(({ robber }) => robber)!;
             const to = after.board.tiles.find(({ robber }) => robber)!;
             const start = this.toScreen(from),
                 end = this.toScreen(to);
-            const offset = this.layout.hexRadius * ROBBER_OFFSET_RATIO;
-            this.effects.robber(
-                this.robberMarker,
+            const offset = this.layout.hexRadius * AHRIMAN_OFFSET_RATIO;
+            this.effects.ahriman(
+                this.ahrimanMarker,
                 { x: start.x, y: start.y - offset },
                 { x: end.x, y: end.y - offset },
             );
@@ -201,12 +199,14 @@ export class GameScene extends Scene {
         this.effects.clear();
         this.pieces.clear();
         this.portPositions.clear();
-        this.robberMarker = null;
+        this.ahrimanMarker = null;
         const previousBoard = this.renderedState?.board;
         this.renderedState = state;
         this.renderedPlacement = this.session.placement;
         this.boardObjects.removeAll(true);
         if (!state) {
+            this.terrainObjects.removeAll(true);
+            this.terrainSignature = '';
             this.coast?.destroy();
             this.coast = null;
             return;
@@ -214,6 +214,25 @@ export class GameScene extends Scene {
         if (force || state.board !== previousBoard || !this.coast) {
             this.coast?.destroy();
             this.coast = createBoardCoast(this, state.board, this.layout).setDepth(-1);
+        }
+        const terrainSignature = state.board.tiles
+            .map((tile) => `${tile.id}:${tile.terrain}`)
+            .join('|');
+        if (force || terrainSignature !== this.terrainSignature) {
+            this.terrainObjects.removeAll(true);
+            for (const tile of state.board.tiles) {
+                const { x, y } = this.toScreen(tile);
+                this.terrainObjects.add(
+                    this.add
+                        .image(
+                            x,
+                            y,
+                            terrainTextureKey(tile.terrain, terrainVariant(tile.q, tile.r)),
+                        )
+                        .setScale(this.layout.hexRadius / TERRAIN_TEXTURE_RADIUS),
+                );
+            }
+            this.terrainSignature = terrainSignature;
         }
         for (const port of state.board.ports) {
             const position = getPortLayout(state.board, port, this.layout);
@@ -308,20 +327,6 @@ export class GameScene extends Scene {
             for (const p of points.slice(1)) graphics.lineTo(p.x, p.y);
             return graphics.closePath();
         };
-        const backplate = this.add
-            .graphics({ x, y })
-            .fillStyle(TERRAIN_COLORS[tile.terrain])
-            .lineStyle(2, 0xe4d4ae);
-        polygon(backplate).fillPath().strokePath();
-        this.boardObjects.add(backplate);
-        const terrain = this.add.image(x, y, `terrain-${tile.terrain}`);
-        terrain.setScale((radius * 2) / terrain.height);
-        const maskShape = this.add.graphics({ x, y }).fillStyle(0xffffff);
-        polygon(maskShape).fillPath();
-        maskShape.setVisible(false);
-        const mask = maskShape.createGeometryMask();
-        terrain.setMask(mask).once('destroy', () => mask.destroy());
-        this.boardObjects.add([terrain, maskShape]);
         const roll = this.session.state!.lastRoll;
         if (roll && roll[0] + roll[1] === tile.number && !tile.robber) {
             const highlight = this.add.graphics({ x, y }).lineStyle(3, 0xffebaf, 0.85);
@@ -354,21 +359,15 @@ export class GameScene extends Scene {
             this.boardObjects.add(rim);
         }
         if (tile.robber || preview) {
-            const marker = this.add
-                .container(x, y - radius * ROBBER_OFFSET_RATIO)
-                .setScale(ROBBER_SCALE)
-                .setAlpha(preview ? 0.55 : 1);
+            const marker = createAhriman(
+                this,
+                x,
+                y - radius * AHRIMAN_OFFSET_RATIO,
+                Math.min(34, radius * 0.9),
+                preview,
+            );
             this.boardObjects.add(marker);
-            if (this.textures.exists('art-robber')) {
-                const shadow = this.add.ellipse(0, 15, 15, 5, 0x151b20, 0.5);
-                const robber = this.add.image(0, 0, 'art-robber', 'crop');
-                robber.setScale(Math.min(32, radius * 0.85) / robber.height);
-                marker.add([shadow, robber]);
-            } else {
-                marker.add(this.add.circle(0, 0, 10, 0x2a1d1c).setStrokeStyle(2, 0xf0d9ac));
-                marker.add(this.text(0, 0, 'ر', 12, '#f0d9ac'));
-            }
-            if (tile.robber) this.robberMarker = marker;
+            if (tile.robber) this.ahrimanMarker = marker;
         }
     }
     private text(

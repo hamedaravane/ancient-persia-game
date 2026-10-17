@@ -53,3 +53,8 @@ export function resourceIcon(resource: ResourceType): string {
 export function resourceValue(resource: ResourceType, count: number, shortage = 0): string {
     return `<span class="resource-value${shortage ? ' is-short' : ''}" aria-label="${number(count)} ${FA.resources[resource]}${shortage ? `، کمبود ${number(shortage)}` : ''}">${resourceIcon(resource)}<span>${number(count)}</span><span class="sr-only">${FA.resources[resource]}${shortage ? `؛ کمبود ${number(shortage)}` : ''}</span></span>`;
 }
+
+/** Measured semantic placeholder; Phaser draws the original procedural trade emblem. */
+export function tradeIcon(width: number): string {
+    return `<span class="trade-icon art-sprite" aria-hidden="true" style="width:${width}px;height:${width}px"></span>`;
+}

@@ -582,7 +582,7 @@ export class GameSession {
                       ? 'راه آغازین رو گذاشت.'
                       : 'آبادی آغازین رو گذاشت.'
                   : command.kind === 'roll' && result.ok
-                    ? `تاس ${number(result.state.lastRoll![0] + result.state.lastRoll![1])}${result.state.phase === 'robber' ? '؛ جابه‌جایی راهزن' : ''}`
+                    ? `تاس ${number(result.state.lastRoll![0] + result.state.lastRoll![1])}${result.state.phase === 'robber' ? '؛ جابه‌جایی اهریمن' : ''}`
                     : command.kind === 'build'
                       ? { road: FA.roadBuilt, settlement: FA.settlementBuilt, city: FA.cityBuilt }[
                             command.type

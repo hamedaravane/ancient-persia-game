@@ -4,7 +4,7 @@ Status: approved design, researched 2026-10-11. The current-rule layout and work
 
 ## Implementation status
 
-Implemented: Phaser Graphics HUD with transparent semantic layout/input and safe-area sizing, compact-height layout, active-player resource hand, public player summaries, core-derived construction costs/shortages/legal targets, board previews and explicit confirmation, reviewed bank/port trades at core-derived 4:1/3:1/2:1 rates, contextual primary action, tile inspection, automatic island fitting without zoom/pan, keyboard-accessible in-game target/inspection lists, modal focus handling, local event history, help, and final score breakdown. Phaser draws the original terrain, coastline, and runtime ownership markers inside the measured board camera, with all visible UI in the same full-shell canvas. The board camera uses the whole board region during ordinary play; placement adds a separate 56-pixel destination-selector row. A 40-pixel ocean margin fits the coast and nine procedural port-islet markers. Later user decisions supersede the original zoom controls and visible DOM styling in the wireframe snapshot. [PHASER_UI_DESIGN.md](PHASER_UI_DESIGN.md) records the current material system and research; [UI_SYSTEM.md](UI_SYSTEM.md) records current row measurements. The six-point target, unlimited supplies, automatic setup, and simplified robber are unchanged.
+Implemented: Phaser Graphics HUD with transparent semantic layout/input and safe-area sizing, compact-height layout, active-player resource hand, public player summaries, core-derived construction costs/shortages/legal targets, board previews and explicit confirmation, reviewed bank/port trades at core-derived 4:1/3:1/2:1 rates, contextual primary action, tile inspection, automatic island fitting without zoom/pan, keyboard-accessible in-game target/inspection lists, modal focus handling, local event history, help, and final score breakdown. Phaser draws the original terrain, coastline, and runtime ownership markers inside the measured board camera, with all visible UI in the same full-shell canvas. The board camera uses the whole board region during ordinary play; placement adds a separate 56-pixel destination-selector row. A 40-pixel ocean margin fits the coast and nine procedural port-islet markers. Later user decisions supersede the original zoom controls and visible DOM styling in the wireframe snapshot. [PHASER_UI_DESIGN.md](PHASER_UI_DESIGN.md) records the current material system and research; [UI_SYSTEM.md](UI_SYSTEM.md) records current row measurements. The six-point target, unlimited supplies, automatic setup, and simplified Ahriman are unchanged.
 
 Deferred until explicitly selected: cards and their deck/rules, player trading, finite piece/bank inventories, awards, manual setup, discard/theft, privacy handover, sound, online services, and timers. No placeholder controls imply support for these systems. See [UI_SYSTEM.md](UI_SYSTEM.md) for implemented component responsibilities and interaction details. The wireframes remain schematic design references, including conditionally illustrated future systems.
 
@@ -35,7 +35,7 @@ Research used documentation and published reference images, not a live app usabi
 
 ### Base-game reference
 
-The classic reference includes resource production, construction costs and placement, finite pieces, player trading, bank/port rates, development cards, a seven's discard/robber/theft sequence, bonus awards, hidden information, setup, and a ten-point victory on one's own turn. These are reference requirements rather than adopted project decisions. [2025 rulebook](https://www.catan.com/sites/default/files/2025-03/CN3081%20CATAN%E2%80%93The%20Game%20Rulebook%20secure%20%281%29.pdf)
+The classic reference includes resource production, construction costs and placement, finite pieces, player trading, bank/port rates, development cards, a seven's discard/Ahriman/theft sequence, bonus awards, hidden information, setup, and a ten-point victory on one's own turn. These are reference requirements rather than adopted project decisions. [2025 rulebook](https://www.catan.com/sites/default/files/2025-03/CN3081%20CATAN%E2%80%93The%20Game%20Rulebook%20secure%20%281%29.pdf)
 
 The classic piece pool is 15 roads, 5 settlements, and 4 cities per player; upgrading returns the settlement. Put those counts in the construction workspace if we adopt them. [25th-anniversary almanac](https://www.catan.com/sites/default/files/2021-07/catan-25th-rules_eng-200313.pdf)
 
@@ -45,7 +45,7 @@ For reference, the base game supplies 19 cards per resource and 25 development c
 
 | System                                       | Current implementation                                        | Proposed access                                                                     |
 | -------------------------------------------- | ------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| Board, roads, settlements, cities, robber    | Present                                                       | Main board, with contextual inspection and targeting                                |
+| Board, roads, settlements, cities, Ahriman   | Present                                                       | Main board, with contextual inspection and targeting                                |
 | Five resource types                          | Present; current core calls the mountain resource `stone`     | Permanent hand strip; stable ordering everywhere                                    |
 | Score and target                             | Public building-derived points; target six                    | Player strip and score breakdown; read the target from game state                   |
 | Dice and turn ownership                      | Present                                                       | Compact top summary; rolling uses the lower primary action                          |
@@ -55,7 +55,7 @@ For reference, the base game supplies 19 cards per resource and 25 development c
 | Player trades and counters                   | Absent                                                        | Future Players trade workspace and incoming-offer notice                            |
 | Ports and improved rates                     | Absent                                                        | Future board markers plus per-resource rates in Bank trading                        |
 | Development cards                            | Absent                                                        | Future Cards dock entry, private hand, purchase and effect workflows                |
-| Discarding and robber theft                  | Absent; seven only requires relocation                        | Future forced-resolution panels and victim selection                                |
+| Discarding and Ahriman theft                 | Absent; seven only requires relocation                        | Future forced-resolution panels and victim selection                                |
 | Longest road/route and largest army          | Absent                                                        | Future award markers and score breakdown                                            |
 | Finite bank and development deck             | Absent                                                        | Future availability and shortage feedback; exact supply visibility needs a decision |
 | Starting placement                           | Automatic                                                     | Future guided settlement/road selection if interactive setup is adopted             |
@@ -69,7 +69,7 @@ Do not show inactive placeholder systems as if they work. For the current MVP, t
 
 ### Always available on the normal board view
 
-- Board ownership, terrain, readable number tokens, robber location, and last dice result.
+- Board ownership, terrain, readable number tokens, Ahriman location, and last dice result.
 - Active player and current phase. State what the viewer must do, if anything.
 - The viewer's five exact resource counts, including zero values. Online, these do not switch to the active player's resources.
 - Compact player summaries: identity/color, visible score, and public resource-card total where that information policy applies.
@@ -83,7 +83,7 @@ Construction costs, remaining supplies, score components, public award progress,
 
 ### Visible when relevant
 
-Production gains, missing materials for a selected action, a pending trade, discard requirements, a robber victim choice, a delayed server response, or reconnection. These temporarily take precedence over optional information.
+Production gains, missing materials for a selected action, a pending trade, discard requirements, Ahriman victim choice, a delayed server response, or reconnection. These temporarily take precedence over optional information.
 
 ## Measured portrait layout
 
@@ -112,7 +112,7 @@ At narrower widths, shorten displayed names, reduce decorative spacing, and scal
 
 For a compact-height preset, reduce the player strip from 64 to 56 pixels, hand from 80 to 72, context line from 40 to 36, dock and primary rows from 64 to 56 each, and bottom spacing from 16 to 8. Keep their actual buttons at least 48 pixels high. This saves 44 pixels without reducing text sizes. Sheet content can scroll independently.
 
-Outside placement mode, tapping a tile opens a small inspector with its resource, number, production probability, robber-blocked status, and adjacent buildings. Keep number tokens readable at the current board scale; probability pips or detail must supplement the number rather than replace it. Inspection must not place a piece or trigger a robber move accidentally.
+Outside placement mode, tapping a tile opens a small inspector with its resource, number, production probability, Ahriman-blocked status, and adjacent buildings. Keep number tokens readable at the current board scale; probability pips or detail must supplement the number rather than replace it. Inspection must not place a piece or trigger Ahriman move accidentally.
 
 ## Construction workspace
 
@@ -168,7 +168,7 @@ The reference effects imply different interfaces:
 
 | Reference card             | Proposed interaction                                                                                                               |
 | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| Knight                     | Review effect, collapse sheet, choose robber destination, then eligible victim if theft is enabled                                 |
+| Knight                     | Review effect, collapse sheet, choose Ahriman destination, then eligible victim if theft is enabled                                |
 | Road Building              | Guided first and second road placement, with a clear progress indicator and handling for piece/legal-location limits               |
 | Invention / Year of Plenty | Select two available resources, including the same resource twice where allowed, then review                                       |
 | Monopoly                   | Select a resource type and review the effect before playing; reveal only the resulting transfers allowed by the information policy |
@@ -188,14 +188,14 @@ These effects are described in the [archived base rules](https://www.catan.com/s
 | Another player's turn           | Your hand remains visible; board inspection stays available  | Waiting for player; offer response available when eligible                            |
 | Discard after seven, if adopted | Ordinary building/trading blocked                            | Select exactly the required resource count and confirm                                |
 | Waiting for other discards      | Preserve board and completion status                         | Waiting indicator; do not expose discarded types to opponents unless policy allows it |
-| Robber relocation               | Highlight valid destinations                                 | Confirm destination                                                                   |
+| Ahriman relocation              | Highlight valid destinations                                 | Confirm destination                                                                   |
 | Victim choice, if theft adopted | Mark eligible adjacent opponents                             | Select opponent; random card chosen by rules/server                                   |
 | Card effect resolution          | Follow that effect's targeting sequence                      | Effect-specific confirmation and progress                                             |
 | Command pending                 | Preserve preview; block duplicate submission                 | Pending status; no false success animation                                            |
 | Disconnected/reconnecting       | Show last confirmed state with an explicit connection notice | Stop submitting moves; reconnect and resynchronize                                    |
 | Finished                        | Keep the final board available behind results                | Result breakdown, rematch/leave as supported                                          |
 
-For the current MVP, a seven enters robber relocation directly. A fuller implementation needs additional states and transition rules before discard/theft UI can work. Timer duration, timeout behavior, reconnect grace periods, pause/resign rules, and automatic actions are online product decisions; they are not supplied by the board game's physical rules.
+For the current MVP, a seven enters Ahriman relocation directly. A fuller implementation needs additional states and transition rules before discard/theft UI can work. Timer duration, timeout behavior, reconnect grace periods, pause/resign rules, and automatic actions are online product decisions; they are not supplied by the board game's physical rules.
 
 ## Public information, private information, and local play
 
@@ -207,7 +207,7 @@ In shared-device play, keep the active-player hand model but add a handover cove
 
 ## Event history, help, and match completeness
 
-The context line answers what just happened and what to do next. Examples: dice result with personal production, blocked production, an accepted trade, or a required robber move. Keep the latest dice result persistent even after the brief message changes. Resource gains may briefly show +1/+2 beside the affected counts, then settle to the authoritative total.
+The context line answers what just happened and what to do next. Examples: dice result with personal production, blocked production, an accepted trade, or a required Ahriman move. Keep the latest dice result persistent even after the brief message changes. Resource gains may briefly show +1/+2 beside the affected counts, then settle to the authoritative total.
 
 Tapping history opens a chronological sheet. Separate game events and player chat; both can share an entry point, but should not compete in a permanent scrolling sidebar. Keep private events visible only to their owner. While chat and its keyboard are open, preserve a route to urgent required actions and a clear close control. Group trade notifications to avoid spam.
 
@@ -239,7 +239,7 @@ Expose typed presentation data for viewer identity, active identity, phase, cost
 
 ## Suggested delivery order
 
-1. **Current-rule UI:** reusable responsive shell, persistent five-resource hand, compact player/turn summaries, event line, Build sheet with real costs/reasons, Bank trade review, contextual primary action, and clear placement preview/confirmation. Preserve six-point victory, unlimited supplies, automatic setup, and simplified robber behavior.
+1. **Current-rule UI:** reusable responsive shell, persistent five-resource hand, compact player/turn summaries, event line, Build sheet with real costs/reasons, Bank trade review, contextual primary action, and clear placement preview/confirmation. Preserve six-point victory, unlimited supplies, automatic setup, and simplified Ahriman behavior.
 2. **Interaction polish:** board inspection and automatic fitting, history, help, messaging, safe areas, focus, reduced motion, and local handover privacy if selected.
 3. **Approved rule additions:** implement each selected finite-supply, development, harbor, player-trade, award, discard/theft, or setup system in core and document its rules alongside its UI.
 4. **Online play:** authenticated viewer projection, server authority, negotiation lifecycle, pending/failed commands, reconnection, and selected timer/disconnect policies.

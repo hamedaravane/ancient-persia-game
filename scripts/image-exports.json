@@ -10,48 +10,6 @@
       "frames": {}
     },
     {
-      "file": "board/terrains/desert.webp",
-      "group": "terrains",
-      "size": [1254, 1254],
-      "source_sha256": "1f910d960e86344c84b47b568ea5f5d76b085cf084a4510f8666fab45d33fee3",
-      "frames": {}
-    },
-    {
-      "file": "board/terrains/forest.webp",
-      "group": "terrains",
-      "size": [1254, 1254],
-      "source_sha256": "de928415751281b0960037b6997636a6559c5275d3f9d316e9a770275db04fb6",
-      "frames": {}
-    },
-    {
-      "file": "board/terrains/mesa.webp",
-      "group": "terrains",
-      "size": [1254, 1254],
-      "source_sha256": "37271fe4e6c11fe658fef4dcf2024dec4e8ee6b1f7e13f5ecae02ca592e062b0",
-      "frames": {}
-    },
-    {
-      "file": "board/terrains/mountain.webp",
-      "group": "terrains",
-      "size": [1254, 1254],
-      "source_sha256": "4c909afb6463ee5f3ad018e4b017ac4e564d5650e95fe900194e3c5c323bfc51",
-      "frames": {}
-    },
-    {
-      "file": "board/terrains/pasture.webp",
-      "group": "terrains",
-      "size": [1254, 1254],
-      "source_sha256": "64d7a42081c102af5cf0515f04f3c25fe9e068f2041ce09a20bdf729b2f0f2e9",
-      "frames": {}
-    },
-    {
-      "file": "board/terrains/wheat.webp",
-      "group": "terrains",
-      "size": [1254, 1254],
-      "source_sha256": "8bf185251a6862ade823b006e7cebc2c1738233a76b34c185f276eb3bb77a2b6",
-      "frames": {}
-    },
-    {
       "file": "board/tokens/number.webp",
       "group": "tokens",
       "size": [1254, 1254],
@@ -147,15 +105,6 @@
       "frames": {}
     },
     {
-      "file": "pieces/robber/robber.webp",
-      "group": "pieces",
-      "size": [1254, 1254],
-      "source_sha256": "7d28c5597a6821570fbb5d6e9ef740cba62fcf49deee68cb8124ae779933cbb2",
-      "frames": {
-        "robber": [380, 60, 610, 1130]
-      }
-    },
-    {
       "file": "resources/resources.webp",
       "group": "resources",
       "size": [1448, 1086],
@@ -178,15 +127,6 @@
       }
     },
     {
-      "file": "ui/illustrations/bank.webp",
-      "group": "ui",
-      "size": [1254, 1254],
-      "source_sha256": "fdb8072aece0139962f9624e23c224c34c7d676d40c71f22703b37d510572557",
-      "frames": {
-        "bank": [15, 80, 1225, 1095]
-      }
-    },
-    {
       "file": "ui/ornaments/ornaments.webp",
       "group": "ui",
       "size": [1254, 1254],
@@ -195,6 +135,68 @@
         "corner": [35, 390, 380, 400],
         "divider": [385, 575, 485, 110],
         "rosette": [930, 480, 310, 310]
+      }
+    }
+  ],
+  "references": [
+    {
+      "file": "board/terrains/desert.webp",
+      "group": "terrains",
+      "size": [1254, 1254],
+      "source_sha256": "1f910d960e86344c84b47b568ea5f5d76b085cf084a4510f8666fab45d33fee3",
+      "frames": {}
+    },
+    {
+      "file": "board/terrains/forest.webp",
+      "group": "terrains",
+      "size": [1254, 1254],
+      "source_sha256": "de928415751281b0960037b6997636a6559c5275d3f9d316e9a770275db04fb6",
+      "frames": {}
+    },
+    {
+      "file": "board/terrains/mesa.webp",
+      "group": "terrains",
+      "size": [1254, 1254],
+      "source_sha256": "37271fe4e6c11fe658fef4dcf2024dec4e8ee6b1f7e13f5ecae02ca592e062b0",
+      "frames": {}
+    },
+    {
+      "file": "board/terrains/mountain.webp",
+      "group": "terrains",
+      "size": [1254, 1254],
+      "source_sha256": "4c909afb6463ee5f3ad018e4b017ac4e564d5650e95fe900194e3c5c323bfc51",
+      "frames": {}
+    },
+    {
+      "file": "board/terrains/pasture.webp",
+      "group": "terrains",
+      "size": [1254, 1254],
+      "source_sha256": "64d7a42081c102af5cf0515f04f3c25fe9e068f2041ce09a20bdf729b2f0f2e9",
+      "frames": {}
+    },
+    {
+      "file": "board/terrains/wheat.webp",
+      "group": "terrains",
+      "size": [1254, 1254],
+      "source_sha256": "8bf185251a6862ade823b006e7cebc2c1738233a76b34c185f276eb3bb77a2b6",
+      "frames": {}
+    },
+    {
+      "file": "pieces/robber/robber.webp",
+      "group": "pieces",
+      "size": [1254, 1254],
+      "source_sha256": "7d28c5597a6821570fbb5d6e9ef740cba62fcf49deee68cb8124ae779933cbb2",
+      "frames": {
+        "robber": [380, 60, 610, 1130]
+      }
+    },
+    {
+      "file": "ui/illustrations/bank.webp",
+      "group": "ui",
+      "size": [1254, 1254],
+      "source_sha256": "fdb8072aece0139962f9624e23c224c34c7d676d40c71f22703b37d510572557",
+      "frames": {
+        "bank": [15, 80, 1225, 1095]
       }
     }
   ]

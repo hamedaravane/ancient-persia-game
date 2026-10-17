@@ -1,3 +1,4 @@
+import { drawTradeIcon } from '../rendering/tradeArt';
 import { SETTLEMENT, CITY } from '../rendering/pieceShapes';
 import type { GameObjects } from 'phaser';
 import { canvasDisplay } from '../rendering/display';
@@ -28,7 +29,9 @@ export function drawComponent(
     const owner = Number.isFinite(ownerValue) ? ownerValue : UI_INK.gold;
     const disabled = el instanceof HTMLButtonElement && el.disabled;
     const selected = el.getAttribute('aria-pressed') === 'true';
-    if (has('match-bar')) {
+    if (has('trade-icon')) {
+        drawTradeIcon(g, box, !!el.closest('button:disabled'));
+    } else if (has('match-bar')) {
         const display = canvasDisplay(g.scene);
         drawSurface(g, headerBackdrop(box, display.width), 'inset', { radius: 0, flat: true });
         g.lineStyle(1, UI_INK.gold, 0.4).lineBetween(

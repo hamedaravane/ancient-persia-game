@@ -2,7 +2,7 @@
 
 ## Rules and attribution
 
-Domestic trades use the [official CATAN Rules & Almanac, Domestic Trade, page 7](https://www.catan.com/sites/default/files/2021-06/catan_base_rules_2020_200707.pdf#page=7) and [CATAN's trade FAQ](https://www.catan.com/faq/basegame). Trades happen after production/robber resolution, always include the active player, and exchange nonempty resource bundles simultaneously. Ratios and quantities are negotiated; matching resource types on both sides, gifts, credit, services, and development-card trades are disallowed. Trades are public. Opponent resource types stay private; their total card count is public. Sunmark retains its already-approved combined build/trade action phase and other MVP rules.
+Domestic trades use the [official CATAN Rules & Almanac, Domestic Trade, page 7](https://www.catan.com/sites/default/files/2021-06/catan_base_rules_2020_200707.pdf#page=7) and [CATAN's trade FAQ](https://www.catan.com/faq/basegame). Trades happen after production/Ahriman resolution, always include the active player, and exchange nonempty resource bundles simultaneously. Ratios and quantities are negotiated; matching resource types on both sides, gifts, credit, services, and development-card trades are disallowed. Trades are public. Opponent resource types stay private; their total card count is public. Sunmark retains its already-approved combined build/trade action phase and other MVP rules.
 
 These rules apply equally to humans and bots, including human responses/proposals during a bot's action phase. Bank/port trading still requires the human's own turn. Inactive bots cannot trade with one another on someone else's turn. Only actual held cards can fund payment; incoming cards never fund an outgoing obligation.
 

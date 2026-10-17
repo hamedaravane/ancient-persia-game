@@ -87,7 +87,7 @@ export class PlayerTrading {
     get draftError(): string | null {
         const { state, humanId } = this.context();
         if (!state || !humanId || !this.allowed)
-            return 'بعد از تاس و جابه‌جایی راهزن می‌تونی معامله کنی.';
+            return 'بعد از تاس و جابه‌جایی اهریمن می‌تونی معامله کنی.';
         if (!RESOURCE_TYPES.some((r) => this.give[r]) || !RESOURCE_TYPES.some((r) => this.want[r]))
             return 'هر دو طرف معامله باید حداقل یک منبع داشته باشند.';
         if (RESOURCE_TYPES.some((r) => this.give[r] && this.want[r]))

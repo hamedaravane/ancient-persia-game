@@ -109,6 +109,14 @@ def main():
         print(f"{asset['file']}: {before:,} -> {after:,} bytes; {profile}; alpha exact; PSNR >= {score:.2f} dB", flush=True)
 
     if not args.group:
+        # Retired paintings remain checked masters, never regenerated into public/.
+        for asset in manifest.get("references", []):
+            master = MASTERS / Path(asset["file"]).with_suffix(".png")
+            if hashlib.sha256(master.read_bytes()).hexdigest() != asset["source_sha256"]:
+                raise ValueError(f"Preserved master hash changed: {master}")
+            with Image.open(master) as source:
+                if list(source.size) != asset["size"]:
+                    raise ValueError(f"Preserved master dimensions changed: {master}")
         actual = {p.relative_to(RUNTIME).as_posix() for p in RUNTIME.rglob("*") if p.suffix.lower() in (".png", ".jpg", ".jpeg", ".webp", ".avif")}
         expected = {a["file"] for a in manifest["assets"]}
         if actual != expected:

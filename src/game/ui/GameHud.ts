@@ -6,7 +6,7 @@ import { isSetup } from '../core/setup';
 import { getBuildOption } from '../core/queries';
 import { RESOURCE_TYPES, type ResourceType, type TradeRatio } from '../core/types';
 import { BottomSheet, type SheetContent } from './bottomSheet';
-import { artSprite, button, escape, number } from './components';
+import { button, escape, number, tradeIcon } from './components';
 import { FA } from './messages.fa';
 import { BUILD_LABELS, costRow, sheetContent } from './sheets';
 import { type GameSession } from './session';
@@ -135,7 +135,7 @@ export class GameHud {
                           : 'آبادی اولت رو روی یکی از تقاطع‌های روشن انتخاب و تأیید کن.'
                   : placement
                     ? placement.kind === 'robber'
-                        ? 'خانه مقصد راهزن را انتخاب و تأیید کنید.'
+                        ? 'خانه مقصد اهریمن را انتخاب و تأیید کنید.'
                         : `${BUILD_LABELS[placement.kind]}: محل روشن را انتخاب و سپس ساخت را تأیید کنید.`
                     : state.phase === 'roll'
                       ? FA.normalRoll
@@ -166,8 +166,8 @@ export class GameHud {
             opening && placement
                 ? `<div class="placement-cost"><span>${placement.kind === 'road' ? 'راه کنار آبادی تازه' : second ? 'آبادی دوم' : 'آبادی اول'}</span><span class="muted">جانمایی آغازین • بدون هزینه</span></div>${button('پاک‌کردن انتخاب', 'cancel-placement', { className: 'button button--quiet', disabled: !placement.targetId })}`
                 : placement
-                  ? `<div class="placement-cost"><span>${placement.kind === 'robber' ? 'جابه‌جایی راهزن' : `هزینه ${BUILD_LABELS[placement.kind]}`}</span>${placement.kind === 'robber' ? '<span class="muted">خانه فعلی قابل انتخاب نیست</span>' : costRow(getBuildOption(state, placement.kind))}</div>${button(placement.kind === 'robber' ? 'پاک‌کردن انتخاب' : 'لغو', 'cancel-placement', { className: 'button button--quiet', disabled: placement.kind === 'robber' && !placement.targetId })}`
-                  : `${button(`<span class="piece-symbol piece-symbol--settlement" aria-hidden="true"></span>ساخت • ${number(availableBuilds.length)} آماده`, 'open:build', { className: 'button dock-button', disabled: opening || state.phase === 'finished' })}${button(`${artSprite('bank', 28)}معامله`, this.session.practice ? 'open:trade' : 'open:domestic', { className: 'button dock-button', disabled: state.phase !== 'actions' || (!!this.session.practice && this.session.practice.stage !== 'trade') })}`,
+                  ? `<div class="placement-cost"><span>${placement.kind === 'robber' ? 'جابه‌جایی اهریمن' : `هزینه ${BUILD_LABELS[placement.kind]}`}</span>${placement.kind === 'robber' ? '<span class="muted">خانه فعلی قابل انتخاب نیست</span>' : costRow(getBuildOption(state, placement.kind))}</div>${button(placement.kind === 'robber' ? 'پاک‌کردن انتخاب' : 'لغو', 'cancel-placement', { className: 'button button--quiet', disabled: placement.kind === 'robber' && !placement.targetId })}`
+                  : `${button(`<span class="piece-symbol piece-symbol--settlement" aria-hidden="true"></span>ساخت • ${number(availableBuilds.length)} آماده`, 'open:build', { className: 'button dock-button', disabled: opening || state.phase === 'finished' })}${button(`${tradeIcon(28)}معامله`, this.session.practice ? 'open:trade' : 'open:domestic', { className: 'button dock-button', disabled: state.phase !== 'actions' || (!!this.session.practice && this.session.practice.stage !== 'trade') })}`,
         );
         const primaryLabel =
             this.session.practice && !placement && this.session.practice.stage !== 'roll'
@@ -183,7 +183,7 @@ export class GameHud {
                   ? 'منتظر نوبت تو…'
                   : placement
                     ? placement.kind === 'robber'
-                        ? 'تأیید جابه‌جایی راهزن'
+                        ? 'تأیید جابه‌جایی اهریمن'
                         : opening
                           ? `تأیید ${placement.kind === 'road' ? 'راه آغازین' : second ? 'آبادی دوم' : 'آبادی اول'}`
                           : `تأیید ساخت ${BUILD_LABELS[placement.kind]}`

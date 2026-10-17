@@ -1,6 +1,6 @@
 # Sunmark
 
-**Sunmark (سان‌مارک)** is a mobile-first, Persian-language local strategy board game inspired by hex-based resource production and settlement building. The MVP starts four-player matches with one human and three automatic local bots, with a generated board, player-chosen opening settlements/roads in CATAN order, turn-based production, building, negotiated player/bot trades, bank trades, a robber, and a six-point victory target.
+**Sunmark (سان‌مارک)** is a mobile-first, Persian-language local strategy board game inspired by hex-based resource production and settlement building. The MVP starts four-player matches with one human and three automatic local bots, with a generated board, player-chosen opening settlements/roads in CATAN order, turn-based production, building, negotiated player/bot trades, bank trades, Ahriman, and a six-point victory target.
 
 [Play the game](https://hamedaravane.github.io/ancient-persia-game/)
 
@@ -88,3 +88,7 @@ Runtime bitmap images are optimized full-resolution WebP exports. Their complete
 See [AGENTS.md](AGENTS.md) for the repository’s working conventions.
 
 Player-to-player trading follows CATAN domestic-trade restrictions with clear offer/counter/review/receipt states and local bot negotiation. See [DOMESTIC_TRADING.md](docs/DOMESTIC_TRADING.md).
+
+## Procedural board art
+
+The board uses code-generated, softly detailed terrain with a small reusable texture cache. Ahriman (اهریمن) is a procedural shadow-spirit marker that blocks production; trade scales are also drawn in code. Original paintings remain preserved under `art/reference/`, outside runtime downloads. See [the visual direction, size study and rendering budgets](docs/PROCEDURAL_BOARD_ART.md).

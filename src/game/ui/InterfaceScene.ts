@@ -63,11 +63,11 @@ export class InterfaceScene extends Scene {
         super('InterfaceScene');
     }
     preload(): void {
-        for (const name of ['bank', 'victory', 'corner', 'divider', 'rosette', 'glint'] as const)
+        for (const name of ['victory', 'corner', 'divider', 'rosette', 'glint'] as const)
             this.load.image(`ui-${name}`, assetUrl(ART[name].file));
     }
     create(): void {
-        for (const name of ['bank', 'victory', 'corner', 'divider', 'rosette', 'glint'] as const) {
+        for (const name of ['victory', 'corner', 'divider', 'rosette', 'glint'] as const) {
             const [x, y, w, h] = ART[name].frame;
             this.textures.get(`ui-${name}`).add('crop', 0, x, y, w, h);
         }

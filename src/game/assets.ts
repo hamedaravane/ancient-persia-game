@@ -1,4 +1,4 @@
-import type { ResourceType, TerrainType } from './core/types';
+import type { ResourceType } from './core/types';
 
 /** Runtime texture rectangles in image pixels. Original art masters are preserved separately. */
 export interface ArtFrame {
@@ -14,19 +14,7 @@ export const assetUrl = (file: string): string => `${import.meta.env.BASE_URL}as
 export const TEXTURE_FILES = {
     menuBackground: 'backgrounds/main-menu.webp',
     resources: 'resources/resources.webp',
-    terrains: {
-        desert: 'board/terrains/desert.webp',
-        forest: 'board/terrains/forest.webp',
-        mesa: 'board/terrains/mesa.webp',
-        mountain: 'board/terrains/mountain.webp',
-        pasture: 'board/terrains/pasture.webp',
-        wheat: 'board/terrains/wheat.webp',
-    },
-} as const satisfies {
-    menuBackground: string;
-    resources: string;
-    terrains: Record<TerrainType, string>;
-};
+} as const satisfies { menuBackground: string; resources: string };
 
 export const ART = {
     'anahita-calm': {
@@ -59,11 +47,6 @@ export const ART = {
         source: [1024, 1536],
         frame: [0, 0, 1024, 1536],
     },
-    robber: {
-        file: 'pieces/robber/robber.webp',
-        source: [1254, 1254],
-        frame: [380, 60, 610, 1130],
-    },
     number: { file: 'board/tokens/number.webp', source: [1254, 1254], frame: [95, 75, 1065, 1075] },
     corner: {
         file: 'ui/ornaments/ornaments.webp',
@@ -81,7 +64,6 @@ export const ART = {
         frame: [930, 480, 310, 310],
     },
     victory: { file: 'ui/emblems/victory.webp', source: [1254, 1254], frame: [40, 50, 1175, 1135] },
-    bank: { file: 'ui/illustrations/bank.webp', source: [1254, 1254], frame: [15, 80, 1225, 1095] },
     spark: { file: 'effects/spark.webp', source: [1283, 1226], frame: [0, 0, 1283, 1226] },
     glint: { file: 'effects/glint.webp', source: [1278, 1230], frame: [0, 0, 1278, 1230] },
     dust: { file: 'effects/dust.webp', source: [1254, 1254], frame: [125, 210, 1010, 850] },

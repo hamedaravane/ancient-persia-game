@@ -10,7 +10,7 @@ The base-game paragraph does not specify a tied-highest-roll procedure. Sunmark 
 
 ## Core model
 
-`createGame()` now returns an empty generated board and `setup-roll`. `core/setup.ts` owns starter selection, opening target legality, immutable placement, second-settlement grants, and the forward/reverse seat calculation. After starter selection the phases alternate `setup-settlement` → `setup-road`. The final road enters ordinary `roll` on the chosen starter. No paid building, bank trade, end-turn, city upgrade, production roll, or robber move is legal during setup.
+`createGame()` now returns an empty generated board and `setup-roll`. `core/setup.ts` owns starter selection, opening target legality, immutable placement, second-settlement grants, and the forward/reverse seat calculation. After starter selection the phases alternate `setup-settlement` → `setup-road`. The final road enters ordinary `roll` on the chosen starter. No paid building, bank trade, end-turn, city upgrade, production roll, or Ahriman move is legal during setup.
 
 `GameState.startingPlayerIndex` records the chosen starter; ordinary round numbers increase when seat order returns to that starter. Missing values in legacy matches retain the earlier seat-zero behavior. `GameState.setup` holds either contenders/current contest rolls or an ordered list of completed pair settlement IDs plus a pending settlement anchor. The anchor survives closing/reloading between the settlement and road. Completing a road appends that anchor to the pair list; no resource grant runs during road placement or resume.
 
@@ -26,7 +26,7 @@ Anahita introduces the contest/order, first settlement, required adjoining road,
 
 ## Recovery and verification
 
-`validateSetup.ts` checks partial opening phases, contender order/dice, selected starter bounds, exact pair/anchor ownership and piece counts, attached roads, untouched desert robber, and expected second-settlement resource totals. Every intermediate state can be saved; previews are discarded on resume, while confirmed anchors and grants persist.
+`validateSetup.ts` checks partial opening phases, contender order/dice, selected starter bounds, exact pair/anchor ownership and piece counts, attached roads, untouched desert Ahriman, and expected second-settlement resource totals. Every intermediate state can be saved; previews are discarded on resume, while confirmed anchors and grants persist.
 
 Completed legacy matches stay in their current phase with their existing pieces/resources. They are never sent through setup again. Obsolete automatic-setup instructions queued in those saves are dropped, while reviewed/practiced memory and intentional journal replay remain available. App/save identifiers stay stable.
 

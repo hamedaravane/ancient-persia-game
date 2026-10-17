@@ -11,7 +11,7 @@ interface ExportedAsset {
 }
 const manifest = JSON.parse(
     readFileSync(new URL('../scripts/image-exports.json', import.meta.url), 'utf8'),
-) as { assets: ExportedAsset[] };
+) as { assets: ExportedAsset[]; references: ExportedAsset[] };
 
 test('every runtime image is a smaller WebP backed by an unchanged full-resolution PNG master', () => {
     const runtime = new URL('../public/assets/', import.meta.url);
@@ -34,11 +34,7 @@ test('every runtime image is a smaller WebP backed by an unchanged full-resoluti
 
 test('loader textures and atlas crops agree with the verified full-resolution exports', () => {
     const byFile = new Map(manifest.assets.map((asset) => [asset.file, asset]));
-    for (const file of [
-        TEXTURE_FILES.menuBackground,
-        TEXTURE_FILES.resources,
-        ...Object.values(TEXTURE_FILES.terrains),
-    ])
+    for (const file of [TEXTURE_FILES.menuBackground, TEXTURE_FILES.resources])
         expect(byFile.has(file)).toBe(true);
     for (const art of [...Object.values(ART), ...DICE_FACES]) {
         const asset = byFile.get(art.file);
@@ -50,4 +46,16 @@ test('loader textures and atlas crops agree with the verified full-resolution ex
     const resources = byFile.get(TEXTURE_FILES.resources)!;
     for (const [name, frame] of Object.entries(RESOURCE_FRAMES))
         expect(resources.frames[name]).toEqual(frame);
+});
+
+test('retired terrain, robber and bank paintings retain verified masters outside runtime packaging', () => {
+    expect(manifest.references).toHaveLength(8);
+    for (const asset of manifest.references) {
+        const master = readFileSync(
+            new URL(`../art/reference/${asset.file.replace(/\.webp$/, '.png')}`, import.meta.url),
+        );
+        expect(createHash('sha256').update(master).digest('hex')).toBe(asset.source_sha256);
+        expect([master.readUInt32BE(16), master.readUInt32BE(20)]).toEqual(asset.size);
+        expect(manifest.assets.some((runtime) => runtime.file === asset.file)).toBe(false);
+    }
 });

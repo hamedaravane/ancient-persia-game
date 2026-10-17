@@ -21,7 +21,7 @@ Original research 2026-10-11; Graphics interface migration 2026-10-13. Motion pr
 | Preview target / choose trade resource | Finite gold outline on the corresponding control                                                                                | 400 ms                                                                       |
 | Change turn                            | Active-player ownership outline, score pips, and a short emphasis ring                                                          | 400 ms                                                                       |
 | Confirm building                       | Existing road trace or stone-piece settle, local ring, supplied dust/spark                                                      | 400–520 ms                                                                   |
-| Move robber                            | Existing miniature glides from its previous tile to its confirmed destination                                                   | 400 ms                                                                       |
+| Move Ahriman                           | Procedural shadow-spirit emblem glides from its previous tile to its confirmed destination                                      | 400 ms                                                                       |
 | Calm sea                               | Seven subtle wave packets with softly changing surface lighting; rendered at 30 Hz into a small cached target                   | Very slow local phase evolution; freezes in menus, modals and reduced motion |
 | Victory                                | Preserved medallion with the supplied glint and brief Graphics rosette sparkles                                                 | 830 ms including delay                                                       |
 
@@ -44,4 +44,4 @@ The user-requested procedural sea adds quiet ambient wave motion behind the isla
 
 ## Verification
 
-Use `npm run check`. Pure Node tests cover session confirmation, core payment, robber relocation, full inspection IDs, and camera/client coordinate agreement. The user performs actual visual/device review; no browser launch is part of routine verification.
+Use `npm run check`. Pure Node tests cover session confirmation, core payment, Ahriman relocation, full inspection IDs, and camera/client coordinate agreement. The user performs actual visual/device review; no browser launch is part of routine verification.

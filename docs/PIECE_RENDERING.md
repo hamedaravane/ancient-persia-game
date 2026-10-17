@@ -86,7 +86,7 @@ The demo canvas resizes to its actual CSS width using `Scale.NONE`; actual-size 
 
 ## Preserved artwork and checks
 
-Original piece paintings are preserved byte-for-byte under `art/reference/pieces/`; see [the reference README](../art/reference/README.md). Their prior oblique perspective, fine detail, and magenta ownership areas were unsuitable for small, arbitrary-color orthographic rendering. They are no longer copied from `public/` into the production build. Other artwork, including the robber, terrain, and resource icons, is unchanged.
+Original piece paintings are preserved byte-for-byte under `art/reference/pieces/`; see [the reference README](../art/reference/README.md). Their prior oblique perspective, fine detail, and magenta ownership areas were unsuitable for small, arbitrary-color orthographic rendering. They are no longer copied from `public/` into the production build. Other artwork, including Ahriman, terrain, and resource icons, is unchanged.
 
 Verification uses the repository typecheck/build and focused recording checks for arbitrary-color/material separation, all-layer grayscale, shared anchors, road dimensions at all six directed edge angles, world-space lighting, text-free pieces, state reset, redraw allocation, and disposal. Recording checks validate drawing commands, not browser rasterization. Interactive device review remains with the user; no browser is launched as part of this task.
 

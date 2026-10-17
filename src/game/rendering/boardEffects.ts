@@ -80,7 +80,7 @@ export class BoardEffects {
         });
         this.track(tween, () => shine.destroy());
     }
-    robber(marker: GameObjects.Container, from: Point, to: Point): void {
+    ahriman(marker: GameObjects.Container, from: Point, to: Point): void {
         if (!this.enabled) return;
         marker.setPosition(from.x, from.y);
         this.track(

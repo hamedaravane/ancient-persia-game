@@ -77,7 +77,7 @@ export function domesticContent(session: GameSession): SheetContent {
     const market = session.trading;
     const tabs = tradeTabs(session, true);
     const context = inventory(session);
-    const rules = `<details class="deal-rules"><summary>قانون‌های معامله</summary><p class="footnote">بعد از تاس و حل‌شدن راهزن، هر معامله باید با صاحب نوبت باشه. هر دو طرف منابع موجود رو هم‌زمان عوض می‌کنن؛ هدیه، قرض، وعدهٔ پرداخت و مبادلهٔ یک نوع منبع در دو طرف مجاز نیست. نسبت و تعداد منابع توافقیه؛ تعداد معامله‌ها محدود نیست. کارت توسعه و خدمات قابل معامله نیستند. دست بازیکن‌ها پنهانه؛ پیشنهاد ممکنه قابل پرداخت نباشه، اما می‌شه مقدارها رو با پیشنهاد متقابل عوض کرد.</p></details>`;
+    const rules = `<details class="deal-rules"><summary>قانون‌های معامله</summary><p class="footnote">بعد از تاس و حل‌شدن اهریمن، هر معامله باید با صاحب نوبت باشه. هر دو طرف منابع موجود رو هم‌زمان عوض می‌کنن؛ هدیه، قرض، وعدهٔ پرداخت و مبادلهٔ یک نوع منبع در دو طرف مجاز نیست. نسبت و تعداد منابع توافقیه؛ تعداد معامله‌ها محدود نیست. کارت توسعه و خدمات قابل معامله نیستند. دست بازیکن‌ها پنهانه؛ پیشنهاد ممکنه قابل پرداخت نباشه، اما می‌شه مقدارها رو با پیشنهاد متقابل عوض کرد.</p></details>`;
     const review = market.reviewId === null ? undefined : market.table.find(market.reviewId);
     if (review?.status === 'accepted') {
         const own = terms(review, human.id);

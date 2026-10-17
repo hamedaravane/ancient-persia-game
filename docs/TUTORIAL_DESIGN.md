@@ -20,13 +20,13 @@ These are fictional character lines, not historical claims about the supplied de
 
 ## Voice and narrative continuity
 
-The contextual conversations form a loose dramatic arc that remains valid in a random local match: arrival and two starting lights, discovering how the island answers, leaving a mark through roads and settlements, opening trade opportunities, confronting the robber, and looking back at the decisions that shaped the final board. The ending recalls the two starting settlements. These recurring images supply continuity without inventing quests, enemies, hidden rewards, historical events, or a guaranteed sequence of actions.
+The contextual conversations form a loose dramatic arc that remains valid in a random local match: arrival and two starting lights, discovering how the island answers, leaving a mark through roads and settlements, opening trade opportunities, confronting Ahriman, and looking back at the decisions that shaped the final board. The ending recalls the two starting settlements. These recurring images supply continuity without inventing quests, enemies, hidden rewards, historical events, or a guaranteed sequence of actions.
 
 - Use spoken forms such as «رو»، «یه»، «اگه»، «می‌تونی» and «توئه», with readable Persian spelling and half-spaces. Keep familiar mechanic names, precise quantities, and actual button labels clear.
 - Give each conversation one brief emotional beat, followed by its concrete mechanic and a direct next step. Use concise paragraphs; the practice introduction also connects the overall objective and mechanics. Tasks, journal copy, menu invitation, and Continue/Pause wording use the same contemporary register.
 - Convey understated allure through invitation, curiosity, close attention, and gentle teasing: «بیا نزدیک‌تر»، «یه راز کوچیک بهت بگم» and «از این بلندپروازیت خوشم میاد». Vary these touches; avoid inserting a flirt or compliment into every lesson.
 - Let dramatic language follow the moment: quiet reassurance for no income, caution before confirmation, tension around seven, delight after construction. Never replace a cost, restriction, or consequence with a metaphor.
-- Keep copy compatible with replay and single-player play. A success line requires a confirmed result, and the ending refers to the winner without assuming the reader personally won. Do not turn probabilistic production into a promise or imply that moving the robber makes the desert productive.
+- Keep copy compatible with replay and single-player play. A success line requires a confirmed result, and the ending refers to the winner without assuming the reader personally won. Do not turn probabilistic production into a promise or imply that moving Ahriman makes the desert productive.
 - Avoid archaic court speech, modern internet memes, lengthy lore exposition, development-version asides, and claims of an exclusive romantic relationship. Anahita's personality comes from how she notices and responds to play.
 
 ## Research and design rationale
@@ -78,7 +78,7 @@ The opening teaches starter selection and forward/reverse order, then each manua
 - Each transition ID is consumed once. Automatic lessons stop repeating after acknowledgement. Replay is explicit and returns to the journal. Pausing drops pending narration without consuming it; resuming examines current context and ignores historical commands.
 - Seen means a conversation was acknowledged, including optional journal review. Practiced means a relevant confirmed core action was observed while guidance was enabled. Neither is a mastery assessment. Some concepts have no direct action and remain review-only.
 - Close, backdrop, Escape, or Pause stop automatic guidance and restore the interrupted screen. Help → journal can resume it. Memory is saved with the match and survives pausing, menu return/resume, and page reload; a new match resets it.
-- No time-based narrative queue exists. The independent bot runner pauses during every dialog. Situational lessons and practice require the human’s action/turn; victory remains observable for either human or bot winners. Required robber movement and finished matches take priority over optional celebrations. Unavailable actions never become mandatory objectives.
+- No time-based narrative queue exists. The independent bot runner pauses during every dialog. Situational lessons and practice require the human’s action/turn; victory remains observable for either human or bot winners. Required Ahriman movement and finished matches take priority over optional celebrations. Unavailable actions never become mandatory objectives.
 
 ## Presentation and art
 
@@ -90,7 +90,7 @@ The six original PNG masters total 12,199,151 bytes and are preserved byte-for-b
 
 ## Verification and device review
 
-`tests/tutorial.test.ts` covers guided/normal entry, transition consumption, robber priority, building/payment/preview behavior, shortages, preserved trade drafts, pause/resume, replay, tile/port inspection, immediate port access, victory priority, and expression coverage. `tests/bots.test.ts` also checks that bot actions cannot earn human practice or create a human robber-placement draft. Agent verification stays with focused Node/TypeScript/lint checks; full game/device testing and CI belong to the user.
+`tests/tutorial.test.ts` covers guided/normal entry, transition consumption, Ahriman priority, building/payment/preview behavior, shortages, preserved trade drafts, pause/resume, replay, tile/port inspection, immediate port access, victory priority, and expression coverage. `tests/bots.test.ts` also checks that bot actions cannot earn human practice or create a human Ahriman-placement draft. Agent verification stays with focused Node/TypeScript/lint checks; full game/device testing and CI belong to the user.
 
 The user performs interactive testing. At 390 × 844 and a compact size, review reading and body scrolling, portrait loading and expression changes, keyboard focus and Escape, returning to a previewed target, preserved bank choices, handoff clarity, and journal navigation. Node tests do not validate appearance or native-modal behavior.
 

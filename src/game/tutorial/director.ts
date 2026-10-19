@@ -124,13 +124,13 @@ export class TutorialDirector {
                 [action.terms.from, action.terms.to].includes(player.id)
             ) {
                 this.practiced.add('domestic');
-                this.offer('domestic-done');
+                this.seen.add('domestic-done');
             }
             if (transition.before.players[transition.before.activePlayerIndex].id === player.id) {
                 if (action.kind === 'setup') this.practiced.add('setup');
                 if (action.kind === 'roll') {
                     this.practiced.add('roll');
-                    if (state.phase !== 'robber') {
+                    if (state.lastRoll && state.lastRoll[0] + state.lastRoll[1] !== 7) {
                         if (
                             transition.production.some(
                                 (grant) => grant.playerId === player.id && grant.amount > 0,
@@ -147,6 +147,11 @@ export class TutorialDirector {
                     this.practiced.add('preview');
                     this.offer(`built-${action.type}`);
                     if (
+                        state.awards?.longestRoad === player.id &&
+                        transition.before.awards?.longestRoad !== player.id
+                    )
+                        this.offer('titles');
+                    if (
                         state.board.ports.some(
                             (port) =>
                                 getPortOwnerId(state.board, port) === player.id &&
@@ -162,7 +167,10 @@ export class TutorialDirector {
                     this.practiced.add('trade-review');
                     this.offer('traded');
                 }
-                if (action.kind === 'robber') {
+                if (
+                    action.kind === 'robber' &&
+                    transition.before.robberResolution?.source !== 'knight'
+                ) {
                     this.practiced.add('seven');
                     this.offer('robber-moved');
                 }
@@ -179,6 +187,7 @@ export class TutorialDirector {
             return;
         }
         if (sheet?.kind === 'domestic') this.offer('domestic');
+        if (sheet?.kind === 'development') this.offer('development');
         if (!humanTurn) return;
         if (isSetup(state)) {
             if (state.phase === 'setup-roll') this.offer('setup-order');
@@ -229,7 +238,7 @@ export class TutorialDirector {
             if (state.phase === 'roll') this.offer('roll');
             else if (state.phase === 'actions') {
                 this.offer('actions');
-                if (getPlayerSummary(state, player.id).score === state.victoryTarget - 1)
+                if (getPlayerSummary(state, player.id, player.id).score === state.victoryTarget - 1)
                     this.offer('near-victory');
             }
         }

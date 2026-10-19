@@ -1,3 +1,8 @@
+import { createDevelopment } from './developmentDeck';
+import { beginRobber } from './robber';
+import { refreshAwards, resolvePublicVictory } from './scoring';
+export { getVictoryPoints, getPublicVictoryPoints } from './scoring';
+export { moveRobber } from './robber';
 import { getProduction } from './production';
 import { canAfford, CITY_COST, ROAD_COST, SETTLEMENT_COST, getPlacementError } from './building';
 export { CITY_COST, ROAD_COST, SETTLEMENT_COST } from './building';
@@ -18,7 +23,7 @@ import {
     type TradeRatio,
 } from './types';
 
-export const VICTORY_TARGET = 6;
+export const VICTORY_TARGET = 10;
 
 // Saturated ownership hues stand apart from the green/gold/stone terrain art.
 // These are session defaults; piece renderers accept any runtime RGB color.
@@ -74,6 +79,10 @@ export function createGame(playerNames: string[], random: RandomSource = Math.ra
 
     return {
         board: createBoard(random),
+        development: createDevelopment(players, random),
+        awards: { longestRoad: null, largestArmy: null },
+        robberResolution: null,
+        roadBuilding: null,
         players,
         activePlayerIndex: 0,
         turn: 1,
@@ -91,16 +100,6 @@ export function createGame(playerNames: string[], random: RandomSource = Math.ra
     };
 }
 
-export function getVictoryPoints(state: GameState, playerId: string): number {
-    return Object.values(state.board.vertices).reduce((score, { building }) => {
-        if (building?.ownerId !== playerId) {
-            return score;
-        }
-
-        return score + (building.type === 'city' ? 2 : 1);
-    }, 0);
-}
-
 export function rollDice(state: GameState, random: RandomSource = Math.random): ActionResult {
     if (state.phase !== 'roll') {
         return failure(state, 'wrong-phase');
@@ -112,7 +111,7 @@ export function rollDice(state: GameState, random: RandomSource = Math.random): 
     const lastRoll: [number, number] = [first, second];
 
     if (total === 7) {
-        return success({ ...state, lastRoll, phase: 'robber' });
+        return success(beginRobber({ ...state, lastRoll }, 'seven', 'actions'));
     }
 
     const gains = new Map<string, Player['resources']>();
@@ -142,53 +141,53 @@ export function rollDice(state: GameState, random: RandomSource = Math.random): 
     return success({ ...state, players, lastRoll, phase: 'actions' });
 }
 
-export function moveRobber(state: GameState, tileId: string): ActionResult {
-    if (state.phase !== 'robber') {
-        return failure(state, 'wrong-phase');
-    }
-
-    if (!state.board.tiles.some(({ id }) => id === tileId)) {
-        return failure(state, 'missing-target');
-    }
-
-    if (state.board.tiles.find(({ robber }) => robber)?.id === tileId) {
-        return failure(state, 'same-robber-tile');
-    }
-
-    const tiles = state.board.tiles.map((tile) => ({ ...tile, robber: tile.id === tileId }));
-    return success({ ...state, board: { ...state.board, tiles }, phase: 'actions' });
-}
-
 function gameWithPlayerAndBoard(state: GameState, player: Player, board: Board): GameState {
     const changed = updateCurrentPlayer(state, player);
     const next = { ...changed, board };
-    const points = getVictoryPoints(next, player.id);
-
-    if (points >= state.victoryTarget) {
-        return { ...next, winnerId: player.id, phase: 'finished' };
-    }
-
-    return next;
+    return resolvePublicVictory(refreshAwards(next));
 }
 
 export function buildRoad(state: GameState, edgeId: string): ActionResult {
-    const player = currentActionsPlayer(state);
+    const free = state.phase === 'road-building' && !!state.roadBuilding;
+    const player = free ? currentPlayer(state) : currentActionsPlayer(state);
 
     if (!player) {
         return failure(state, state.phase === 'finished' ? 'game-finished' : 'wrong-phase');
     }
 
+    if (Object.values(state.board.edges).filter((e) => e.road?.ownerId === player.id).length >= 15)
+        return failure(state, 'road-supply');
     const placementError = getPlacementError(state.board, player.id, 'road', edgeId);
     if (placementError) return failure(state, placementError);
     const edge = state.board.edges[edgeId];
 
-    if (!canAfford(player, ROAD_COST)) {
+    if (!free && !canAfford(player, ROAD_COST)) {
         return failure(state, 'insufficient-resources');
     }
 
     const updatedEdge: BoardEdge = { ...edge, road: { ownerId: player.id } };
     const board = { ...state.board, edges: { ...state.board.edges, [edgeId]: updatedEdge } };
-    return success(gameWithPlayerAndBoard(state, pay(player, ROAD_COST), board));
+    let next = gameWithPlayerAndBoard(state, free ? player : pay(player, ROAD_COST), board);
+    if (next.phase === 'finished') return success(next);
+    if (free) {
+        const remaining = state.roadBuilding!.remaining - 1;
+        const count = Object.values(board.edges).filter(
+            (e) => e.road?.ownerId === player.id,
+        ).length;
+        const more =
+            remaining > 0 &&
+            count < 15 &&
+            Object.keys(board.edges).some(
+                (id) => getPlacementError(board, player.id, 'road', id) === null,
+            );
+        next = {
+            ...next,
+            phase: more ? 'road-building' : state.roadBuilding!.returnPhase,
+            roadBuilding: more ? { ...state.roadBuilding!, remaining } : null,
+        };
+        next = resolvePublicVictory(next);
+    }
+    return success(next);
 }
 
 export function buildSettlement(state: GameState, vertexId: string): ActionResult {
@@ -276,7 +275,18 @@ export function endTurn(state: GameState): ActionResult {
     const activePlayerIndex = (state.activePlayerIndex + 1) % state.players.length;
     const turn = state.turn + (activePlayerIndex === (state.startingPlayerIndex ?? 0) ? 1 : 0);
 
-    return success({ ...state, activePlayerIndex, turn, phase: 'roll', lastRoll: null });
+    return success(
+        resolvePublicVictory({
+            ...state,
+            activePlayerIndex,
+            turn,
+            phase: 'roll',
+            lastRoll: null,
+            development: state.development
+                ? { ...state.development, playedThisTurn: false }
+                : undefined,
+        }),
+    );
 }
 
 export function getPlayerById(state: GameState, playerId: string): Player | undefined {

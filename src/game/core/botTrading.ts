@@ -1,7 +1,7 @@
 import { BUILD_COSTS, type ResourceCost } from './building';
 import { expansionRoad } from './bot';
 import { getBuildOption, getProductionProbability } from './queries';
-import { getVictoryPoints } from './game';
+import { getPublicVictoryPoints } from './game';
 import {
     emptyBundle,
     type ResourceBundle,
@@ -79,9 +79,9 @@ export function evaluateBotTrade(
 ): BotTradeDecision {
     const index = state.players.findIndex((p) => p.id === botId);
     const otherId = offer.from === botId ? offer.to : offer.from;
-    const ownScore = getVictoryPoints(state, botId);
+    const ownScore = getPublicVictoryPoints(state, botId);
     if (
-        getVictoryPoints(state, otherId) >= state.victoryTarget - 1 &&
+        getPublicVictoryPoints(state, otherId) >= state.victoryTarget - 1 &&
         ownScore < state.victoryTarget - 1
     )
         return { kind: 'reject', reason: 'leader' };
@@ -125,8 +125,8 @@ export function proposeBotTrade(
     if (state.phase !== 'actions' || botId === targetId) return null;
     const bot = state.players.find((p) => p.id === botId)!;
     if (
-        getVictoryPoints(state, targetId) >= state.victoryTarget - 1 &&
-        getVictoryPoints(state, botId) < state.victoryTarget - 1
+        getPublicVictoryPoints(state, targetId) >= state.victoryTarget - 1 &&
+        getPublicVictoryPoints(state, botId) < state.victoryTarget - 1
     )
         return null;
     const goal = plan(state, botId);

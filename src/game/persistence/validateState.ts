@@ -1,3 +1,4 @@
+import { validAdvanced } from './validateAdvanced';
 import { createBoard } from '../core/board';
 import { getVictoryPoints } from '../core/game';
 import { RESOURCE_TYPES, type GameState } from '../core/types';
@@ -42,7 +43,7 @@ export function validGameState(value: unknown): value is GameState {
         owners.size !== players.length ||
         !integer(value.activePlayerIndex, 0, players.length - 1) ||
         !integer(value.turn, 1) ||
-        value.victoryTarget !== 6 ||
+        ![6, 10].includes(Number(value.victoryTarget)) ||
         typeof value.phase !== 'string' ||
         ![
             'setup-roll',
@@ -50,6 +51,9 @@ export function validGameState(value: unknown): value is GameState {
             'setup-road',
             'roll',
             'robber',
+            'discard',
+            'steal',
+            'road-building',
             'actions',
             'finished',
         ].includes(value.phase) ||
@@ -66,9 +70,13 @@ export function validGameState(value: unknown): value is GameState {
         )
     )
         return false;
-    if (['actions', 'robber', 'finished'].includes(value.phase) && value.lastRoll === null)
-        return false;
-    if (value.phase === 'robber' && (value.lastRoll as number[]).reduce((a, b) => a + b, 0) !== 7)
+    if (value.phase === 'actions' && value.lastRoll === null) return false;
+    if (
+        !value.development &&
+        value.phase === 'robber' &&
+        (!Array.isArray(value.lastRoll) ||
+            (value.lastRoll as number[]).reduce((a, b) => a + b, 0) !== 7)
+    )
         return false;
     const board = value.board;
     if (
@@ -178,19 +186,15 @@ export function validGameState(value: unknown): value is GameState {
     )
         return false;
     const state = value as unknown as GameState;
-    if (!validOpening(state)) return false;
+    if (!validAdvanced(state) || !validOpening(state)) return false;
     if (
         Object.values(state.board.vertices).some(
             (v) => v.building && v.neighborIds.some((id) => state.board.vertices[id].building),
         )
     )
         return false;
-    const winners = state.players.filter(
-        (player) => getVictoryPoints(state, player.id) >= state.victoryTarget,
-    );
     return state.phase === 'finished'
-        ? winners.length === 1 &&
-              winners[0].id === state.winnerId &&
-              state.winnerId === state.players[state.activePlayerIndex].id
-        : state.winnerId === null && winners.length === 0;
+        ? state.winnerId === state.players[state.activePlayerIndex].id &&
+              getVictoryPoints(state, state.winnerId!) >= state.victoryTarget
+        : state.winnerId === null;
 }

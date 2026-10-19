@@ -34,6 +34,7 @@ export class PlayerTrading {
         private notify: () => void,
         private commit: (result: ActionResult, text: string, action: MatchAction) => void,
         private show: () => void,
+        private settled: (message: string) => void,
     ) {}
     reset(): void {
         this.table.reset();
@@ -185,6 +186,10 @@ export class PlayerTrading {
             this.message = accept
                 ? 'هنوز منابع جابه‌جا نشده؛ جزئیات رو بررسی و نهایی کن.'
                 : 'پیشنهاد رو رد کردی؛ چیزی جابه‌جا نشد.';
+            if (!accept) {
+                this.dismiss();
+                this.settled('پیشنهاد رد شد؛ منابع جابه‌جا نشد.');
+            }
         } else this.message = 'این پیشنهاد با منابع فعلی قابل قبول نیست.';
         this.notify();
     }
@@ -277,6 +282,14 @@ export class PlayerTrading {
                 decision.reason,
             );
         this.message = 'پاسخ‌ها رسید؛ پیشنهادها رو بررسی کن.';
+        if (
+            offer.from === humanId &&
+            !this.table.pendingFor(humanId!).length &&
+            !this.table.offers.some((o) => o.from === humanId && o.status === 'accepted')
+        ) {
+            this.dismiss();
+            this.settled('پیشنهاد پذیرفته نشد؛ منابع جابه‌جا نشد.');
+        }
         if (this.waitingForHuman) {
             this.composing = false;
             this.show();

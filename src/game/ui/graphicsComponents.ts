@@ -52,7 +52,7 @@ export function drawComponent(
             accent: has('is-active') ? owner : undefined,
             pressed: pressed === el,
         });
-        const target = Number(el.dataset.target) || 6;
+        const target = Number(el.dataset.target) || 10;
         const score = Number(el.dataset.score) || 0;
         const spacing = (box.width - 16) / target;
         for (let i = 0; i < target; i++)
@@ -103,7 +103,7 @@ export function drawComponent(
             flat: true,
             pressed: pressed === el,
         });
-        const target = Number(el.dataset.target) || 6;
+        const target = Number(el.dataset.target) || 10;
         const score = Number(el.dataset.score) || 0;
         const spacing = Math.min(10, (box.width - 18) / target);
         for (let i = 0; i < target; i++) {

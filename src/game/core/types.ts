@@ -4,7 +4,16 @@ export type ResourceType = (typeof RESOURCE_TYPES)[number];
 export type TerrainType = 'forest' | 'mesa' | 'wheat' | 'pasture' | 'mountain' | 'desert';
 export type BuildingType = 'settlement' | 'city';
 export type GamePhase =
-    'setup-roll' | 'setup-settlement' | 'setup-road' | 'roll' | 'robber' | 'actions' | 'finished';
+    | 'setup-roll'
+    | 'setup-settlement'
+    | 'setup-road'
+    | 'roll'
+    | 'discard'
+    | 'robber'
+    | 'steal'
+    | 'road-building'
+    | 'actions'
+    | 'finished';
 
 export interface StarterRoll {
     playerId: string;
@@ -88,7 +97,32 @@ export interface Player {
     resources: Record<ResourceType, number>;
 }
 
+export type DevelopmentKind =
+    'knight' | 'victory-point' | 'road-building' | 'monopoly' | 'year-of-plenty';
+export interface DevelopmentCard {
+    id: string;
+    kind: DevelopmentKind;
+    boughtOnRound: number;
+    playedBy?: string;
+}
+export interface DevelopmentState {
+    deck: DevelopmentCard[];
+    discard: DevelopmentCard[];
+    hands: Record<string, DevelopmentCard[]>;
+    knights: Record<string, number>;
+    playedThisTurn: boolean;
+}
+export interface RobberResolution {
+    source: 'seven' | 'knight';
+    returnPhase: 'roll' | 'actions';
+    discards: Record<string, number>;
+    victims: string[];
+}
 export interface GameState {
+    development?: DevelopmentState;
+    awards?: { longestRoad: string | null; largestArmy: string | null };
+    robberResolution?: RobberResolution | null;
+    roadBuilding?: { remaining: number; returnPhase: 'roll' | 'actions' } | null;
     board: Board;
     players: Player[];
     activePlayerIndex: number;
@@ -108,6 +142,15 @@ export type ActionResult =
     { ok: true; state: GameState } | { ok: false; state: GameState; reason: RuleErrorCode };
 
 export type RuleErrorCode =
+    | 'deck-empty'
+    | 'invalid-card'
+    | 'card-too-new'
+    | 'card-already-played'
+    | 'invalid-card-choice'
+    | 'invalid-discard'
+    | 'invalid-victim'
+    | 'not-enough-points'
+    | 'road-supply'
     | 'wrong-phase'
     | 'invalid-player-count'
     | 'missing-target'

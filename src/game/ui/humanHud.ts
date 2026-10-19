@@ -61,7 +61,7 @@ export function humanHeader(session: GameSession): string {
         })
         .join('');
     const self = button(
-        `${playerAvatar(own.avatar)}<span class="turn-heading"><span class="human-name"><bdi>${escape(human.name)}</bdi> <span class="bot-label">تو</span></span><span class="human-score">${number(own.score)} / ${number(state.victoryTarget)} امتیاز • رتبه ${number(own.rank)}</span><span class="phase-label">${escape(phase)} • ${isSetup(state) ? 'آغاز جزیره' : `دور ${number(state.turn)}`}</span></span>`,
+        `${playerAvatar(own.avatar)}<span class="turn-heading"><span class="human-name"><bdi>${escape(human.name)}</bdi> <span class="bot-label">تو</span></span><span class="human-score">${number(own.score)} / ${number(state.victoryTarget)} امتیاز • رتبهٔ نمایان ${number(own.rank)}</span><span class="phase-label">${escape(phase)} • ${isSetup(state) ? 'آغاز جزیره' : `دور ${number(state.turn)}`}</span></span>`,
         `player:${human.id}`,
         {
             className: `header-self${own.active ? ' is-active' : ''}`,

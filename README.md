@@ -1,6 +1,6 @@
 # Sunmark
 
-**Sunmark (سان‌مارک)** is a mobile-first, Persian-language local strategy board game inspired by hex-based resource production and settlement building. The MVP starts four-player matches with one human and three automatic local bots, with a generated board, player-chosen opening settlements/roads in CATAN order, turn-based production, building, negotiated player/bot trades, bank trades, Ahriman, and a six-point victory target.
+**Sunmark (سان‌مارک)** is a mobile-first, Persian-language local strategy board game inspired by hex-based resource production and settlement building. The MVP starts four-player matches with one human and three automatic local bots, with a generated board, player-chosen opening settlements/roads in CATAN order, turn-based production, building, negotiated player/bot trades, bank trades, Ahriman, and a ten-point victory target.
 
 [Play the game](https://hamedaravane.github.io/ancient-persia-game/)
 
@@ -52,7 +52,7 @@ Pages must use **GitHub Actions** as its publishing source. The setup follows [G
 
 ## Installable app and offline play
 
-The two-button menu offers Play and Tutorial. Tutorial is a short, disposable exercise connecting dice, terrain production, road expansion, trading for a missing resource, and a settlement score change. It explains the six-point goal up front and preserves the saved match; Play then resumes that match or starts ordinary setup. Non-installed browser visits show a dismissible installation modal with Android/Chrome or iPhone instructions; the browser’s Home Screen/install action also works. After offline preparation completes, all game art, fonts, and Anahita expressions are available without connectivity. One local match and its tutorial progress are saved automatically; the **بازی** button resumes unfinished games after reopening. Downloaded updates prompt for confirmation, save the match, and reload into the new release. Pending domestic-trade consent is restored without automatic payment.
+The two-button menu offers Play and Tutorial. Tutorial is a short, disposable exercise connecting dice, terrain production, road expansion, trading for a missing resource, and a settlement score change. It explains the ten-point goal up front and preserves the saved match; Play then resumes that match or starts ordinary setup. Non-installed browser visits show a dismissible installation modal with Android/Chrome or iPhone instructions; the browser’s Home Screen/install action also works. After offline preparation completes, all game art, fonts, and Anahita expressions are available without connectivity. One local match and its tutorial progress are saved automatically; the **بازی** button resumes unfinished games after reopening. Downloaded updates prompt for confirmation, save the match, and reload into the new release. Pending domestic-trade consent is restored without automatic payment.
 
 Run `npm run pwa:check` after a production build to verify install metadata, icon dimensions, scoped launch URLs, controlled updates, and offline asset coverage. The Pages workflow runs this before deployment. Ordinary `npm run dev` does not register a service worker; use the production preview on localhost or HTTPS for PWA checks. See [docs/PWA_RELEASE.md](docs/PWA_RELEASE.md) for implementation, storage limits, icon reproduction, and the user’s Android/iPhone release checklist.
 
@@ -92,3 +92,7 @@ Player-to-player trading follows CATAN domestic-trade restrictions with clear of
 ## Procedural board art
 
 The board uses code-generated, softly detailed terrain with a small reusable texture cache. Ahriman (اهریمن) is a procedural shadow-spirit marker that blocks production; trade scales are also drawn in code. Original paintings remain preserved under `art/reference/`, outside runtime downloads. See [the visual direction, size study and rendering budgets](docs/PROCEDURAL_BOARD_ART.md).
+
+## Development cards and official scoring
+
+Matches now use the 25-card development deck, complete seven discard/move/theft resolution, Longest Road and Largest Army, and a ten-point victory on the winner's own turn. Hidden VP cards remain private until victory declaration. The Cards control explains costs, effects and play timing. Completed/rejected trades return directly to the board. See [rules, save compatibility and verification](docs/DEVELOPMENT_AND_SCORING.md).

@@ -214,7 +214,7 @@ test('winning immediately suppresses ordinary build commentary and returns to re
     const session = start();
     actionPhase(session);
     const state = session.state!;
-    // Place three existing cities/settlements worth five points for the finishing action.
+    // Place existing cities/settlements worth nine points for the finishing action.
     const owned = Object.values(state.board.vertices).filter(
         (v) => v.building?.ownerId === state.players[0].id,
     );
@@ -223,6 +223,12 @@ test('winning immediately suppresses ordinary build commentary and returns to re
         (v) => !v.building && v.neighborIds.every((id) => !state.board.vertices[id].building),
     )!;
     extra.building = { type: 'city', ownerId: state.players[0].id };
+    for (let n = 0; n < 2; n++) {
+        const site = Object.values(state.board.vertices).find(
+            (v) => !v.building && v.neighborIds.every((id) => !state.board.vertices[id].building),
+        )!;
+        site.building = { type: 'city', ownerId: state.players[0].id };
+    }
     state.players[0].resources.wheat = 2;
     state.players[0].resources.stone = 3;
     session.chooseBuild('city');

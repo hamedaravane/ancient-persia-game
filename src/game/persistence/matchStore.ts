@@ -1,3 +1,6 @@
+import { createDevelopment } from '../core/developmentDeck';
+import { refreshAwards } from '../core/scoring';
+import { beginRobber } from '../core/robber';
 import { validTrading } from './validateTrading';
 import type { TradeMemory } from '../core/domesticTrade';
 import type { GameState } from '../core/types';
@@ -7,7 +10,7 @@ import { LESSONS } from '../tutorial/lessons.fa';
 import { integer, label, record, validGameState } from './validateState';
 
 export interface SavedMatch {
-    version: 1;
+    version: 1 | 2;
     /** Absent in legacy shared-device saves; their first seat becomes the human. */
     humanPlayerId?: string;
     state: GameState;
@@ -25,7 +28,12 @@ export function decodeSave(raw: string): SavedMatch | null {
     try {
         if (raw.length > 1_000_000) return null;
         const value: unknown = JSON.parse(raw);
-        if (!record(value) || value.version !== 1 || !validGameState(value.state)) return null;
+        if (
+            !record(value) ||
+            ![1, 2].includes(Number(value.version)) ||
+            !validGameState(value.state)
+        )
+            return null;
         const state = value.state;
         if (value.trading !== undefined && !validTrading(value.trading, state)) return null;
         if (
@@ -67,7 +75,26 @@ export function decodeSave(raw: string): SavedMatch | null {
             )
         )
             return null;
-        return value as unknown as SavedMatch;
+        const saved = value as unknown as SavedMatch;
+        if (!saved.state.development && saved.state.phase !== 'finished') {
+            let seed = 0x6d2b79f5;
+            for (const char of raw) seed = (Math.imul(seed, 31) + char.charCodeAt(0)) >>> 0;
+            const random = () => {
+                seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+                return seed / 2 ** 32;
+            };
+            let upgraded = refreshAwards({
+                ...saved.state,
+                victoryTarget: 10,
+                development: createDevelopment(saved.state.players, random),
+                robberResolution: null,
+                roadBuilding: null,
+            });
+            if (upgraded.phase === 'robber') upgraded = beginRobber(upgraded, 'seven', 'actions');
+            if (!validGameState(upgraded)) return null;
+            return { ...saved, version: 2, state: upgraded };
+        }
+        return saved;
     } catch {
         return null;
     }

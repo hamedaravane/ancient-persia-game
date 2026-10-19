@@ -144,7 +144,7 @@ test('human announcement gets paced bot responses; resources move only after fin
     expect(session.state!.players[0].resources.wood).toBe(1);
     expect(session.state!.players[1].resources.wheat).toBe(2);
     expect(session.transition?.action.kind).toBe('domestic-trade');
-    expect(session.history.at(-1)?.text).toContain('گندم');
+    expect(session.history[session.history.length - 1]?.text).toContain('گندم');
     expect(session.trading.table.offers.filter((o) => o.status === 'withdrawn')).toHaveLength(2);
     const after = session.state;
     session.trading.finish(id);
@@ -355,7 +355,8 @@ test('Anahita explains domestic trade and earns practice for a human party even 
     session.trading.review(id);
     session.trading.finish(id);
     expect(session.tutorial.practiced.has('domestic')).toBe(true);
-    expect(session.tutorial.current).toBe('domestic-done');
+    expect(session.tutorial.current).toBeNull();
+    expect(session.sheet).toBeNull();
 });
 
 test('bots trade with each other only on a participating bot turn and never earn human practice', () => {
@@ -460,6 +461,22 @@ test.each([17, 91])(
                     session.trading.finish(incoming.id);
                 }
                 session.closeSheet();
+            } else if (session.sheet?.kind === 'discard') {
+                const count = session.state!.robberResolution!.discards[session.humanPlayer!.id];
+                let left = count;
+                for (const r of ['wood', 'brick', 'wheat', 'wool', 'stone'] as const) {
+                    const n = Math.min(left, session.humanPlayer!.resources[r]);
+                    for (let i = 0; i < n; i++) session.adjustDiscard(r, 1);
+                    left -= n;
+                }
+                session.confirmDiscard();
+            } else if (session.sheet?.kind === 'steal') {
+                session.stealFrom(session.state!.robberResolution!.victims[0]);
+            } else if (
+                session.botReady &&
+                ['discard', 'robber', 'steal', 'road-building'].includes(session.state!.phase)
+            ) {
+                session.advanceBot();
             } else if (session.isHumanTurn) {
                 if (session.placement) session.preview(session.targets[0]);
                 session.primary();
@@ -471,3 +488,51 @@ test.each([17, 91])(
         expect(session.state!.phase).toBe('finished');
     },
 );
+
+test('a successful incoming rejection immediately returns to the board without moving resources', () => {
+    const { session } = fixture();
+    const proposal = session.trading.table.propose(session.state!, {
+        from: 'player-2',
+        to: 'player-1',
+        give: bundle({ wheat: 1 }),
+        want: bundle({ wood: 1 }),
+    })!;
+    const before = structuredClone(session.state);
+    session.trading.respond(proposal.id, false);
+    expect(proposal.status).toBe('rejected');
+    expect(session.sheet).toBeNull();
+    expect(session.state).toEqual(before);
+});
+
+test('final confirmation of an accepted offer closes the panel while preserving its receipt in the table', () => {
+    const { session } = fixture();
+    offer(session);
+    session.advanceBot();
+    const proposal = session.trading.table.offers[0];
+    expect(proposal.status).toBe('accepted');
+    session.trading.review(proposal.id);
+    expect(session.sheet?.kind).toBe('domestic');
+    const before = structuredClone(session.state);
+    session.trading.finish(proposal.id);
+    expect(proposal.status).toBe('completed');
+    expect(session.sheet).toBeNull();
+    expect(session.state).not.toEqual(before);
+    expect(session.history[session.history.length - 1]?.text).toContain('معامله');
+});
+
+test('a final bot rejection of an outgoing offer closes the panel and a stale rejection does not dismiss it', () => {
+    const { session } = fixture();
+    session.trading.respond(9999, false);
+    expect(session.sheet?.kind).toBe('domestic');
+    session.state!.players[1].resources.stone = 5;
+    const proposal = session.trading.table.propose(session.state!, {
+        from: 'player-1',
+        to: 'player-2',
+        give: bundle({ wheat: 1 }),
+        want: bundle({ stone: 5 }),
+    })!;
+    session.state!.players[1].resources.stone = 0;
+    session.advanceBot();
+    expect(proposal.status).toBe('rejected');
+    expect(session.sheet).toBeNull();
+});

@@ -1,3 +1,5 @@
+import { resolutionActor } from '../core/robber';
+import { getVictoryPoints } from '../core/scoring';
 import { getBankTradeRatio } from '../core/ports';
 import { PRACTICE_TASKS } from '../tutorial/practice';
 import { LESSONS, type LessonId } from '../tutorial/lessons.fa';
@@ -88,6 +90,13 @@ export class GameHud {
         }
         const human = this.session.humanPlayer!;
         const humanTurn = this.session.isHumanTurn;
+        const mandatory = ['discard', 'robber', 'steal', 'road-building'].includes(state.phase);
+        const humanDecision = resolutionActor(state) === human.id;
+        const canDeclare =
+            humanTurn &&
+            !this.session.practice &&
+            ['roll', 'actions'].includes(state.phase) &&
+            getVictoryPoints(state, human.id) >= state.victoryTarget;
         const placement = this.session.placement;
         const opening = isSetup(state);
         const second =
@@ -117,6 +126,15 @@ export class GameHud {
             : `ساخت آماده نیست؛ کمبود و محل را در ساخت ببین. ${tradeHint}؛ یا پایان نوبت.`;
         const hint =
             this.session.error ||
+            (mandatory
+                ? state.phase === 'discard'
+                    ? 'تاس ۷؛ بازیکن‌ها نصف منابع دستِ بیشتر از ۷ را انتخاب می‌کنند.'
+                    : state.phase === 'steal'
+                      ? 'یک حریف مجاور را برای گرفتن منبع تصادفی انتخاب کن.'
+                      : state.phase === 'road-building'
+                        ? 'کارت راه‌سازی؛ راه رایگان را انتخاب و تأیید کن.'
+                        : 'اهریمن را به یک خانهٔ متفاوت ببر؛ سپس حریف مجاور را انتخاب کن.'
+                : '') ||
             (this.session.practice ? PRACTICE_TASKS[this.session.practice.stage] : '') ||
             (storageWarning ? 'ذخیره خودکار فعال نیست؛ برای جزئیات بزن.' : '') ||
             (!humanTurn && state.phase !== 'finished'
@@ -166,40 +184,50 @@ export class GameHud {
             opening && placement
                 ? `<div class="placement-cost"><span>${placement.kind === 'road' ? 'راه کنار آبادی تازه' : second ? 'آبادی دوم' : 'آبادی اول'}</span><span class="muted">جانمایی آغازین • بدون هزینه</span></div>${button('پاک‌کردن انتخاب', 'cancel-placement', { className: 'button button--quiet', disabled: !placement.targetId })}`
                 : placement
-                  ? `<div class="placement-cost"><span>${placement.kind === 'robber' ? 'جابه‌جایی اهریمن' : `هزینه ${BUILD_LABELS[placement.kind]}`}</span>${placement.kind === 'robber' ? '<span class="muted">خانه فعلی قابل انتخاب نیست</span>' : costRow(getBuildOption(state, placement.kind))}</div>${button(placement.kind === 'robber' ? 'پاک‌کردن انتخاب' : 'لغو', 'cancel-placement', { className: 'button button--quiet', disabled: placement.kind === 'robber' && !placement.targetId })}`
-                  : `${button(`<span class="piece-symbol piece-symbol--settlement" aria-hidden="true"></span>ساخت • ${number(availableBuilds.length)} آماده`, 'open:build', { className: 'button dock-button', disabled: opening || state.phase === 'finished' })}${button(`${tradeIcon(28)}معامله`, this.session.practice ? 'open:trade' : 'open:domestic', { className: 'button dock-button', disabled: state.phase !== 'actions' || (!!this.session.practice && this.session.practice.stage !== 'trade') })}`,
+                  ? `<div class="placement-cost"><span>${state.phase === 'road-building' ? `راه رایگان • ${number(state.roadBuilding?.remaining ?? 0)} باقی‌مانده` : placement.kind === 'robber' ? 'جابه‌جایی اهریمن' : `هزینه ${BUILD_LABELS[placement.kind]}`} </span>${state.phase === 'road-building' ? '<span class="muted">بدون پرداخت منابع</span>' : placement.kind === 'robber' ? '<span class="muted">خانه فعلی قابل انتخاب نیست</span>' : costRow(getBuildOption(state, placement.kind))}</div>${button(placement.kind === 'robber' ? 'پاک‌کردن انتخاب' : 'لغو', 'cancel-placement', { className: 'button button--quiet', disabled: placement.kind === 'robber' && !placement.targetId })}`
+                  : `${button(`<span class="piece-symbol piece-symbol--settlement" aria-hidden="true"></span>ساخت (${number(availableBuilds.length)})`, 'open:build', { className: 'button dock-button', disabled: opening || mandatory || state.phase === 'finished' })}${button(`${tradeIcon(28)}معامله`, this.session.practice ? 'open:trade' : 'open:domestic', { className: 'button dock-button', disabled: state.phase !== 'actions' || (!!this.session.practice && this.session.practice.stage !== 'trade') })}${button('کارت‌ها', 'open:development', { className: 'button dock-button', disabled: opening || mandatory || !!this.session.practice || state.phase === 'finished' })}`,
         );
         const primaryLabel =
-            this.session.practice && !placement && this.session.practice.stage !== 'roll'
-                ? (
-                      {
-                          road: 'بازکردن ساخت راه',
-                          trade: 'بازکردن بانک؛ دریافت پشم',
-                          settlement: 'بازکردن ساخت آبادی',
-                          complete: 'تمرین تمام شد؛ بازگشت به منو',
-                      } as const
-                  )[this.session.practice.stage]
-                : !humanTurn && state.phase !== 'finished'
-                  ? 'منتظر نوبت تو…'
-                  : placement
-                    ? placement.kind === 'robber'
-                        ? 'تأیید جابه‌جایی اهریمن'
-                        : opening
-                          ? `تأیید ${placement.kind === 'road' ? 'راه آغازین' : second ? 'آبادی دوم' : 'آبادی اول'}`
-                          : `تأیید ساخت ${BUILD_LABELS[placement.kind]}`
-                    : state.phase === 'setup-roll'
-                      ? 'تاس تعیین آغازکننده'
-                      : state.phase === 'roll'
-                        ? FA.roll
-                        : state.phase === 'finished'
-                          ? 'نتیجه بازی'
-                          : FA.endTurn;
+            mandatory && !humanDecision
+                ? 'منتظر انتخاب حریف…'
+                : state.phase === 'discard'
+                  ? 'انتخاب منابع دورریختنی'
+                  : state.phase === 'steal'
+                    ? 'انتخاب حریف'
+                    : canDeclare
+                      ? 'اعلام پیروزی؛ ۱۰ امتیاز داری'
+                      : this.session.practice &&
+                          !placement &&
+                          this.session.practice.stage !== 'roll'
+                        ? (
+                              {
+                                  road: 'بازکردن ساخت راه',
+                                  trade: 'بازکردن بانک؛ دریافت پشم',
+                                  settlement: 'بازکردن ساخت آبادی',
+                                  complete: 'تمرین تمام شد؛ بازگشت به منو',
+                              } as const
+                          )[this.session.practice.stage]
+                        : !humanTurn && state.phase !== 'finished'
+                          ? 'منتظر نوبت تو…'
+                          : placement
+                            ? placement.kind === 'robber'
+                                ? 'تأیید جابه‌جایی اهریمن'
+                                : opening
+                                  ? `تأیید ${placement.kind === 'road' ? 'راه آغازین' : second ? 'آبادی دوم' : 'آبادی اول'}`
+                                  : `تأیید ساخت ${BUILD_LABELS[placement.kind]}`
+                            : state.phase === 'setup-roll'
+                              ? 'تاس تعیین آغازکننده'
+                              : state.phase === 'roll'
+                                ? FA.roll
+                                : state.phase === 'finished'
+                                  ? 'نتیجه بازی'
+                                  : FA.endTurn;
         this.updatePart(
             '.primary-row',
-            button(primaryLabel, 'primary', {
-                className: `button button--primary${state.phase === 'actions' && !placement && !this.session.practice ? ' button--end-turn' : ''}`,
+            button(primaryLabel, canDeclare ? 'declare-victory' : 'primary', {
+                className: `button button--primary${state.phase === 'actions' && !placement && !this.session.practice && !canDeclare ? ' button--end-turn' : ''}`,
                 disabled:
-                    (!humanTurn && state.phase !== 'finished') ||
+                    (mandatory ? !humanDecision : !humanTurn && state.phase !== 'finished') ||
                     (!!placement && !placement.targetId),
             }),
         );
@@ -259,6 +287,7 @@ export class GameHud {
             action === 'open' &&
             [
                 'build',
+                'development',
                 'trade',
                 'domestic',
                 'help',
@@ -274,6 +303,7 @@ export class GameHud {
             this.session.openSheet({
                 kind: value as
                     | 'build'
+                    | 'development'
                     | 'trade'
                     | 'domestic'
                     | 'help'
@@ -335,6 +365,23 @@ export class GameHud {
             if (action === 'deal-finish' && performance.now() - this.lastTradeReviewAt >= 300)
                 market.finish(Number(value));
         }
+        if (action === 'buy-development') this.session.buyCard();
+        if (action === 'development-select') this.session.selectDevelopment(value);
+        if (
+            action === 'development-resource' &&
+            ['0', '1'].includes(value) &&
+            RESOURCE_TYPES.includes(resource as ResourceType)
+        )
+            this.session.chooseDevelopmentResource(
+                Number(value) as 0 | 1,
+                resource as ResourceType,
+            );
+        if (action === 'play-development') this.session.playCard();
+        if (action === 'declare-victory') this.session.declareVictory();
+        if (action === 'discard-adjust' && RESOURCE_TYPES.includes(value as ResourceType))
+            this.session.adjustDiscard(value as ResourceType, Number(resource));
+        if (action === 'confirm-discard') this.session.confirmDiscard();
+        if (action === 'steal') this.session.stealFrom(value);
         if (action === 'confirm-trade') this.session.confirmTrade();
         if (action === 'confirm-end-turn') this.session.confirmEndTurn();
         if (action === 'primary') {

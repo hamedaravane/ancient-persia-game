@@ -27,11 +27,17 @@ These invariants are enforced by the pure TypeScript rules in `src/game/core/` a
 - Offers/counters do not reserve or spend cards. Final confirmation requires current consent and revalidates both balances. A confirmed broadcast trade cancels competing promises; turn changes invalidate pending negotiations.
 - Human tutorial practice is earned only by human commands or completed domestic trades involving the human. Bot-to-bot trades, bot rolls/builds/bank trades, and Ahriman moves cannot earn it.
 - Only the active player can roll while the game is waiting for the roll.
-- A seven suspends production until Ahriman is moved to a different tile.
+- A seven produces nothing and blocks ordinary actions until every required chosen discard, relocation to a different hex and eligible random theft is complete. Knight relocation/theft never creates discard obligations. Development cards never count as resources for discards or theft.
 - A tile with Ahriman produces no resources.
 - Dice results are generated and stored by core game logic before presentation or animation.
 - A settlement produces one resource per matching adjacent tile; a city produces two.
-- Victory points derive from owned buildings: one per settlement, two per city. A player at six points ends the match immediately.
+- Scores include buildings, private VP cards and both two-point titles; only the active player can win at 10 or more. Opponent VP cards stay hidden until that opponent declares victory. Off-turn score changes cannot end the match. Title ties preserve a qualifying incumbent; an interrupted title without a unique qualifying leader is unowned.
 - Player ownership colors are runtime data.
 
 Core transitions return a new state on success and preserve the original state when the action is rejected. Phaser scenes never make rule decisions themselves.
+
+- Development inventory always contains the original 25 unique cards across deck, hands and discard. Buying pays 1 stone/wheat/wool; non-VP play is at most once per own turn and never in its purchase turn. Only played Knights count for Largest Army.
+- Free Road Building placements preserve normal connectivity/occupancy, never charge resources, respect the 15-road supply and preserve the pending return phase across saves.
+- Longest Road measures a continuous trail with no repeated segment; opponent buildings stop traversal. All confirmed road/building changes recalculate title ownership.
+- Every pending human discard can be completed even on a bot's turn. No bot work can bypass a human mandatory choice, a modal or a stale state reference.
+- New saves validate complete card inventory, used-card attribution, title eligibility and pending effect metadata. Unconfirmed drafts never consume cards, discard resources or steal.

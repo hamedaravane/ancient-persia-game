@@ -1,3 +1,4 @@
+import { advancedSheet } from './advancedMarkup';
 import { getBankTradeError } from '../core/game';
 import {
     getBankTradeRates,
@@ -47,6 +48,9 @@ export const PHASE_LABELS = {
     'setup-settlement': 'انتخاب آبادی آغازین',
     'setup-road': 'انتخاب راه آغازین',
     roll: 'آغاز نوبت',
+    discard: 'انتخاب منابع دورریختنی',
+    steal: 'انتخاب حریف برای گرفتن یک منبع',
+    'road-building': 'ساخت راه رایگان',
     robber: 'جابه‌جایی اهریمن',
     actions: 'ساخت و تجارت',
     finished: 'پایان بازی',
@@ -58,6 +62,7 @@ export function buildReason(option: BuildOption, session: GameSession): string {
         return session.state?.phase === 'robber'
             ? 'ابتدا اهریمن را جابه‌جا کنید.'
             : 'ابتدا تاس را بیندازید.';
+    if (option.reason === 'road-supply') return FA.errors['road-supply'];
     if (option.reason === 'no-legal-targets') return locationReason(option);
     if (option.reason === 'game-finished') return FA.errors['game-finished'];
     const shortage = RESOURCE_TYPES.some((r) => option.missing[r])
@@ -91,6 +96,8 @@ export function sheetContent(session: GameSession, updateReady = false): SheetCo
     const state = session.state!;
     const player = session.humanPlayer!;
     const sheet = session.sheet!;
+    const advanced = advancedSheet(session);
+    if (advanced) return advanced;
     if (sheet.kind === 'help') return pauseMenuContent(session, updateReady);
     if (sheet.kind === 'review') return gameReviewContent(session);
     if (sheet.kind === 'domestic') return domesticContent(session);
@@ -146,7 +153,7 @@ export function sheetContent(session: GameSession, updateReady = false): SheetCo
         };
         return {
             title: 'ساخت‌وساز',
-            body: `<p class="sheet-intro">${escape(player.name)} • منابع فقط پس از تأیید محل پرداخت می‌شوند.</p>
+            body: `${button('کارت‌های توسعه و عنوان‌ها', 'open:development', { className: 'button full-width', disabled: !!session.practice })}<p class="sheet-intro">${escape(player.name)} • منابع فقط پس از تأیید محل پرداخت می‌شوند.</p>
             <div class="build-list">${BUILD_TYPES.map((type) => {
                 const option = getBuildOption(state, type, player.id);
                 return `<article class="build-card"><div class="row-between"><h3><span class="piece-symbol piece-symbol--${type}" aria-hidden="true"></span>${BUILD_LABELS[type]}</h3><span class="muted">ساخته‌شده: ${number(built[type])}</span></div>
@@ -154,7 +161,7 @@ export function sheetContent(session: GameSession, updateReady = false): SheetCo
                     ${button('انتخاب محل', `build:${type}`, { disabled: option.reason !== null || (!!session.practice && session.practice.stage !== type) })}</article>`;
             }).join(
                 '',
-            )}</div><p class="footnote">تعداد قطعات در این نسخه محدود نیست. شهر جایگزین آبادی شما می‌شود و یک امتیاز می‌افزاید.</p>`,
+            )}</div><p class="footnote">هر بازیکن ۱۵ قطعه راه دارد. شهر جایگزین آبادی شما می‌شود و یک امتیاز می‌افزاید.</p>`,
         };
     }
     if (sheet.kind === 'trade') {
@@ -231,10 +238,10 @@ export function sheetContent(session: GameSession, updateReady = false): SheetCo
     }
     if (sheet.kind === 'player') {
         const selected = state.players.find(({ id }) => id === sheet.id)!;
-        const summary = getPlayerSummary(state, selected.id);
+        const summary = getPlayerSummary(state, selected.id, player.id);
         return {
             title: selected.name,
-            body: `<div class="player-detail" style="--owner:${color(selected.color)}"><span class="owner-badge">${number(state.players.indexOf(selected) + 1)}</span><p class="score-large">${number(summary.score)} <span>از ${number(state.victoryTarget)} امتیاز</span></p></div><dl class="detail-list"><div><dt>راه</dt><dd>${number(summary.roads)}</dd></div><div><dt>آبادی</dt><dd>${number(summary.settlements)}</dd></div><div><dt>شهر</dt><dd>${number(summary.cities)}</dd></div><div><dt>مجموع منابع</dt><dd>${number(summary.resources)}</dd></div></dl><h3>بندرهای در دسترس</h3>${ownedPortsMarkup(state.board, selected.id)}<p class="footnote">هر آبادی یک امتیاز و هر شهر دو امتیاز دارد. تعداد قطعات محدود نیست.</p>`,
+            body: `<div class="player-detail" style="--owner:${color(selected.color)}"><span class="owner-badge">${number(state.players.indexOf(selected) + 1)}</span><p class="score-large">${number(summary.score)} <span>از ${number(state.victoryTarget)} امتیاز</span></p></div><dl class="detail-list"><div><dt>راه</dt><dd>${number(summary.roads)}</dd></div><div><dt>آبادی</dt><dd>${number(summary.settlements)}</dd></div><div><dt>شهر</dt><dd>${number(summary.cities)}</dd></div><div><dt>مجموع منابع</dt><dd>${number(summary.resources)}</dd></div></dl><h3>بندرهای در دسترس</h3>${ownedPortsMarkup(state.board, selected.id)}<p class="footnote">هر آبادی ۱ و هر شهر ۲ امتیاز دارد؛ عنوان‌های راه و ارتش هرکدام ۲ امتیاز می‌دهند. کارت‌های امتیازی حریف‌ها مخفی‌اند. راه‌ها به ۱۵ قطعه محدودند.</p>`,
         };
     }
     if (sheet.kind === 'tile') {
@@ -297,12 +304,12 @@ export function sheetContent(session: GameSession, updateReady = false): SheetCo
             title: 'راهنمای تمرین',
             key: 'practice-rules',
             footer: pauseMenuBack(),
-            body: `<p>این صفحهٔ تمرین جدا از بازی اصلی است؛ تاس و دارایی آماده‌اند و رقبا حرکت نمی‌کنند. با دکمهٔ اصلی قدم بعدی را انجام بده: تاس، ساخت راه، بانک برای پشم، ساخت آبادی. مسیر روشن یک نمونه است، نه بهترین حرکت. امتیازت از ۱ به ۲ می‌رسد؛ هدف بازی واقعی ۶ امتیاز است.</p>${button('بازگشت به تمرین', 'close-sheet', { className: 'button button--primary full-width' })}${button('خروج از تمرین و بازگشت به منو', 'new-game', { className: 'button full-width' })}`,
+            body: `<p>این صفحهٔ تمرین جدا از بازی اصلی است؛ تاس و دارایی آماده‌اند و رقبا حرکت نمی‌کنند. با دکمهٔ اصلی قدم بعدی را انجام بده: تاس، ساخت راه، بانک برای پشم، ساخت آبادی. مسیر روشن یک نمونه است، نه بهترین حرکت. امتیازت از ۱ به ۲ می‌رسد؛ هدف بازی واقعی ۱۰ امتیاز است.</p>${button('بازگشت به تمرین', 'close-sheet', { className: 'button button--primary full-width' })}${button('خروج از تمرین و بازگشت به منو', 'new-game', { className: 'button full-width' })}`,
         };
     return {
         title: 'قوانین بازی',
         key: 'game-rules',
         footer: button('بازگشت به آموزش', 'open:journal', { className: 'button full-width' }),
-        body: `<p>هدف رسیدن به ${number(state.victoryTarget)} امتیاز است: هر آبادی ۱ و هر شهر ۲ امتیاز دارد. تاس از زمین‌های کنار ساختمان‌ها منابع می‌دهد؛ منابع هزینهٔ ساخت هستند. راه به محل آبادی تازه دسترسی می‌دهد و معامله کمبود ساخت بعدی را جبران می‌کند.</p><p>تو با سه رقیب خودکار بازی می‌کنی. برای معاملهٔ توافقی، «معامله» رو باز کن؛ بعد از تاس، هر معامله باید با صاحب نوبت باشه و هر دو طرف منابع بدهند. منابع پایین صفحه و اطلاعات بالای صفحه همیشه مال توئه. بعد از پایان نوبتت، رقبا به‌ترتیب بازی می‌کنن؛ لازم نیست گوشی رو به کسی بدی.</p><h3>جانمایی آغازین</h3><p>بالاترین تاس، شروع‌کننده رو مشخص می‌کنه. هرکس یک آبادی و یک راه کنار هم می‌ذاره؛ دور دوم از نفر آخر به عقب برمی‌گردیم. فاصلهٔ آبادی‌ها همیشه لازمه. جانمایی رایگانه و فقط آبادی دوم منابع آغازین می‌ده.</p><ol class="help-list"><li>تاس را بیندازید. خانه‌های هم‌شماره برای آبادی‌های مجاور یک منبع و برای شهرها دو منبع تولید می‌کنند.</li><li>با تاس هفت، اهریمن را به خانه دیگری ببرید. خانه دارای اهریمن تولید ندارد؛ در این نسخه سرقت و دورریختن منابع وجود ندارد.</li><li>ساخت‌وساز را باز کنید تا هزینه و محل‌های مجاز را ببینید. محل را انتخاب و سپس ساخت را تأیید کنید.</li><li>در بانک، چهار منبع یکسان را با یک منبع دیگر مبادله کنید. آبادی یا شهر کنار بندر عمومی نرخ ۳ به ۱ می‌دهد؛ بندر تخصصی فقط منبع نشان‌داده‌شده را با نرخ ۲ به ۱ می‌پذیرد. ساخت راه کافی نیست. پس از ساخت آبادی بندری، همان نوبت می‌توانید از نرخ آن استفاده کنید.</li><li>پس از انجام کارها، پایان نوبت را بزنید. رسیدن به ${number(state.victoryTarget)} امتیاز بازی را تمام می‌کند.</li></ol><p>راه باید به شبکه شما وصل باشد؛ ساختمان حریف ادامه راه را قطع می‌کند. بین آبادی‌ها یک تقاطع خالی لازم است. شهر فقط آبادی خودتان را ارتقا می‌دهد.</p><p class="footnote">برای جزئیات خانه آن را لمس کنید. برای انتخاب دقیق‌تر از فهرست محل‌ها استفاده کنید؛ محل انتخاب‌شده را پیش از تأیید بررسی کنید.</p>`,
+        body: `<p>هدف رسیدن به ${number(state.victoryTarget)} امتیاز است: هر آبادی ۱ و هر شهر ۲ امتیاز دارد. تاس از زمین‌های کنار ساختمان‌ها منابع می‌دهد؛ منابع هزینهٔ ساخت هستند. راه به محل آبادی تازه دسترسی می‌دهد و معامله کمبود ساخت بعدی را جبران می‌کند.</p><p>تو با سه رقیب خودکار بازی می‌کنی. برای معاملهٔ توافقی، «معامله» رو باز کن؛ بعد از تاس، هر معامله باید با صاحب نوبت باشه و هر دو طرف منابع بدهند. منابع پایین صفحه و اطلاعات بالای صفحه همیشه مال توئه. بعد از پایان نوبتت، رقبا به‌ترتیب بازی می‌کنن؛ لازم نیست گوشی رو به کسی بدی.</p><h3>جانمایی آغازین</h3><p>بالاترین تاس، شروع‌کننده رو مشخص می‌کنه. هرکس یک آبادی و یک راه کنار هم می‌ذاره؛ دور دوم از نفر آخر به عقب برمی‌گردیم. فاصلهٔ آبادی‌ها همیشه لازمه. جانمایی رایگانه و فقط آبادی دوم منابع آغازین می‌ده.</p><ol class="help-list"><li>تاس را بیندازید. خانه‌های هم‌شماره برای آبادی‌های مجاور یک منبع و برای شهرها دو منبع تولید می‌کنند.</li><li>با تاس هفت تولیدی نداریم. اول هرکس بیش از ۷ منبع دارد، نصف آن را رو به پایین و به انتخاب خود دور می‌ریزد؛ بعد اهریمن را به خانهٔ متفاوتی (حتی بیابان) ببرید و سپس یک حریف مجاورِ دارای منبع را برای گرفتن یک کارت تصادفی انتخاب کنید.</li><li>ساخت‌وساز را باز کنید تا هزینه و محل‌های مجاز را ببینید. محل را انتخاب و سپس ساخت را تأیید کنید.</li><li>در بانک، چهار منبع یکسان را با یک منبع دیگر مبادله کنید. آبادی یا شهر کنار بندر عمومی نرخ ۳ به ۱ می‌دهد؛ بندر تخصصی فقط منبع نشان‌داده‌شده را با نرخ ۲ به ۱ می‌پذیرد. ساخت راه کافی نیست. پس از ساخت آبادی بندری، همان نوبت می‌توانید از نرخ آن استفاده کنید.</li><li>پس از انجام کارها، پایان نوبت را بزنید. با ${number(state.victoryTarget)} امتیاز یا بیشتر در نوبت خودت برنده می‌شوی؛ کارت امتیاز مخفی را فقط با اعلام پیروزی نشان بده.</li></ol><h3>کارت‌های توسعه و عنوان‌ها</h3><p>خرید کارت: ۱ سنگ، ۱ گندم و ۱ پشم. در هر نوبت فقط یک کارت غیرامتیازی از نوبت‌های قبل بازی کن؛ شوالیه قبل یا بعد از تاس، اهریمن را بدون دورریختن جابه‌جا می‌کند. راه‌سازی دو راه رایگان می‌دهد؛ انحصار همهٔ یک نوع منبع حریف‌ها را می‌گیرد؛ اختراع دو منبع از بانک می‌دهد. کارت امتیاز مخفی تا اعلام پیروزی رو نمی‌شود.</p><p>طولانی‌ترین راه پیوستهٔ دست‌کم ۵ قطعه، و بزرگ‌ترین ارتش با دست‌کم ۳ شوالیهٔ بازی‌شده، هرکدام ۲ امتیاز دارند. صاحب فعلی در تساوی عنوان را نگه می‌دارد؛ اگر راهش قطع شود و چند نفر در بالاترین طول مساوی شوند، عنوان بی‌صاحب می‌ماند تا یک نفر جلو بزند.</p><p>راه باید به شبکه شما وصل باشد؛ ساختمان حریف ادامه راه را قطع می‌کند. بین آبادی‌ها یک تقاطع خالی لازم است. شهر فقط آبادی خودتان را ارتقا می‌دهد.</p><p class="footnote">برای جزئیات خانه آن را لمس کنید. برای انتخاب دقیق‌تر از فهرست محل‌ها استفاده کنید؛ محل انتخاب‌شده را پیش از تأیید بررسی کنید.</p>`,
     };
 }

@@ -164,6 +164,7 @@ test('bot seven creates no human placement or practice; bot construction is not 
     expect(session.sheet).toBeNull();
     const original = session.state!.board.tiles.find((t) => t.robber)!.id;
     session.advanceBot();
+    if (session.state!.phase === 'steal') session.advanceBot();
     expect(session.state!.phase).toBe('actions');
     expect(session.state!.board.tiles.find((t) => t.robber)!.id).not.toBe(original);
     session.state!.players[1].resources.wheat = 2;
@@ -241,7 +242,13 @@ test('a bot victory ends immediately, opens results and cancels automatic play',
     extra.building = { type: 'settlement', ownerId: bot.id };
     bot.resources.wheat = 2;
     bot.resources.stone = 3;
-    expect(getVictoryPoints(state, bot.id)).toBe(5);
+    for (let n = 0; n < 2; n++) {
+        const site = Object.values(state.board.vertices).find(
+            (v) => !v.building && v.neighborIds.every((id) => !state.board.vertices[id].building),
+        )!;
+        site.building = { type: 'city', ownerId: bot.id };
+    }
+    expect(getVictoryPoints(state, bot.id)).toBe(9);
     const runner = new BotTurnRunner(session, () => true, 10);
     vi.advanceTimersByTime(10);
     expect(session.state!.phase).toBe('finished');
@@ -297,6 +304,12 @@ test('a three-seat legacy save keeps its pieces and resumes a bot robber move wi
     session.save();
     const legacy = structuredClone(session.savedMatch!);
     delete legacy.humanPlayerId;
+    legacy.version = 1;
+    legacy.state.victoryTarget = 6;
+    delete legacy.state.development;
+    delete legacy.state.awards;
+    delete legacy.state.robberResolution;
+    delete legacy.state.roadBuilding;
     legacy.tutorial.enabled = true;
     legacy.tutorial.queue = ['seven'];
     const raw = JSON.stringify(legacy);
@@ -311,7 +324,7 @@ test('a three-seat legacy save keeps its pieces and resumes a bot robber move wi
         throw new Error('Never reroll this seven');
     });
     restored.advanceBot();
-    expect(restored.state!.phase).toBe('actions');
+    expect(['steal', 'actions']).toContain(restored.state!.phase);
     expect(restored.state!.lastRoll).toEqual([3, 4]);
     expect(restored.state!.players).toEqual(state.players);
     random.mockRestore();

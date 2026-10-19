@@ -93,3 +93,11 @@ Settlement/city icons share their actual board contours. The city has a broad L-
 ## Terrain, Ahriman and trading art
 
 Terrain is now generated from muted vector motifs into a fixed 24-texture cache. Its static board layer survives ordinary actions/previews without allocating new terrain images or masks. Ahriman uses procedural shadow-spirit geometry, including translucent previews and the existing movement/reduced-motion path. The trade icon uses measured `.trade-icon` placeholders painted by `graphicsComponents.ts`, without an image download. Player-facing Persian terminology is اهریمن throughout; serialized identifiers remain compatible. See [PROCEDURAL_BOARD_ART.md](PROCEDURAL_BOARD_ART.md).
+
+## Development and mandatory choices
+
+The dock now has construction, trading and cards controls. The private card workspace supports repeated purchases, play restrictions, Monopoly/Year of Plenty choices, public title holders and private ten-point declarations. Opponent standing/rank/leader projections use public scores; the personal total includes its owner's hidden VP cards.
+
+Seven resolution opens a chosen-discard workspace even during an opponent turn. After every required discard, the active player previews/confirms an Ahriman destination, then chooses one eligible victim for weighted random theft. Mandatory phases disable normal actions; pausing/inspection cannot bypass them. Knight resolution returns to its previous pre-roll or action phase. Road Building reserves legal, unpaid road placements and displays the remaining count.
+
+Final trade completion or rejection returns to the board automatically; pending acceptance still requires the existing final consent. Outcomes remain in notice/history without a narrator completion popup. See [DEVELOPMENT_AND_SCORING.md](DEVELOPMENT_AND_SCORING.md).

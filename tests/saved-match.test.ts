@@ -48,6 +48,10 @@ test('an interrupted robber relocation is still mandatory and starts without a s
     expect(restored.state).toBe(before);
     restored.preview(restored.targets[0]);
     restored.primary();
+    if (restored.state?.phase === 'steal') {
+        expect(restored.sheet?.kind).toBe('steal');
+        restored.stealFrom(restored.state.robberResolution!.victims[0]);
+    }
     expect(restored.state?.phase).toBe('actions');
 });
 
@@ -209,6 +213,12 @@ test('finished matches reopen their results without reopening play', () => {
             vertex.neighborIds.every((id) => !state.board.vertices[id].building),
     )!;
     extra.building = { type: 'city', ownerId: owner };
+    for (let n = 0; n < 2; n++) {
+        const site = Object.values(state.board.vertices).find(
+            (v) => !v.building && v.neighborIds.every((id) => !state.board.vertices[id].building),
+        )!;
+        site.building = { type: 'city', ownerId: owner };
+    }
     state.phase = 'finished';
     state.winnerId = owner;
     state.lastRoll = [3, 4];

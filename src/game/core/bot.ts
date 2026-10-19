@@ -1,3 +1,6 @@
+import { developmentBuyError, developmentPlayError } from './development';
+import { resourceCount, resolutionActor } from './robber';
+import { getPublicVictoryPoints } from './scoring';
 import { getSetupTargets, setupPlacementType } from './setup';
 import { BUILD_COSTS, canAfford, type BuildType } from './building';
 import type { GameCommand } from './commands';
@@ -90,8 +93,61 @@ export function chooseBotCommand(state: GameState): GameCommand | null {
         targets.sort((a, b) => value(b) - value(a));
         return targets.length ? { kind: 'setup', type: openingType, targetId: targets[0] } : null;
     }
-    if (state.phase === 'roll') return { kind: 'roll' };
+    if (state.phase === 'discard') {
+        const playerId = resolutionActor(state);
+        const hand = { ...state.players.find((p) => p.id === playerId)!.resources };
+        const resources = { wood: 0, brick: 0, wheat: 0, wool: 0, stone: 0 };
+        for (let n = 0; n < state.robberResolution!.discards[playerId]; n++) {
+            const r = [...RESOURCE_TYPES].sort((a, b) => hand[b] - hand[a])[0];
+            resources[r]++;
+            hand[r]--;
+        }
+        return { kind: 'discard', playerId, resources };
+    }
     const player = state.players[state.activePlayerIndex];
+    if (
+        ['roll', 'actions'].includes(state.phase) &&
+        getVictoryPoints(state, player.id) >= state.victoryTarget
+    )
+        return { kind: 'declare-victory' };
+    if (state.phase === 'steal')
+        return {
+            kind: 'steal',
+            victimId: [...state.robberResolution!.victims].sort(
+                (a, b) =>
+                    resourceCount(state.players.find((p) => p.id === b)!.resources) -
+                    resourceCount(state.players.find((p) => p.id === a)!.resources),
+            )[0],
+        };
+    if (state.phase === 'road-building')
+        return {
+            kind: 'build',
+            type: 'road',
+            targetId: expansionRoad(state) ?? getBuildOption(state, 'road').legalTargetIds[0],
+        };
+    const card = state.development?.hands[player.id].find(
+        (c) => !developmentPlayError(state, c.id),
+    );
+    if (card) {
+        const wanted = [...RESOURCE_TYPES].sort(
+            (a, b) =>
+                BUILD_COSTS.city[b] +
+                BUILD_COSTS.settlement[b] -
+                player.resources[b] -
+                (BUILD_COSTS.city[a] + BUILD_COSTS.settlement[a] - player.resources[a]),
+        );
+        return {
+            kind: 'play-development',
+            cardId: card.id,
+            choice:
+                card.kind === 'monopoly'
+                    ? { resource: wanted[0] }
+                    : card.kind === 'year-of-plenty'
+                      ? { resources: [wanted[0], wanted[1]] }
+                      : {},
+        };
+    }
+    if (state.phase === 'roll') return { kind: 'roll' };
     if (state.phase === 'robber') {
         const value = (id: string) => {
             const tile = state.board.tiles.find((t) => t.id === id)!;
@@ -99,7 +155,7 @@ export function chooseBotCommand(state: GameState): GameCommand | null {
             return tile.vertexIds.reduce((sum, vertexId) => {
                 const building = state.board.vertices[vertexId].building;
                 if (!building) return sum;
-                const leader = getVictoryPoints(state, building.ownerId);
+                const leader = getPublicVictoryPoints(state, building.ownerId);
                 return (
                     sum +
                     (building.ownerId === player.id ? -4 : 1 + leader / state.victoryTarget) *
@@ -152,5 +208,6 @@ export function chooseBotCommand(state: GameState): GameCommand | null {
                 };
         }
     }
+    if (!developmentBuyError(state)) return { kind: 'buy-development' };
     return { kind: 'end-turn' };
 }

@@ -1,6 +1,6 @@
 # MVP rules
 
-This document records the playable single-player MVP. New games have exactly four seats: one human and three local bots in fixed clockwise seat order. Ordinary matches use these rules. The menu Tutorial is a separate, disposable practice exercise; contextual narration can also be enabled in an ordinary match through Help. Legacy three-player saves retain their existing board/player count, with seat one controlled by the human. Online multiplayer, additional economic and scoring systems remain out of scope until designed.
+This document records the playable single-player MVP. New games have exactly four seats: one human and three local bots in fixed clockwise seat order. Ordinary matches use these rules. The menu Tutorial is a separate, disposable practice exercise; contextual narration can also be enabled in an ordinary match through Help. Legacy three-player saves retain their existing board/player count, with seat one controlled by the human. Online multiplayer and unrequested expansions remain out of scope. Development cards, official seven resolution, scoring titles and ten-point victory are specified below and in [DEVELOPMENT_AND_SCORING.md](DEVELOPMENT_AND_SCORING.md).
 
 ## Board setup
 
@@ -23,7 +23,7 @@ This initial-piece flow follows [CATAN's official Rules & Almanac, Set-Up Phase,
 - A total from 2 to 12 activates every productive tile with that number.
 - Each adjacent settlement produces one unit of the tile's resource for its owner; each adjacent city produces two.
 - Ahriman on a tile blocks that tile's production.
-- A total of seven gives no normal production. The active player must move Ahriman to a different tile before taking other actions. The MVP Ahriman does not steal a resource.
+- A seven produces nothing. Every player with more than seven resource cards chooses exactly half (rounded down) to discard; development cards do not count. After all discards, the active player moves Ahriman to a different hex (desert allowed), then chooses one adjacent opponent with resources and steals one uniformly random resource card. No eligible victim means no theft. All ordinary actions remain blocked until resolution is complete. A Knight moves/steals without triggering discards.
 - After resolving the roll and any Ahriman move, the active player can take actions until ending the turn. The human ends their own turn manually; bots choose and execute their turns automatically in the existing seat order. Bots pay identical costs, use eligible bank/port rates, move Ahriman when required, and receive only ordinary production. There are no bot resource gifts or forced rolls. There is no action limit in the MVP.
 
 ## Building
@@ -34,7 +34,7 @@ This initial-piece flow follows [CATAN's official Rules & Almanac, Set-Up Phase,
 - A road occupies one unoccupied board edge and must connect at one endpoint to the player's own building or an existing road in their network. An opponent's building blocks a road network from continuing through that intersection.
 - After setup, a settlement occupies an empty board vertex, must connect to one of the player's roads, and cannot be adjacent to another settlement or city.
 - A city replaces one of the active player's settlements at the same vertex.
-- Building and upgrades have no additional per-turn or piece-supply limits in this MVP.
+- Each player has 15 road pieces. Other existing building/upgrade supplies remain unchanged; there are no per-turn paid-build limits.
 
 ## Bank and port trading
 
@@ -43,7 +43,7 @@ This initial-piece flow follows [CATAN's official Rules & Almanac, Set-Up Phase,
 - A general port permits three identical resources for one different resource. A specialist permits two units of its indicated resource for one unit of any different resource; the discount applies to payment, not receipt.
 - Choose the best available rate by default. Players may still choose the ordinary 4:1 rate, or 3:1 if they also own a general port. Discounts never combine to produce 1:1. A city has the same rate as a settlement.
 - Ahriman blocks production, not port access. Ports introduce no pirate, shipping, sea roads, or island-building rules.
-- The bank remains unlimited in this MVP; finite bank inventories, negotiated player trading, and other base-game systems are separate decisions.
+- The bank remains unlimited in this MVP; finite bank inventories and other unrequested base-game systems remain separate decisions.
 
 These maritime rules follow the [official CATAN base rules and almanac](https://www.catan.com/sites/default/files/2021-06/catan_base_rules_2020_200707.pdf), maritime trade and harbor sections. Port types shuffle over this project's fixed coastal slots; these are not a reproduction of CATAN's printed frame layout. Other MVP rules remain as recorded above and below.
 
@@ -57,11 +57,21 @@ These maritime rules follow the [official CATAN base rules and almanac](https://
 
 These domestic rules follow [CATAN's official Rules & Almanac, Domestic Trade, page 7](https://www.catan.com/sites/default/files/2021-06/catan_base_rules_2020_200707.pdf#page=7) and [trade FAQ](https://www.catan.com/faq/basegame). See [DOMESTIC_TRADING.md](DOMESTIC_TRADING.md) for confirmation, bots, interface, and recovery.
 
-## Victory
+## Development cards
 
-- Each settlement is worth one victory point. Each city is worth two. Roads are worth zero.
-- All starting settlements count toward victory points.
-- The first player to reach six points wins immediately; no further action or turn change is allowed.
+- Shuffle the official 25-card deck: 14 Knights, 5 Victory Points, and 2 each of Road Building, Monopoly and Year of Plenty (Invention).
+- Each purchase costs 1 stone (ore), 1 wheat (grain) and 1 wool. Repeat purchases while resources and deck stock allow; cards remain private.
+- Play at most one non-VP card per own turn, before the roll or after required roll resolution. Never play one on the turn it was bought; rolling does not reset the play limit.
+- Knight: move Ahriman and steal from one eligible adjacent opponent; no discards. Road Building: place two legal free roads (or one if the supply/legal locations prevent a second). Monopoly: take all of a chosen resource from all opponents. Year of Plenty: take two chosen resources, identical or different, from this project's unlimited bank.
+- Victory Point cards are never played as ordinary cards. All held VP cards, including new purchases, count toward victory, but remain hidden until their owner declares victory.
+
+## Titles and victory
+
+- Settlements score 1, cities score 2. Held Victory Point cards score 1 each.
+- Longest Road scores 2 for the longest continuous edge-simple route of at least 5 segments. Do not sum branches/disconnected roads; opponent buildings interrupt the route. Largest Army scores 2 after at least 3 played Knights; held Knights do not count.
+- Incumbents keep tied titles. A strictly greater qualifying value takes the title. If an interrupted Longest Road loses its qualifying lead, a unique new leader receives it; ties among other players leave it unowned.
+- The victory target is 10. Only the active player may win, even if another player acquires a scoring title off-turn. Public ten-point totals win automatically on that player's turn; private VP cards are revealed through an explicit own-turn declaration. No further command may execute after victory.
+- See [DEVELOPMENT_AND_SCORING.md](DEVELOPMENT_AND_SCORING.md) for exact timing, title transfers, UI privacy, mandatory resolution, save compatibility and tests.
 
 ## Beginner practice
 

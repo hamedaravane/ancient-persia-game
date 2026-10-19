@@ -1,3 +1,10 @@
+import {
+    buyDevelopment,
+    playDevelopment,
+    declareVictory,
+    type DevelopmentChoice,
+} from './development';
+import { discardResources, stealResource } from './robber';
 import { tradeWithPlayer, type TradeTerms } from './domesticTrade';
 import { placeInitialPiece, rollForStart } from './setup';
 import type { BuildType } from './building';
@@ -13,6 +20,10 @@ import {
 } from './game';
 
 export type GameCommand =
+    | { kind: 'buy-development' | 'declare-victory' }
+    | { kind: 'play-development'; cardId: string; choice?: DevelopmentChoice }
+    | { kind: 'discard'; playerId: string; resources: Record<ResourceType, number> }
+    | { kind: 'steal'; victimId: string }
     | { kind: 'roll' | 'end-turn' | 'setup-roll' }
     | { kind: 'setup'; type: 'settlement' | 'road'; targetId: string }
     | { kind: 'build'; type: BuildType; targetId: string }
@@ -27,6 +38,16 @@ export function executeCommand(
     random: RandomSource = Math.random,
 ) {
     switch (command.kind) {
+        case 'buy-development':
+            return buyDevelopment(state);
+        case 'play-development':
+            return playDevelopment(state, command.cardId, command.choice);
+        case 'declare-victory':
+            return declareVictory(state);
+        case 'discard':
+            return discardResources(state, command.playerId, command.resources);
+        case 'steal':
+            return stealResource(state, command.victimId, random);
         case 'setup-roll':
             return rollForStart(state, random);
         case 'setup':

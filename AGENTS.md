@@ -1,6 +1,6 @@
 # Repository guide for coding agents
 
-This repository is a Phaser 4 and TypeScript MVP for a mobile-first Persian-language local multiplayer strategy board game. Preserve the project’s real art and documented decisions. Do not treat a familiar board-game convention as an agreed rule.
+This repository is a Phaser 4 and TypeScript mobile-first Persian-language strategy board game with active, returning players. Prioritize full-match usability, enjoyable interaction, visual clarity, performance, and reliable recovery. Preserve the project’s real art and documented decisions. Do not treat a familiar board-game convention as an agreed rule.
 
 ## Read before changing
 

@@ -4,7 +4,9 @@
 
 **Sunmark** (Persian pronunciation: **سان‌مارک**) is a mobile-first Persian-language single-player strategy board game inspired by hex-based resource production and settlement building. It uses a historically grounded Achaemenid visual direction.
 
-## MVP status
+## Current product
+
+Sunmark has active, returning players. Ongoing work should meet a production-quality bar for full-match usability, satisfying interaction, readable presentation, performance, and recovery. [MOBILE_GAME_EXPERIENCE_RESEARCH.md](MOBILE_GAME_EXPERIENCE_RESEARCH.md) develops the next interaction direction with a sourced study and an independent prototype; those proposed flows are not yet the shipped UI.
 
 New games have four players: one human on this device and three local bots. The highest opening dice roll selects the starter. The human chooses both of their starting settlement/road pairs; bots choose theirs automatically in the same forward/reverse setup order. Ordinary turns then proceed clockwise from the starter. Online multiplayer is the later product goal; this stage needs no backend. Players take turns, roll dice, collect resources, build roads and settlements, upgrade settlements, negotiate resource trades with opponents, trade with the bank using eligible coastal port rates, buy/play development cards, resolve discards and Ahriman theft after a seven, and race to ten victory points.
 

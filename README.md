@@ -96,3 +96,7 @@ The board uses code-generated, softly detailed terrain with a small reusable tex
 ## Development cards and official scoring
 
 Matches now use the 25-card development deck, complete seven discard/move/theft resolution, Longest Road and Largest Army, and a ten-point victory on the winner's own turn. Hidden VP cards remain private until victory declaration. The Cards control explains costs, effects and play timing. Completed/rejected trades return directly to the board. See [rules, save compatibility and verification](docs/DEVELOPMENT_AND_SCORING.md).
+
+## Gameplay experience research
+
+The [mobile UI/UX research](docs/MOBILE_GAME_EXPERIENCE_RESEARCH.md) studies ten games and proposes a more tactile dice flow, compact resource-led construction, and a private development-card hand. Open the [independent interactive study](docs/design/turn-experience-study.html) through the development server at `/docs/design/turn-experience-study.html` to explore scripted examples. It does not change the real game or saved match; the report includes a staged production plan and player-review criteria.

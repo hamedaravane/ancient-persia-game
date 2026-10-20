@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="color-scheme" content="dark" />
+        <title>Sunmark · A more tactile turn</title>
+        <link rel="stylesheet" href="turn-experience-study.css" />
+        <script src="turn-experience-study.js" defer></script>
+    </head>
+    <body>
+        <main class="study">
+            <aside class="study-notes">
+                <p class="eyebrow">SUNMARK / INTERACTION STUDY 01</p>
+                <h1>A turn that<br />feels like play.</h1>
+                <p class="intro">Touch an object. See its consequence. Keep the island in view.</p>
+                <ol>
+                    <li>Tap the dice and follow the result into your hand.</li>
+                    <li>Open Build. Pin a settlement and inspect its missing wool.</li>
+                    <li>Trade four wood for wool, then preview and build.</li>
+                    <li>Explore your cards, or restart with a seven.</li>
+                </ol>
+                <fieldset class="study-controls">
+                    <legend>Explore the study</legend>
+                    <label for="scenario">Next roll</label>
+                    <select id="scenario">
+                        <option value="ordinary">Production · 4 + 4</option>
+                        <option value="seven">Seven · discard, move, steal</option>
+                        <option value="empty">No income · 1 + 2</option>
+                    </select>
+                    <label class="toggle"
+                        ><input id="reduced-motion" type="checkbox" />Reduced motion</label
+                    >
+                    <label class="toggle"><input id="sound" type="checkbox" />Soft sound</label>
+                    <button id="restart" class="study-restart" type="button">
+                        Restart this scenario
+                    </button>
+                </fieldset>
+                <p class="study-disclosure">
+                    Independent interaction prototype. Scripted resources, locations, cards, and
+                    opponents; no real match or save is changed. The real game retains its Phaser
+                    renderer and authoritative rules.
+                </p>
+                <a href="../MOBILE_GAME_EXPERIENCE_RESEARCH.md"
+                    >Read the research and design proposal ↗</a
+                >
+            </aside>
+
+            <section class="phone" lang="fa" dir="rtl" aria-label="نمونهٔ تعاملی نوبت سان‌مارک">
+                <header class="match-header">
+                    <div class="personal-row">
+                        <button
+                            class="identity"
+                            data-action="score"
+                            aria-label="امتیاز و وضعیت تو"
+                            type="button"
+                        >
+                            <span class="avatar" aria-hidden="true">آ</span>
+                            <span
+                                ><strong>آرمان <small>تو</small></strong
+                                ><span id="score-label">۳ از ۱۰ امتیاز</span></span
+                            >
+                        </button>
+                        <div
+                            id="dice-slot"
+                            class="dice-slot"
+                            role="img"
+                            aria-label="نتیجهٔ آخرین تاس"
+                        ></div>
+                        <button
+                            class="icon-button pause"
+                            data-action="pause"
+                            aria-label="توقف و راهنما"
+                            type="button"
+                        >
+                            ⋯
+                        </button>
+                    </div>
+                    <div class="rivals" aria-label="امتیاز نمایان حریف‌ها">
+                        <button data-action="rivals" type="button">
+                            <i class="seal seal--rose" aria-hidden="true"></i>سورنا <b>۲</b>
+                        </button>
+                        <button data-action="rivals" type="button">
+                            <i class="seal seal--blue" aria-hidden="true"></i>آریا <b>۳</b>
+                        </button>
+                        <button data-action="rivals" type="button">
+                            <i class="seal seal--gold" aria-hidden="true"></i>بهمن <b>۲</b>
+                        </button>
+                    </div>
+                </header>
+
+                <div id="phase-label" class="phase-line">نوبت تو</div>
+                <section class="island-space" aria-label="جزیرهٔ نمایشی">
+                    <svg
+                        id="island"
+                        viewBox="0 0 390 380"
+                        role="group"
+                        aria-label="زمین‌ها و محل‌های انتخاب روی جزیره"
+                    ></svg>
+                    <button
+                        id="roll-object"
+                        class="roll-object"
+                        data-action="roll"
+                        type="button"
+                        aria-label="ریختن دو تاس"
+                    >
+                        <span class="hero-dice" aria-hidden="true"></span>
+                        <span class="roll-caption">برای تاس‌ریختن بزن</span>
+                    </button>
+                    <div id="board-message" class="board-message" aria-hidden="true"></div>
+                </section>
+
+                <footer class="turn-footer">
+                    <p id="receipt" class="receipt">تاس‌ها آماده‌اند</p>
+                    <div id="resource-hand" class="resource-hand" aria-label="دارایی تو"></div>
+                    <div id="action-dock" class="action-dock"></div>
+                    <div id="primary-row" class="primary-row"></div>
+                    <span class="sample-tag">نمونهٔ تعاملی · دادهٔ نمایشی</span>
+                </footer>
+                <div
+                    id="announcement"
+                    class="sr-only"
+                    role="status"
+                    aria-live="polite"
+                    aria-atomic="true"
+                ></div>
+                <noscript>برای دیدن نمونهٔ تعاملی، جاوااسکریپت را فعال کنید.</noscript>
+            </section>
+        </main>
+        <dialog id="panel" lang="fa" dir="rtl" aria-labelledby="panel-title">
+            <div class="panel-head">
+                <h2 id="panel-title" tabindex="-1"></h2>
+                <button
+                    class="icon-button"
+                    data-action="close"
+                    type="button"
+                    aria-label="بستن و بازگشت به جزیره"
+                >
+                    ×
+                </button>
+            </div>
+            <div id="panel-body" class="panel-body"></div>
+            <div id="panel-footer" class="panel-footer"></div>
+        </dialog>
+    </body>
+</html>

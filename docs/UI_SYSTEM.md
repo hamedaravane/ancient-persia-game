@@ -1,5 +1,7 @@
 # UI system
 
+The [20 October experience research](MOBILE_GAME_EXPERIENCE_RESEARCH.md) and [interactive turn study](design/turn-experience-study.html) propose the next turn, construction and card interactions. They are candidate designs; the implementation described below remains current until those slices are implemented and reviewed.
+
 ## Direction
 
 The public game name is **Sunmark**, pronounced **سان‌مارک** in Persian. `src/brand.ts` supplies the shared product name and description for runtime UI, tutorial welcome, and Vite/PWA metadata. The menu title renders Sunmark as an explicit LTR English text run inside the Persian RTL layout; the smaller eyebrow includes the Persian pronunciation. Keep names as runtime text. The preserved gold sun-rosette emblem remains the app mark.

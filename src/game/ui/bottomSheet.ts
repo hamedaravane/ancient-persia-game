@@ -55,7 +55,7 @@ export class BottomSheet {
                 );
                 const fallback =
                     this.parent.querySelector<HTMLElement>(
-                        '.match-screen:not([hidden]) .target-picker button:not([disabled]), .match-screen:not([hidden]) .primary-row button:not([disabled])',
+                        '.match-screen:not([hidden]) .roll-object:not([disabled]), .match-screen:not([hidden]) .target-picker button:not([disabled]), .match-screen:not([hidden]) .primary-row button:not([disabled])',
                     ) ??
                     this.parent.querySelector<HTMLElement>(
                         '.match-screen:not([hidden]) .match-bar button:not([disabled]), .main-menu:not([hidden]) button:not([disabled])',

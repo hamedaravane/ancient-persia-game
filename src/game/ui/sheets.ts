@@ -1,3 +1,6 @@
+import { scoreAwards } from './scoreMarkup';
+import { constructionSheet } from './constructionMarkup';
+import { experienceSheet, experienceGuide } from './experienceMarkup';
 import { advancedSheet } from './advancedMarkup';
 import { getBankTradeError } from '../core/game';
 import {
@@ -6,13 +9,7 @@ import {
     getPortOwnerId,
     getPortTradeRatio,
 } from '../core/ports';
-import { BUILD_TYPES } from '../core/building';
-import {
-    getBuildOption,
-    getPlayerSummary,
-    getProductionProbability,
-    type BuildOption,
-} from '../core/queries';
+import { getPlayerSummary, getProductionProbability, type BuildOption } from '../core/queries';
 import { RESOURCE_TYPES } from '../core/types';
 import {
     artSprite,
@@ -32,14 +29,7 @@ import { pauseMenuContent, gameReviewContent, pauseMenuBack } from './pauseMenu'
 import { journalContent, tutorialContent } from '../tutorial/markup';
 import { ownedPortsMarkup, portDirectory, portIcon, portName, tradeRateLabel } from './ports';
 import { domesticContent, tradeTabs } from './domesticSheet';
-import {
-    BUILD_LABELS,
-    BUILD_PURPOSE,
-    buildInventory,
-    locationReason,
-    missingLabel,
-    tradeBuildFeedback,
-} from './buildFeedback';
+import { BUILD_LABELS, locationReason, missingLabel, tradeBuildFeedback } from './buildFeedback';
 export { BUILD_LABELS } from './buildFeedback';
 import { avatarForSeat, PLAYER_NAME_LIMIT } from './playerIdentity';
 
@@ -144,26 +134,17 @@ export function sheetContent(session: GameSession, updateReady = false): SheetCo
             title: 'پایان نوبت؟',
             body: `<p>مبادله تأییدنشده دارید. با پایان نوبت این انتخاب کنار گذاشته می‌شود.</p>${button('بازگشت به مبادله', 'open:trade', { className: 'button full-width' })}${button('کنارگذاشتن مبادله و پایان نوبت', 'confirm-end-turn', { className: 'button button--primary full-width' })}`,
         };
-    if (sheet.kind === 'build') {
-        const summary = getPlayerSummary(state, player.id);
-        const built = {
-            road: summary.roads,
-            settlement: summary.settlements,
-            city: summary.cities,
-        };
+    if (sheet.kind === 'build') return constructionSheet(session);
+    if (sheet.kind === 'experience') return experienceSheet(session);
+    if (sheet.kind === 'experience-guide') return experienceGuide();
+    if (sheet.kind === 'development-rules')
         return {
-            title: 'ساخت‌وساز',
-            body: `${button('کارت‌های توسعه و عنوان‌ها', 'open:development', { className: 'button full-width', disabled: !!session.practice })}<p class="sheet-intro">${escape(player.name)} • منابع فقط پس از تأیید محل پرداخت می‌شوند.</p>
-            <div class="build-list">${BUILD_TYPES.map((type) => {
-                const option = getBuildOption(state, type, player.id);
-                return `<article class="build-card"><div class="row-between"><h3><span class="piece-symbol piece-symbol--${type}" aria-hidden="true"></span>${BUILD_LABELS[type]}</h3><span class="muted">ساخته‌شده: ${number(built[type])}</span></div>
-                    ${buildInventory(option, player.resources)}<p class="muted">${BUILD_PURPOSE[type]}</p><p class="${option.reason ? 'availability' : 'muted'}">${buildReason(option, session)}</p>${session.practice && session.practice.stage !== type ? '<p class="availability">در این قدم تمرین، فقط سازهٔ خواسته‌شده را می‌سازیم.</p>' : ''}
-                    ${button('انتخاب محل', `build:${type}`, { disabled: option.reason !== null || (!!session.practice && session.practice.stage !== type) })}</article>`;
-            }).join(
-                '',
-            )}</div><p class="footnote">هر بازیکن ۱۵ قطعه راه دارد. شهر جایگزین آبادی شما می‌شود و یک امتیاز می‌افزاید.</p>`,
+            title: 'قوانین کارت‌های توسعه',
+            body: '<p>دستهٔ ۲۵ کارتی: ۱۴ شوالیه، ۵ امتیاز مخفی، و از راه‌سازی، انحصار و سال فراوانی هرکدام ۲ کارت.</p><p>خرید: ۱ سنگ، ۱ گندم و ۱ پشم. در هر نوبت یک کارت غیرامتیازی، پیش از تاس یا بعد از پایان مراحل اجباری. کارت تازه تا نوبت بعد بازی نمی‌شود. امتیازهای مخفی، حتی تازه‌خریداری‌شده، هنگام اعلام پیروزی حساب می‌شوند.</p>',
+            footer: button('بازگشت به کارت‌های تو', 'open:development', {
+                className: 'button full-width',
+            }),
         };
-    }
     if (sheet.kind === 'trade') {
         const ratio = session.tradeRatio;
         const rates = session.give ? getBankTradeRates(state.board, player.id, session.give) : [];
@@ -241,7 +222,15 @@ export function sheetContent(session: GameSession, updateReady = false): SheetCo
         const summary = getPlayerSummary(state, selected.id, player.id);
         return {
             title: selected.name,
-            body: `<div class="player-detail" style="--owner:${color(selected.color)}"><span class="owner-badge">${number(state.players.indexOf(selected) + 1)}</span><p class="score-large">${number(summary.score)} <span>از ${number(state.victoryTarget)} امتیاز</span></p></div><dl class="detail-list"><div><dt>راه</dt><dd>${number(summary.roads)}</dd></div><div><dt>آبادی</dt><dd>${number(summary.settlements)}</dd></div><div><dt>شهر</dt><dd>${number(summary.cities)}</dd></div><div><dt>مجموع منابع</dt><dd>${number(summary.resources)}</dd></div></dl><h3>بندرهای در دسترس</h3>${ownedPortsMarkup(state.board, selected.id)}<p class="footnote">هر آبادی ۱ و هر شهر ۲ امتیاز دارد؛ عنوان‌های راه و ارتش هرکدام ۲ امتیاز می‌دهند. کارت‌های امتیازی حریف‌ها مخفی‌اند. راه‌ها به ۱۵ قطعه محدودند.</p>`,
+            body: `<div class="player-detail" style="--owner:${color(selected.color)}"><span class="owner-badge">${number(state.players.indexOf(selected) + 1)}</span><p class="score-large">${number(summary.score)} <span>از ${number(state.victoryTarget)} امتیاز</span></p></div><dl class="detail-list"><div><dt>راه</dt><dd>${number(summary.roads)}</dd></div><div><dt>آبادی</dt><dd>${number(summary.settlements)}</dd></div><div><dt>شهر</dt><dd>${number(summary.cities)}</dd></div><div><dt>مجموع منابع</dt><dd>${number(summary.resources)}</dd></div><div><dt>امتیاز کارت‌های مخفی تو</dt><dd>${number((state.development?.hands[selected.id] ?? []).filter((c) => c.kind === 'victory-point').length)}</dd></div></dl>${scoreAwards(state, selected.id)}<h3>بندرهای در دسترس</h3>${ownedPortsMarkup(state.board, selected.id)}<p class="footnote">هر آبادی ۱ و هر شهر ۲ امتیاز دارد؛ عنوان‌های راه و ارتش هرکدام ۲ امتیاز می‌دهند. کارت‌های امتیازی حریف‌ها مخفی‌اند. راه‌ها به ۱۵ قطعه محدودند.</p>`,
+            footer:
+                button('کارت‌های تو', 'open:development', {
+                    className: 'button full-width',
+                    disabled: !!session.practice,
+                }) +
+                button('برنامهٔ ساخت', 'open:build', {
+                    className: 'button button--quiet full-width',
+                }),
         };
     }
     if (sheet.kind === 'tile') {

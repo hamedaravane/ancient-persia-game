@@ -10,6 +10,7 @@ import { LESSONS } from '../tutorial/lessons.fa';
 import { integer, label, record, validGameState } from './validateState';
 
 export interface SavedMatch {
+    buildGoal?: 'road' | 'settlement' | 'city' | null;
     version: 1 | 2;
     /** Absent in legacy shared-device saves; their first seat becomes the human. */
     humanPlayerId?: string;
@@ -35,6 +36,13 @@ export function decodeSave(raw: string): SavedMatch | null {
         )
             return null;
         const state = value.state;
+        if (
+            value.buildGoal !== undefined &&
+            value.buildGoal !== null &&
+            (typeof value.buildGoal !== 'string' ||
+                !['road', 'settlement', 'city'].includes(value.buildGoal))
+        )
+            return null;
         if (value.trading !== undefined && !validTrading(value.trading, state)) return null;
         if (
             value.humanPlayerId !== undefined &&
@@ -77,6 +85,17 @@ export function decodeSave(raw: string): SavedMatch | null {
             return null;
         const saved = value as unknown as SavedMatch;
         if (!saved.state.development && saved.state.phase !== 'finished') {
+            // Modern rules already reject an over-supply legacy network. Check before
+            // exponential trail evaluation rather than calculating an unusable title.
+            if (
+                saved.state.players.some(
+                    (p) =>
+                        Object.values(saved.state.board.edges).filter(
+                            (e) => e.road?.ownerId === p.id,
+                        ).length > 15,
+                )
+            )
+                return null;
             let seed = 0x6d2b79f5;
             for (const char of raw) seed = (Math.imul(seed, 31) + char.charCodeAt(0)) >>> 0;
             const random = () => {

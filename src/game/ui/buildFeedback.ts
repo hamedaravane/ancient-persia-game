@@ -1,7 +1,7 @@
 import { BUILD_TYPES, type BuildType } from '../core/building';
 import { getBuildOption, type BuildOption } from '../core/queries';
 import { RESOURCE_TYPES, type ResourceType } from '../core/types';
-import { escape, number } from './components';
+import { escape, number, button } from './components';
 import { FA } from './messages.fa';
 import type { GameSession } from './session';
 
@@ -25,6 +25,8 @@ export function missingLabel(missing: BuildOption['missing']): string {
 }
 
 export function locationReason(option: BuildOption): string {
+    if (option.reason === 'road-supply' || option.reason === 'game-finished')
+        return FA.errors[option.reason];
     if (option.legalTargetIds.length) return `${number(option.legalTargetIds.length)} محل مجاز`;
     return {
         road: 'راه خالیِ متصل به شبکه ندارید؛ ساختمان حریف ادامهٔ راه را قطع می‌کند.',
@@ -46,6 +48,37 @@ export function buildInventory(option: BuildOption, hand: Record<ResourceType, n
         .join('')}</div>`;
 }
 
+export function goalMarkup(
+    session: GameSession,
+    hand = session.humanPlayer!.resources,
+    comparison = false,
+): string {
+    const goal = session.buildGoal;
+    if (!goal || !session.state) return '';
+    const player = session.humanPlayer!;
+    const projected = {
+        ...session.state,
+        players: session.state.players.map((p) =>
+            p.id === player.id ? { ...p, resources: hand } : p,
+        ),
+    };
+    const option = getBuildOption(projected, goal, player.id);
+    const short = RESOURCE_TYPES.some((r) => option.missing[r]);
+    const status =
+        option.reason === 'road-supply' || option.reason === 'game-finished'
+            ? locationReason(option)
+            : short
+              ? `${missingLabel(option.missing)} کم`
+              : !option.legalTargetIds.length
+                ? locationReason(option)
+                : !session.isHumanTurn
+                  ? 'منابع آماده · ساخت در نوبت تو'
+                  : session.state.phase !== 'actions'
+                    ? 'منابع آماده · پس از مراحل نوبت'
+                    : 'آمادهٔ ساخت ✓';
+    return `<section class="build-goal" aria-label="هدف انتخابی تو${comparison ? ' پس از معامله' : ''}"><span class="piece-symbol piece-symbol--${goal}" aria-hidden="true"></span><span><strong>${comparison ? 'پس از معامله' : 'هدف تو'}: ${BUILD_LABELS[goal]}</strong><small>${escape(status)}</small></span>${!comparison ? button('×', 'pin-build:clear', { className: 'icon-button', label: 'برداشتن هدف ساخت' }) : ''}</section>`;
+}
+
 /** Read-only comparison accounts for the payment as well as the resource received. */
 export function tradeBuildFeedback(
     session: GameSession,
@@ -58,11 +91,11 @@ export function tradeBuildFeedback(
         ...state,
         players: state.players.map((p) => (p.id === human.id ? { ...p, resources: after } : p)),
     };
-    return `<section class="trade-build-feedback" aria-label="اثر معامله بر ساخت"><h3>اثر معامله بر ساخت</h3><p class="footnote">کمبود قبل ← بعد؛ پرداخت معامله هم حساب شده است. این مقایسه پیشنهادِ حرکت نیست.</p>${BUILD_TYPES.map(
+    return `${goalMarkup(session, after, true)}<details class="trade-build-feedback"><summary>اثر معامله بر ساخت‌ها</summary><p class="footnote">کمبود قبل ← بعد؛ پرداخت معامله هم حساب شده است.</p>${BUILD_TYPES.map(
         (type) => {
             const before = getBuildOption(state, type, human.id);
             const next = getBuildOption(projected, type, human.id);
             return `<p><strong>${BUILD_LABELS[type]}</strong> • کمبود قبل: ${missingLabel(before.missing)}؛ بعد: ${missingLabel(next.missing)}<br><span class="muted">${escape(locationReason(next))}${next.reason === null ? ' • پس از معامله قابل ساخت' : ''}${!session.isHumanTurn ? ' • ساخت در نوبت خودتان' : ''}</span></p>`;
         },
-    ).join('')}</section>`;
+    ).join('')}</details>`;
 }

@@ -5,9 +5,13 @@ import type { Motion } from './motion';
 import type { GameSession, Placement, Sheet } from './session';
 import type { MatchTransition } from './transitions';
 import type { InterfaceScene } from './InterfaceScene';
+import { getVictoryPoints } from '../core/scoring';
+import { GameAudio } from './GameAudio';
+import type { UiBox } from './graphicsTheme';
 
 /** Bridges confirmed state to bounded Phaser effects; never submits a command. */
 export class GameFeedback {
+    private audio: GameAudio;
     private unsubscribe: () => void;
     private unsubscribeLayout: () => void;
     private unsubscribeMotion: () => void;
@@ -18,6 +22,8 @@ export class GameFeedback {
     private lastError: string | null;
     private lastGive: ResourceType | null;
     private lastReceive: ResourceType | null;
+    private lastCard: string | null;
+    private cancelOnScroll = () => this.clear();
 
     constructor(
         private parent: HTMLElement,
@@ -25,7 +31,9 @@ export class GameFeedback {
         private board: GameScene,
         private ui: InterfaceScene,
         motion: Motion,
+        private rollOrigin: (transition: MatchTransition) => UiBox | null = () => null,
     ) {
+        this.audio = new GameAudio(parent, session.preferences, motion);
         this.lastId = session.transition?.id ?? 0;
         this.lastState = session.state;
         this.lastSheet = session.sheet;
@@ -33,6 +41,8 @@ export class GameFeedback {
         this.lastError = session.error;
         this.lastGive = session.give;
         this.lastReceive = session.receive;
+        this.lastCard = session.selectedDevelopmentId;
+        parent.addEventListener('scroll', this.cancelOnScroll, true);
         this.unsubscribe = session.subscribe(() => this.update());
         this.unsubscribeLayout = board.subscribeLayout(() => this.clear());
         this.unsubscribeMotion = motion.subscribe(() => this.clear());
@@ -46,7 +56,12 @@ export class GameFeedback {
     }
     private update(): void {
         const state = this.session.state;
-        if (state !== this.lastState || this.session.sheet !== this.lastSheet) this.clear();
+        if (
+            state !== this.lastState ||
+            this.session.sheet !== this.lastSheet ||
+            this.session.selectedDevelopmentId !== this.lastCard
+        )
+            this.clear();
         const transition = this.session.transition;
         if (transition && transition.id !== this.lastId) {
             this.lastId = transition.id;
@@ -73,6 +88,7 @@ export class GameFeedback {
         this.lastError = this.session.error;
         this.lastGive = this.session.give;
         this.lastReceive = this.session.receive;
+        this.lastCard = this.session.selectedDevelopmentId;
     }
     private play(transition: MatchTransition): void {
         const { action, before, after } = transition;
@@ -80,6 +96,7 @@ export class GameFeedback {
         const humanId = this.session.humanPlayer!.id;
         const human = after.players.find((p) => p.id === humanId)!;
         const previousHuman = before.players.find((p) => p.id === humanId)!;
+        this.audio.play(transition, humanId);
         for (const resource of RESOURCE_TYPES) {
             const delta = human.resources[resource] - previousHuman.resources[resource];
             if (delta)
@@ -89,28 +106,64 @@ export class GameFeedback {
                     delta < 0,
                 );
         }
+        if (
+            (action.kind === 'roll' || action.kind === 'setup-roll') &&
+            before.players[before.activePlayerIndex].id === humanId
+        ) {
+            const origin = this.rollOrigin(transition);
+            const values = action.kind === 'roll' ? after.lastRoll : after.setup?.lastRoll?.dice;
+            if (origin && values && !this.session.sheet)
+                this.ui.feedback?.diceRoll(origin, this.query('.dice-pair'), values);
+            else this.ui.feedback?.pulse(this.query('.dice-result'));
+        }
         if (action.kind === 'roll') {
-            if (this.session.isHumanTurn) this.ui.feedback?.pulse(this.query('.dice-result'));
             if (!this.session.sheet)
-                transition.production.forEach((grant, index) => {
-                    const source = this.board.tileAnchor(grant.tileId);
-                    const target =
-                        grant.playerId === humanId
-                            ? this.query(
-                                  `.hand-resource[data-resource="${grant.resource}"] .resource-icon`,
-                              )
-                            : null;
-                    const owner = after.players.find(({ id }) => id === grant.playerId)!;
-                    if (source && target)
-                        this.ui.feedback?.fly(
-                            source,
-                            target,
-                            grant.resource,
-                            number(grant.amount),
-                            owner.color,
-                            220 + index * 35,
-                        );
-                });
+                transition.production
+                    .filter((grant) => grant.playerId === humanId)
+                    .slice(0, 6)
+                    .forEach((grant, index) => {
+                        const source = this.board.tileAnchor(grant.tileId);
+                        const target =
+                            grant.playerId === humanId
+                                ? this.query(
+                                      `.hand-resource[data-resource="${grant.resource}"] .resource-icon`,
+                                  )
+                                : null;
+                        const owner = after.players.find(({ id }) => id === grant.playerId)!;
+                        if (source && target)
+                            this.ui.feedback?.fly(
+                                source,
+                                target,
+                                grant.resource,
+                                number(grant.amount),
+                                owner.color,
+                                200 + index * 30,
+                            );
+                    });
+        }
+        const pointDelta = getVictoryPoints(after, humanId) - getVictoryPoints(before, humanId);
+        if (pointDelta) {
+            this.ui.feedback?.pulse(this.query('.human-score'));
+            this.ui.feedback?.delta(
+                this.query('.human-score'),
+                `${pointDelta > 0 ? '+' : '−'}${number(Math.abs(pointDelta))}`,
+                pointDelta < 0,
+            );
+        }
+        if (
+            action.kind === 'buy-development' &&
+            before.players[before.activePlayerIndex].id === humanId &&
+            this.session.sheet?.kind === 'development'
+        ) {
+            const old = new Set(before.development!.hands[humanId].map((c) => c.id));
+            const card = after.development!.hands[humanId].find((c) => !old.has(c.id));
+            if (card)
+                this.ui.feedback?.cardReveal(
+                    this.query(
+                        `.development-feature[data-development-id="${card.id}"] .action-emblem`,
+                    ),
+                    card.kind,
+                );
         }
         if (action.kind === 'end-turn' && this.session.isHumanTurn)
             this.ui.feedback?.pulse(this.query('.turn-heading'), active.color);
@@ -118,6 +171,8 @@ export class GameFeedback {
         if (!this.session.sheet) this.board.playTransition(transition);
     }
     destroy(): void {
+        this.parent.removeEventListener('scroll', this.cancelOnScroll, true);
+        this.audio.destroy();
         this.unsubscribe();
         this.unsubscribeLayout();
         this.unsubscribeMotion();

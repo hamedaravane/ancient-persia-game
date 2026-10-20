@@ -1,6 +1,6 @@
 # Sunmark
 
-**Sunmark (سان‌مارک)** is a mobile-first, Persian-language local strategy board game inspired by hex-based resource production and settlement building. The MVP starts four-player matches with one human and three automatic local bots, with a generated board, player-chosen opening settlements/roads in CATAN order, turn-based production, building, negotiated player/bot trades, bank trades, Ahriman, and a ten-point victory target.
+**Sunmark (سان‌مارک)** is a mobile-first, Persian-language local strategy board game inspired by hex-based resource production and settlement building. Matches have one human and three automatic local bots, with a generated board, player-chosen opening settlements/roads in CATAN order, turn-based production, building, negotiated player/bot trades, bank trades, development cards, Ahriman, and a ten-point victory target.
 
 [Play the game](https://hamedaravane.github.io/ancient-persia-game/)
 
@@ -70,7 +70,7 @@ Run `npm run pwa:check` after a production build to verify install metadata, ico
 | `public/assets/`   | Runtime art loaded by Phaser from stable public URLs                                       |
 | `docs/`            | Product direction, confirmed rules, invariants, art and UI guidance, and asset conventions |
 
-The local session and HUD provide match setup, a portrait board, the fixed human player's resource hand, and action controls. The board scene calls pure transitions in `src/game/core/`; the scene owns no gameplay rules. See [docs/SINGLE_PLAYER.md](docs/SINGLE_PLAYER.md) for bots/controller/save compatibility and [docs/GAME_RULES.md](docs/GAME_RULES.md) for the exact MVP rules and [docs/GAMEPLAY_INVARIANTS.md](docs/GAMEPLAY_INVARIANTS.md) for state constraints.
+The local session and HUD provide match setup, a portrait board, the fixed human player's resource hand, and action controls. The board scene calls pure transitions in `src/game/core/`; the scene owns no gameplay rules. See [docs/SINGLE_PLAYER.md](docs/SINGLE_PLAYER.md) for bots/controller/save compatibility and [docs/GAME_RULES.md](docs/GAME_RULES.md) for the implemented rules and [docs/GAMEPLAY_INVARIANTS.md](docs/GAMEPLAY_INVARIANTS.md) for state constraints.
 
 ## Assets
 
@@ -95,4 +95,8 @@ The board uses code-generated, softly detailed terrain with a small reusable tex
 
 ## Development cards and official scoring
 
-Matches now use the 25-card development deck, complete seven discard/move/theft resolution, Longest Road and Largest Army, and a ten-point victory on the winner's own turn. Hidden VP cards remain private until victory declaration. The Cards control explains costs, effects and play timing. Completed/rejected trades return directly to the board. See [rules, save compatibility and verification](docs/DEVELOPMENT_AND_SCORING.md).
+Matches use the 25-card development deck, complete seven discard/move/theft resolution, Longest Road and Largest Army, and a ten-point victory on the winner's own turn. Hidden VP cards remain private until victory declaration. The Development deck opens a private hand with a separate purchase area. Completed/rejected trades return directly to the board. See [rules, save compatibility and verification](docs/DEVELOPMENT_AND_SCORING.md).
+
+## Mobile game experience
+
+The real match uses large tappable dice that carry the committed result into the header, a phase-aware hammer/trade/deck dock, compact resource-cost construction cards, and a pinnable build goal compared against actual trade payments. Owned development cards show their effect and timing, with a private reveal after purchase. Score/title feedback follows confirmed game state. Pause → **صدا و حرکت** offers optional synthesized sound, supported-device haptics, faster feedback and reduced motion; all start quiet and preserve the saved match. See [implementation and verification](docs/MOBILE_GAME_EXPERIENCE.md).

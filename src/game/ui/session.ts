@@ -1,3 +1,4 @@
+import { awardChanges } from './scoreMarkup';
 import {
     buyDevelopment,
     playDevelopment,
@@ -27,6 +28,7 @@ import {
     rollDice,
     tradeWithBank,
     upgradeCity,
+    getVictoryPoints,
 } from '../core/game';
 import { getBuildOption } from '../core/queries';
 import { getBankTradeRates, getBankTradeRatio, getPortOwnerId } from '../core/ports';
@@ -39,6 +41,7 @@ import type { LessonId } from '../tutorial/lessons.fa';
 import type { MatchStore, SavedMatch } from '../persistence/matchStore';
 import { PlayerTrading } from './playerTrading';
 import { BOT_NAMES, playerName } from './playerIdentity';
+import { ExperiencePreferences, type ExperienceOption } from './experiencePreferences';
 
 export type Sheet =
     | {
@@ -46,6 +49,9 @@ export type Sheet =
               | 'build'
               | 'trade'
               | 'development'
+              | 'experience'
+              | 'experience-guide'
+              | 'development-rules'
               | 'discard'
               | 'steal'
               | 'domestic'
@@ -77,6 +83,8 @@ export interface MatchEvent {
 
 /** One human controller and local bots; drafts never mutate authoritative state. */
 export class GameSession {
+    readonly preferences = new ExperiencePreferences();
+    buildGoal: BuildType | null = null;
     readonly tutorial = new TutorialDirector();
     practice: Practice | null = null;
     readonly trading = new PlayerTrading(
@@ -131,6 +139,7 @@ export class GameSession {
         } else this.requestStart(4);
     }
     private startPractice(): void {
+        this.buildGoal = null;
         const { state, practice } = createPractice();
         this.gameState = state;
         this.practice = practice;
@@ -197,6 +206,7 @@ export class GameSession {
                 : tutorial,
         );
         this.trading.restore(saved.trading);
+        this.buildGoal = saved.buildGoal ?? null;
         this.transition = null;
         this.transitionId = 0;
         this.tutorialReturnSheet = null;
@@ -220,6 +230,7 @@ export class GameSession {
         this.trading.sync();
         this.savedMatch = {
             version: 2,
+            buildGoal: this.buildGoal,
             humanPlayerId: this.humanPlayer!.id,
             state: this.state,
             tutorial: this.tutorial.snapshot(),
@@ -369,6 +380,7 @@ export class GameSession {
     }
 
     start(count: 3 | 4, guided = true, name = 'بازیکن'): void {
+        this.buildGoal = null;
         this.practice = null;
         this.gameState = createGame([playerName(name), ...BOT_NAMES].slice(0, count));
         this.controlledPlayerId = this.gameState.players[0].id;
@@ -389,6 +401,7 @@ export class GameSession {
     }
     returnToMenu(): void {
         this.save();
+        this.buildGoal = null;
         this.practice = null;
         this.trading.reset();
         this.tutorial.start(false);
@@ -420,6 +433,8 @@ export class GameSession {
                 'inspect',
                 'app',
                 'update',
+                'experience',
+                'experience-guide',
             ].includes(sheet.kind)
         )
             return;
@@ -441,12 +456,42 @@ export class GameSession {
     }
     closeSheet(): void {
         if (this.sheet?.kind === 'domestic') this.trading.dismiss();
+        if (this.sheet?.kind === 'experience-guide') this.preferences.set('introduced', true);
         if (this.sheet?.kind === 'tutorial') {
             this.setTutorialEnabled(false);
             return;
         }
         this.sheet = null;
         this.emit();
+    }
+    setBuildGoal(type: BuildType | null): void {
+        if (
+            !this.state ||
+            this.practice ||
+            (type !== null && !['road', 'settlement', 'city'].includes(type))
+        )
+            return;
+        this.buildGoal = this.buildGoal === type ? null : type;
+        this.emit();
+    }
+    setExperienceOption(key: ExperienceOption): void {
+        if (this.sheet?.kind !== 'experience') return;
+        this.preferences.set(key, !this.preferences.snapshot[key]);
+        this.emit();
+    }
+    tradeForResource(resource: ResourceType): void {
+        if (
+            !this.state ||
+            !this.isHumanTurn ||
+            this.state.phase !== 'actions' ||
+            this.practice ||
+            !RESOURCE_TYPES.includes(resource)
+        )
+            return;
+        this.give = null;
+        this.receive = resource;
+        this.requestedTradeRatio = null;
+        this.openSheet({ kind: 'trade' });
     }
     chooseBuild(kind: BuildType): void {
         if (this.practice && this.practice.stage !== kind) return;
@@ -543,15 +588,10 @@ export class GameSession {
     }
     buyCard(): void {
         if (!this.isHumanTurn || this.practice || this.sheet?.kind !== 'development') return;
-        this.apply(
-            buyDevelopment(this.state!),
-            'یک کارت توسعه خریدی؛ نوع آن برای حریف‌ها مخفی است.',
-            { kind: 'buy-development' },
-        );
-        if (this.state?.phase === 'actions') {
-            this.sheet = { kind: 'development' };
-            this.emit();
-        }
+        const result = buyDevelopment(this.state!);
+        this.apply(result, 'یک کارت توسعه خریدی؛ نوع آن برای حریف‌ها مخفی است.', {
+            kind: 'buy-development',
+        });
     }
     selectDevelopment(id: string): void {
         if (
@@ -727,6 +767,23 @@ export class GameSession {
             this.openSheet({ kind: 'results' });
         }
     }
+    /** The dice object has a dedicated guarded command; a second tap can never end a turn. */
+    roll(): void {
+        if (
+            !this.state ||
+            this.sheet ||
+            !this.isHumanTurn ||
+            !['roll', 'setup-roll'].includes(this.state.phase)
+        )
+            return;
+        if (
+            !this.practice &&
+            this.state.phase === 'roll' &&
+            getVictoryPoints(this.state, this.humanPlayer!.id) >= this.state.victoryTarget
+        )
+            return;
+        this.primary();
+    }
     advanceBot(expectedState: GameState = this.state!): void {
         if (!this.botReady || this.state !== expectedState) return;
         const state = this.state!;
@@ -789,6 +846,8 @@ export class GameSession {
             const before = this.gameState!;
             this.gameState = result.state;
             if (before.players[before.activePlayerIndex].id === this.humanPlayer!.id) {
+                if (action.kind === 'roll' || action.kind === 'setup-roll')
+                    this.preferences.set('introduced', true);
                 if (action.kind === 'roll') this.tutorial.practiced.add('roll');
                 if (
                     ['robber', 'steal'].includes(action.kind) &&
@@ -807,9 +866,18 @@ export class GameSession {
                         ? getProduction(before, result.state.lastRoll[0] + result.state.lastRoll[1])
                         : [],
             };
-            this.sheet = result.state.phase === 'finished' ? { kind: 'results' } : null;
+            const boughtCard =
+                action.kind === 'buy-development' &&
+                before.players[before.activePlayerIndex].id === this.humanPlayer!.id;
+            this.sheet =
+                result.state.phase === 'finished'
+                    ? { kind: 'results' }
+                    : boughtCard
+                      ? { kind: 'development' }
+                      : null;
             this.discardDraft = { wood: 0, brick: 0, wheat: 0, wool: 0, stone: 0 };
-            this.selectedDevelopmentId = null;
+            const hand = result.state.development?.hands[this.humanPlayer!.id] ?? [];
+            this.selectedDevelopmentId = boughtCard ? (hand[hand.length - 1]?.id ?? null) : null;
             this.placement = this.requiredPlacement();
             this.give = this.receive = null;
             this.requestedTradeRatio = null;
@@ -822,6 +890,8 @@ export class GameSession {
                 )
                     text += '؛ بالاترین تاس مساوی شد، دوباره تاس می‌ندازن.';
             }
+            const awards = awardChanges(before, result.state);
+            if (awards) text += `؛ ${awards}`;
             this.record(
                 text,
                 action.kind === 'discard'

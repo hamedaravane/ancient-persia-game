@@ -29,6 +29,7 @@ export function pauseMenuContent(session: GameSession, updateReady: boolean): Sh
                 ${menuOption(practice ? 'خروج از تمرین' : 'بازگشت به منوی اصلی', practice ? 'بازی اصلی محفوظ می‌ماند' : session.saveStatus === 'unavailable' ? 'ذخیره خودکار در دسترس نیست' : 'ادامه این بازی با دکمهٔ «بازی»', 'new-game')}
             </section>
             <section class="pause-section"><h3>برنامه</h3>
+                ${menuOption('صدا و حرکت', 'صدای کارها، حرکت کمتر و بازخورد سریع', 'open:experience')}
                 ${menuOption(updateReady ? 'به‌روزرسانی بازی' : 'نصب و بازی آفلاین', updateReady ? 'نسخه تازه آماده است' : 'نصب، ذخیره و وضعیت برنامه', 'open-app')}
             </section>
         </div>`,
@@ -51,6 +52,7 @@ export function gameReviewContent(session: GameSession): SheetContent {
         body: `<div class="pause-menu">
             ${menuOption('رویدادهای بازی', 'مرور تاس‌ها، ساخت‌وساز و معامله‌ها', 'open:history')}
             ${menuOption('خانه‌های جزیره', 'فهرست زمین‌ها و تولید هر خانه', 'open:inspect')}
+            ${menuOption('راهنمای رابط بازی', 'تاس لمسی، هزینه‌ها و دست کارت‌ها', 'open:experience-guide')}
             ${!session.practice ? `<section class="pause-section"><h3>شروع دوباره</h3>${menuOption('شروع بازی تازه', 'پس از تأیید، بازی فعلی جایگزین می‌شود', 'restart-match')}</section>` : ''}
         </div>`,
         footer: pauseMenuBack(),

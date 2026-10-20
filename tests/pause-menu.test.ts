@@ -14,12 +14,18 @@ function pausedSession() {
     return session;
 }
 
-test('pause menu has five focused actions, one tutorial entry, and no inline rulebook or lesson list', () => {
+test('pause menu has focused actions and experience preferences, one tutorial entry, and no inline rulebook or lesson list', () => {
     const session = pausedSession();
     const before = structuredClone(session.state);
     const content = sheetContent(session);
     expect(content.title).toBe('بازی متوقف است');
-    expect(actions(content.body)).toEqual(['open:journal', 'open:review', 'new-game', 'open-app']);
+    expect(actions(content.body)).toEqual([
+        'open:journal',
+        'open:review',
+        'new-game',
+        'open:experience',
+        'open-app',
+    ]);
     expect(actions(content.footer!)).toEqual(['resume-game']);
     expect(content.focusAction).toBe('resume-game');
     expect(content.body).toContain('آناهیتا خاموش است');
@@ -62,7 +68,12 @@ test('review retains keyboard inspection and history; restarting a live match re
     const before = session.state;
     session.openSheet({ kind: 'review' });
     const content = sheetContent(session);
-    expect(actions(content.body)).toEqual(['open:history', 'open:inspect', 'restart-match']);
+    expect(actions(content.body)).toEqual([
+        'open:history',
+        'open:inspect',
+        'open:experience-guide',
+        'restart-match',
+    ]);
     expect(actions(content.footer!)).toEqual(['open:help']);
     for (const kind of ['history', 'inspect'] as const) {
         session.openSheet({ kind });
@@ -107,7 +118,13 @@ test('practice pause menu has a single relevant help entry and update availabili
     while (session.sheet?.kind === 'tutorial') session.continueTutorial();
     session.openSheet({ kind: 'help' });
     const content = sheetContent(session, true);
-    expect(actions(content.body)).toEqual(['open:rules', 'open:review', 'new-game', 'open-app']);
+    expect(actions(content.body)).toEqual([
+        'open:rules',
+        'open:review',
+        'new-game',
+        'open:experience',
+        'open-app',
+    ]);
     expect(content.body).toContain('به‌روزرسانی بازی');
     expect(content.body).not.toContain('ادامه این بازی');
     session.openSheet({ kind: 'review' });

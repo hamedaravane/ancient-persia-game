@@ -1,15 +1,18 @@
 import type { Scene, GameObjects } from 'phaser';
 import { MOTION, type Motion } from './motion';
 import { UI_FONT_FAMILY } from './typography';
-import { drawSurface, drawRosette, UI_INK, type UiBox } from './graphicsTheme';
+import { drawSurface, drawRosette, drawDie, UI_INK, type UiBox } from './graphicsTheme';
+import { drawActionEmblem, drawDevelopmentBack } from '../rendering/actionArt';
 import { createSharpText } from '../rendering/sharpText';
 
 export class GraphicsFeedback {
     private effects: GameObjects.Container;
+    private diceDestination: HTMLElement | null = null;
     constructor(
         private scene: Scene,
         private parent: HTMLElement,
         private motion: Motion,
+        private invalidate: () => void = () => {},
     ) {
         this.effects = scene.add.container();
     }
@@ -31,6 +34,97 @@ export class GraphicsFeedback {
         if (!this.effects) return;
         for (const child of this.effects.list) this.scene.tweens.killTweensOf(child);
         this.effects.removeAll(true);
+        if (this.diceDestination) {
+            this.diceDestination = null;
+            this.invalidate();
+        }
+    }
+    hides(element: HTMLElement): boolean {
+        return this.diceDestination === element;
+    }
+    /** Actual committed values only. A moving clone never becomes an input target. */
+    diceRoll(
+        source: UiBox,
+        destination: HTMLElement | null,
+        values: readonly [number, number],
+    ): void {
+        if (
+            !destination ||
+            !this.effects ||
+            this.motion.reduced ||
+            !this.motion.visible ||
+            source.width < 1
+        )
+            return;
+        const end = this.box(destination);
+        if (end.width < 1 || end.height < 1) return;
+        const width = source.width,
+            height = source.height;
+        const face = Math.min((width - 14) / 2, height);
+        const dice = this.scene.add.container(
+            source.x - this.origin.x + width / 2,
+            source.y - this.origin.y + height / 2,
+        );
+        const g = this.scene.add.graphics();
+        drawDie(g, { x: -face - 7, y: -face / 2, width: face, height: face }, values[0]);
+        drawDie(g, { x: 7, y: -face / 2, width: face, height: face }, values[1]);
+        dice.add(g);
+        this.effects.add(dice);
+        this.diceDestination = destination;
+        this.invalidate();
+        dice.setScale(0.94).setAngle(-3);
+        this.scene.tweens.add({
+            targets: dice,
+            scale: 1,
+            angle: 0,
+            duration: this.motion.duration(150),
+            ease: 'Cubic.Out',
+        });
+        this.scene.tweens.add({
+            targets: dice,
+            x: end.x + end.width / 2,
+            y: end.y + end.height / 2,
+            scale: Math.min(end.width / width, end.height / face),
+            delay: this.motion.duration(230),
+            duration: this.motion.duration(280),
+            ease: 'Cubic.InOut',
+            onComplete: () => {
+                dice.destroy();
+                this.diceDestination = null;
+                this.invalidate();
+            },
+        });
+    }
+    cardReveal(element: HTMLElement | null, kind: string): void {
+        if (!element || !this.effects || this.motion.reduced || !this.motion.visible) return;
+        const box = this.box(element);
+        const card = this.scene.add.container(box.x + box.width / 2, box.y + box.height / 2);
+        const g = this.scene.add.graphics();
+        drawDevelopmentBack(g, { x: -29, y: -38, width: 58, height: 76 });
+        card.add(g);
+        this.effects.add(card);
+        this.scene.tweens.add({
+            targets: card,
+            scaleX: 0.08,
+            duration: this.motion.duration(120),
+            onComplete: () => {
+                g.clear();
+                drawSurface(g, { x: -29, y: -38, width: 58, height: 76 }, 'basalt', {
+                    flat: true,
+                    quiet: true,
+                    accent: UI_INK.gold,
+                });
+                drawActionEmblem(g, { x: -20, y: -20, width: 40, height: 40 }, kind);
+                this.scene.tweens.add({
+                    targets: card,
+                    scaleX: 1,
+                    alpha: 0,
+                    y: card.y - 5,
+                    duration: this.motion.duration(230),
+                    onComplete: () => card.destroy(),
+                });
+            },
+        });
     }
     pulse(element: HTMLElement | null, color = UI_INK.gold): void {
         if (!element || !this.effects || !this.motion.visible) return;
@@ -43,7 +137,7 @@ export class GraphicsFeedback {
         this.scene.tweens.add({
             targets: ring,
             alpha: 0,
-            duration: MOTION.board,
+            duration: this.motion.duration(MOTION.board),
             onComplete: () => ring.destroy(),
         });
     }
@@ -62,8 +156,8 @@ export class GraphicsFeedback {
             targets: text,
             y: this.motion.reduced ? text.y : text.y - 22,
             alpha: 0,
-            delay: 600,
-            duration: 500,
+            delay: this.motion.duration(600),
+            duration: this.motion.reduced ? 500 : this.motion.duration(500),
             onComplete: () => text.destroy(),
         });
     }
@@ -101,8 +195,8 @@ export class GraphicsFeedback {
             y: end.y + end.height / 2,
             alpha: { from: 1, to: 0 },
             scale: 0.5,
-            delay,
-            duration: MOTION.flight,
+            delay: this.motion.duration(delay),
+            duration: this.motion.duration(MOTION.flight),
             ease: 'Cubic.easeInOut',
             onComplete: () => flight.destroy(),
         });
@@ -125,8 +219,8 @@ export class GraphicsFeedback {
         this.scene.tweens.add({
             targets: sparkle,
             alpha: 0,
-            delay: 180,
-            duration: 650,
+            delay: this.motion.duration(180),
+            duration: this.motion.duration(650),
             onComplete: () => sparkle.destroy(),
         });
         const glint = this.scene.add
@@ -138,7 +232,7 @@ export class GraphicsFeedback {
             targets: glint,
             alpha: 0,
             angle: 12,
-            duration: 650,
+            duration: this.motion.duration(650),
             onComplete: () => glint.destroy(),
         });
     }

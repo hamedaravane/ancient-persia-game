@@ -30,7 +30,8 @@ test('construction shows cost, actual hand, exact shortages and disconnected loc
     expect(inventory).toContain('role="columnheader">کمبود');
     expect(inventory).toContain('role="cell">۷');
     session.openSheet({ kind: 'build' });
-    expect(sheetContent(session).body).toContain('کمبود: ۱ آجر، ۱ پشم');
+    expect(sheetContent(session).body).toContain('آجر؛ هزینه ۱؛ داری ۰؛ ۱ کم');
+    expect(sheetContent(session).body).toContain('پشم؛ هزینه ۱؛ داری ۰؛ ۱ کم');
     expect(sheetContent(session).body).toContain('برای رسیدن به محل تازه، راه را گسترش دهید');
 });
 

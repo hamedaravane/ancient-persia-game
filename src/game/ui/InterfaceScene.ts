@@ -29,6 +29,7 @@ interface PaintLayer {
  */
 export class InterfaceScene extends Scene {
     private hud: PaintLayer;
+    private dock: PaintLayer;
     private theatre: PaintLayer;
     private modal: PaintLayer;
     private content: PaintLayer;
@@ -47,6 +48,8 @@ export class InterfaceScene extends Scene {
     private cleanup: Array<() => void> = [];
     private sheetOpenedAt = -Infinity;
     private hadSheet = false;
+    private hadActionPhase = false;
+    private dockOpenedAt = -Infinity;
     private narratorLoading = false;
     private unavailablePortraits = new Set<string>();
     private portraitExpression = '';
@@ -72,6 +75,7 @@ export class InterfaceScene extends Scene {
             this.textures.get(`ui-${name}`).add('crop', 0, x, y, w, h);
         }
         this.hud = this.layer();
+        this.dock = this.layer();
         this.theatre = this.layer();
         this.modal = this.layer();
         this.content = this.layer();
@@ -85,7 +89,7 @@ export class InterfaceScene extends Scene {
             this.content.container.enableFilters();
             this.content.container.filters!.external.addMask(this.maskShape);
         }
-        this.feedback = new GraphicsFeedback(this, this.parent, this.motion);
+        this.feedback = new GraphicsFeedback(this, this.parent, this.motion, this.invalidate);
         this.parent.classList.add('graphics-ui');
         this.observer = new MutationObserver(this.invalidate);
         // Exclude the stage: Phaser attaches its hidden RTL text canvases there.
@@ -177,17 +181,29 @@ export class InterfaceScene extends Scene {
             this.dirty = false;
             this.paint(time);
         }
-        if (this.hadSheet && time - this.sheetOpenedAt < MOTION.sheet) {
-            const progress = Math.min(1, (time - this.sheetOpenedAt) / MOTION.sheet);
+        if (this.hadSheet && time - this.sheetOpenedAt < this.motion.duration(MOTION.sheet)) {
+            const progress = Math.min(
+                1,
+                (time - this.sheetOpenedAt) / this.motion.duration(MOTION.sheet),
+            );
             const alpha = 0.45 + 0.55 * (1 - Math.pow(1 - progress, 3));
             this.modal.container.setAlpha(alpha);
             this.content.container.setAlpha(alpha);
         }
         this.animatePortrait(time);
+        const dockDuration = this.motion.duration(150);
+        this.dock.container.setAlpha(
+            dockDuration
+                ? Math.min(1, 0.3 + (0.7 * Math.max(0, time - this.dockOpenedAt)) / dockDuration)
+                : 1,
+        );
     }
     private animatePortrait(time: number): void {
         if (!this.theatre) return;
-        const progress = Math.max(0, Math.min(1, (time - this.portraitChangedAt) / 280));
+        const progress = Math.max(
+            0,
+            Math.min(1, (time - this.portraitChangedAt) / Math.max(1, this.motion.duration(280))),
+        );
         const eased = 1 - Math.pow(1 - progress, 3);
         for (const image of this.theatre.objects.values())
             image.setAlpha(eased).setY(this.portraitRestY + (1 - eased) * 12);
@@ -233,10 +249,18 @@ export class InterfaceScene extends Scene {
         this.loadNarrator();
         const origin = this.parent.getBoundingClientRect();
         this.origin = { x: origin.left, y: origin.top };
-        for (const layer of [this.hud, this.theatre, this.modal, this.content]) this.begin(layer);
+        for (const layer of [this.hud, this.dock, this.theatre, this.modal, this.content])
+            this.begin(layer);
         const menu = this.parent.querySelector<HTMLElement>('.main-menu')!;
         const match = this.parent.querySelector<HTMLElement>('.match-screen')!;
         this.paintTree(this.session.state ? match : menu, this.hud);
+        this.dock.container.setVisible(!!this.session.state);
+        if (this.session.state)
+            this.paintTree(match.querySelector<HTMLElement>('.action-dock')!, this.dock);
+        const actionPhase = this.session.state?.phase === 'actions';
+        if (actionPhase && !this.hadActionPhase)
+            this.dockOpenedAt = this.motion.reduced ? -Infinity : time;
+        this.hadActionPhase = actionPhase;
         const dialog = this.parent.querySelector<HTMLDialogElement>('dialog[open]');
         this.theatre.container.setVisible(!!dialog);
         this.modal.container.setVisible(!!dialog);
@@ -292,7 +316,8 @@ export class InterfaceScene extends Scene {
             this.content.container.setAlpha(1);
         } else this.portraitExpression = '';
         this.hadSheet = !!dialog;
-        for (const layer of [this.hud, this.theatre, this.modal, this.content]) this.end(layer);
+        for (const layer of [this.hud, this.dock, this.theatre, this.modal, this.content])
+            this.end(layer);
     }
     private loadNarrator(): void {
         if (
@@ -342,7 +367,9 @@ export class InterfaceScene extends Scene {
             if (
                 element.hidden ||
                 element.classList.contains('sr-only') ||
-                element.classList.contains('board-canvas')
+                element.classList.contains('board-canvas') ||
+                (element.classList.contains('action-dock') && layer !== this.dock) ||
+                this.feedback?.hides(element)
             )
                 return;
             const style = getComputedStyle(element);

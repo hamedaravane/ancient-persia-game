@@ -1,5 +1,7 @@
 # Portrait gameplay screen: research and proposed design
 
+Historical design record from 11 October 2026. Its implementation-status and rule tables describe an earlier version, including the obsolete six-point target. Use [GAME_RULES.md](GAME_RULES.md) and [UI_SYSTEM.md](UI_SYSTEM.md) for current behavior. The new [mobile game experience research](MOBILE_GAME_EXPERIENCE_RESEARCH.md) and [interactive turn study](design/turn-experience-study.html) explore the next design direction for active players.
+
 Status: approved design, researched 2026-10-11. The current-rule layout and workspaces are now implemented; future-rule and online sections remain proposals. `GAME_RULES.md` remains authoritative. The current product is a local three/four-player MVP; this proposal also describes the interaction and privacy requirements of a future online version.
 
 ## Implementation status

@@ -15,7 +15,7 @@ export class GameFeedback {
     private unsubscribe: () => void;
     private unsubscribeLayout: () => void;
     private unsubscribeMotion: () => void;
-    private lastId: number;
+    private lastTransition: MatchTransition | null;
     private lastState: GameState | null;
     private lastSheet: Sheet | null;
     private lastPlacement: Placement | null;
@@ -34,7 +34,7 @@ export class GameFeedback {
         private rollOrigin: (transition: MatchTransition) => UiBox | null = () => null,
     ) {
         this.audio = new GameAudio(parent, session.preferences, motion);
-        this.lastId = session.transition?.id ?? 0;
+        this.lastTransition = session.transition;
         this.lastState = session.state;
         this.lastSheet = session.sheet;
         this.lastPlacement = session.placement;
@@ -56,6 +56,7 @@ export class GameFeedback {
     }
     private update(): void {
         const state = this.session.state;
+        if (!state) this.audio.stop();
         if (
             state !== this.lastState ||
             this.session.sheet !== this.lastSheet ||
@@ -63,9 +64,9 @@ export class GameFeedback {
         )
             this.clear();
         const transition = this.session.transition;
-        if (transition && transition.id !== this.lastId) {
-            this.lastId = transition.id;
-            if (transition.after === state) this.play(transition);
+        if (transition !== this.lastTransition) {
+            this.lastTransition = transition;
+            if (transition && transition.after === state) this.play(transition);
         }
         if (this.session.placement?.targetId && this.session.placement !== this.lastPlacement)
             this.ui.feedback?.pulse(this.query('.primary-row button'));

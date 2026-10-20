@@ -48,30 +48,20 @@ export class GameScene extends Scene {
     private portPositions = new Map<string, PortLayout>();
     private ahrimanMarker: GameObjects.Container | null = null;
     private layoutListeners = new Set<() => void>();
+    private prepared = false;
 
     constructor(
         private session: GameSession,
         private motion: Motion,
         private viewport: HTMLElement,
         private onReady: (scene: GameScene) => void,
+        private onPrepared: () => void,
     ) {
         super({ key: 'GameScene', active: true });
     }
 
-    preload(): void {
-        for (const name of ['spark', 'dust'] as const)
-            this.load.image(`art-${name}`, assetUrl(ART[name].file));
-    }
     create(): void {
         ensureResourceTextures(this);
-        for (const name of ['spark', 'dust'] as const) {
-            const key = `art-${name}`;
-            if (!this.textures.exists(key)) continue;
-            const texture = this.textures.get(key);
-            const [x, y, width, height] = ART[name].frame;
-            if (!texture.has('crop')) texture.add('crop', 0, x, y, width, height);
-        }
-        ensureTerrainTextures(this);
         this.terrainObjects = this.add.container();
         this.boardObjects = this.add.container();
         this.effects = new BoardEffects(this, this.motion);
@@ -98,6 +88,27 @@ export class GameScene extends Scene {
         this.resizeBoard();
         this.scene.launch('InterfaceScene');
         this.onReady(this);
+    }
+
+    /** Warm actual board textures/effect art during the introduction, once per app visit. */
+    private prepareMatch(): void {
+        if (this.prepared) return;
+        this.prepared = true;
+        ensureTerrainTextures(this);
+        for (const name of ['spark', 'dust'] as const)
+            this.load.image(`art-${name}`, assetUrl(ART[name].file));
+        this.load.once('complete', () => {
+            for (const name of ['spark', 'dust'] as const) {
+                const key = `art-${name}`;
+                if (!this.textures.exists(key)) continue;
+                const texture = this.textures.get(key);
+                const [x, y, width, height] = ART[name].frame;
+                if (!texture.has('crop')) texture.add('crop', 0, x, y, width, height);
+            }
+        });
+        this.load.start();
+        // Dust/spark are optional: prepare them while players read, never gate entry on a download.
+        this.onPrepared();
     }
     resizeBoard(): void {
         if (!this.boardObjects) return;
@@ -207,6 +218,7 @@ export class GameScene extends Scene {
             this.coast = null;
             return;
         }
+        this.prepareMatch();
         if (force || state.board !== previousBoard || !this.coast) {
             this.coast?.destroy();
             this.coast = createBoardCoast(this, state.board, this.layout).setDepth(-1);

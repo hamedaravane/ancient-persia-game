@@ -68,7 +68,7 @@ export type Sheet =
               | 'journal';
       }
     | { kind: 'player' | 'tile' | 'port'; id: string }
-    | { kind: 'app' | 'update' }
+    | { kind: 'app' | 'update' | 'introduction' }
     | { kind: 'new-match' | 'player-name'; count: 3 | 4; guided: boolean };
 export interface Placement {
     kind: BuildType | 'robber';
@@ -180,7 +180,7 @@ export class GameSession {
     }
     confirmPlayerName(): void {
         if (this.sheet?.kind !== 'player-name') return;
-        this.start(this.sheet.count, this.sheet.guided, this.playerNameDraft);
+        this.start(this.sheet.count, this.sheet.guided, this.playerNameDraft, true);
     }
     resumeSaved(): void {
         if (this.state || !this.savedMatch) return;
@@ -316,7 +316,8 @@ export class GameSession {
             if (
                 this.tutorial.current &&
                 !['discard', 'steal', 'road-building'].includes(this.state.phase) &&
-                this.sheet?.kind !== 'tutorial'
+                this.sheet?.kind !== 'tutorial' &&
+                this.sheet?.kind !== 'introduction'
             ) {
                 this.tutorialReturnSheet = this.sheet;
                 this.sheet = { kind: 'tutorial' };
@@ -379,13 +380,13 @@ export class GameSession {
         if (this.history.length > 100) this.history.shift();
     }
 
-    start(count: 3 | 4, guided = true, name = 'بازیکن'): void {
+    start(count: 3 | 4, guided = true, name = 'بازیکن', introduce = false): void {
         this.buildGoal = null;
         this.practice = null;
         this.gameState = createGame([playerName(name), ...BOT_NAMES].slice(0, count));
         this.controlledPlayerId = this.gameState.players[0].id;
         this.trading.reset();
-        this.sheet = null;
+        this.sheet = introduce ? { kind: 'introduction' } : null;
         this.placement = this.requiredPlacement();
         this.give = this.receive = null;
         this.discardDraft = { wood: 0, brick: 0, wheat: 0, wool: 0, stone: 0 };
@@ -475,7 +476,11 @@ export class GameSession {
         this.emit();
     }
     setExperienceOption(key: ExperienceOption): void {
-        if (this.sheet?.kind !== 'experience') return;
+        if (
+            this.sheet?.kind !== 'experience' &&
+            !(this.sheet?.kind === 'introduction' && ['sound', 'haptics'].includes(key))
+        )
+            return;
         this.preferences.set(key, !this.preferences.snapshot[key]);
         this.emit();
     }

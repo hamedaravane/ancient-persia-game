@@ -132,6 +132,9 @@ export function drawComponent(
                 .lineTo(x - direction * 28, box.y + 16)
                 .strokePath();
         }
+    } else if (has('intro-participant')) {
+        drawSurface(g, box, 'inset', { accent: owner, radius: 12, flat: true });
+        g.fillStyle(owner).fillRect(box.x + box.width - 3, box.y + 10, 3, box.height - 20);
     } else if (has('player-chip')) {
         drawSurface(g, box, has('is-active') ? 'limestone' : 'card', {
             accent: has('is-active') ? owner : undefined,

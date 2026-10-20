@@ -141,6 +141,7 @@ test('closing the practice narrator exits without saving; starting a real match 
     expect(session.sheet?.kind).toBe('player-name');
     session.confirmPlayerName();
     expect(session.tutorial.enabled).toBe(true);
+    session.closeSheet(); // Enter the ordinary match from its participant introduction.
     while (session.sheet?.kind === 'tutorial') session.continueTutorial();
     const source = vi.spyOn(Math, 'random').mockReturnValue(0.99);
     session.primary();

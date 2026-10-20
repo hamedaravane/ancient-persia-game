@@ -56,6 +56,8 @@ export class InterfaceScene extends Scene {
     private portraitChangedAt = -Infinity;
     private portraitRestY = 0;
     private portraitReady = false;
+    private hadIntroduction = false;
+    private matchEnteredAt = -Infinity;
     feedback: GraphicsFeedback | undefined;
 
     constructor(
@@ -191,6 +193,12 @@ export class InterfaceScene extends Scene {
             this.content.container.setAlpha(alpha);
         }
         this.animatePortrait(time);
+        const entryDuration = this.motion.duration(MOTION.fast);
+        this.hud.container.setAlpha(
+            entryDuration
+                ? 0.5 + 0.5 * Math.min(1, (time - this.matchEnteredAt) / entryDuration)
+                : 1,
+        );
         const dockDuration = this.motion.duration(150);
         this.dock.container.setAlpha(
             dockDuration
@@ -262,6 +270,10 @@ export class InterfaceScene extends Scene {
             this.dockOpenedAt = this.motion.reduced ? -Infinity : time;
         this.hadActionPhase = actionPhase;
         const dialog = this.parent.querySelector<HTMLDialogElement>('dialog[open]');
+        const introduction = dialog?.dataset.contentKey === 'match-introduction';
+        if (this.hadIntroduction && !introduction)
+            this.matchEnteredAt = this.motion.reduced || !this.motion.visible ? -Infinity : time;
+        this.hadIntroduction = introduction;
         this.theatre.container.setVisible(!!dialog);
         this.modal.container.setVisible(!!dialog);
         this.content.container.setVisible(!!dialog);
@@ -338,7 +350,12 @@ export class InterfaceScene extends Scene {
                     !this.textures.exists(`ui-${name}`) &&
                     !this.unavailablePortraits.has(name),
             );
-        const next = this.session.sheet?.kind === 'tutorial' ? this.session.tutorial.next : null;
+        const next =
+            this.session.sheet?.kind === 'introduction'
+                ? this.session.tutorial.current
+                : this.session.sheet?.kind === 'tutorial'
+                  ? this.session.tutorial.next
+                  : null;
         if (!names.length && next) {
             const name = `anahita-${LESSONS[next].expression}` as const;
             if (!this.textures.exists(`ui-${name}`) && !this.unavailablePortraits.has(name))

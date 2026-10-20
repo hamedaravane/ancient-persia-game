@@ -99,6 +99,8 @@ test('new matches enable Anahita by default and saved opt-outs survive resume', 
     expect(session.sheet).toMatchObject({ kind: 'player-name', guided: true });
     session.confirmPlayerName();
     expect(session.tutorial.enabled).toBe(true);
+    expect(session.sheet?.kind).toBe('introduction');
+    session.closeSheet();
     expect(session.sheet?.kind).toBe('tutorial');
     session.setTutorialEnabled(false);
     session.returnToMenu();

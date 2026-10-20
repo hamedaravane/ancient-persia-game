@@ -647,6 +647,65 @@ h3 {
     font-size: 17px;
     margin-block: 24px 16px;
 }
+.bottom-sheet.introduction-sheet {
+    height: var(--app-height);
+    max-height: var(--app-height);
+    border-radius: 0;
+    padding-top: env(safe-area-inset-top, 0px);
+}
+.introduction-sheet .sheet-body {
+    flex: 1;
+}
+.match-introduction {
+    text-align: center;
+    padding-block: 12px;
+}
+.match-introduction h3 {
+    margin-block: 12px;
+    font-size: 19px;
+    line-height: 1.8;
+}
+.intro-participants {
+    display: grid;
+    gap: 10px;
+    padding: 0;
+    margin-block: 24px;
+    list-style: none;
+}
+.intro-participant {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 66px;
+    padding: 10px 14px;
+    text-align: start;
+}
+.intro-participant > div {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+.intro-participant small {
+    display: block;
+    font-size: 12px;
+    color: var(--muted);
+}
+.intro-participant .player-avatar {
+    width: 42px;
+    height: 42px;
+    flex-basis: 42px;
+}
+.intro-participant .owner-badge {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+.intro-preferences {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+}
 .menu-choices {
     display: flex;
     gap: 12px;

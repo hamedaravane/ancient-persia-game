@@ -36,12 +36,17 @@ export function StartGame(parent: HTMLElement): Game {
     parent.prepend(stage);
     let feedback: GameFeedback | null = null;
     const ui = new InterfaceScene(parent, session, motion);
-    const scene = new GameScene(session, motion, hud.boardViewport, (readyScene) => {
-        hud.boardReady();
-        feedback = new GameFeedback(parent, session, readyScene, ui, motion, (transition) =>
-            hud.consumeRollOrigin(transition),
-        );
-    });
+    const scene = new GameScene(
+        session,
+        motion,
+        hud.boardViewport,
+        (readyScene) => {
+            feedback = new GameFeedback(parent, session, readyScene, ui, motion, (transition) =>
+                hud.consumeRollOrigin(transition),
+            );
+        },
+        () => hud.boardReady(),
+    );
     const initialSize = canvasPixelSize(
         parent.clientWidth || 390,
         parent.clientHeight || 844,

@@ -29,6 +29,8 @@ this.load.image('menu', `${import.meta.env.BASE_URL}assets/backgrounds/main-menu
 
 Full-image paths live in `TEXTURE_FILES` and cropped illustrations in `ART` within `src/game/assets.ts`. Use a stable asset key in code and build the URL from `import.meta.env.BASE_URL` so deployments under a path prefix keep working. Keep the source path in the relevant scene or an asset registry. If the project later moves assets into imported modules or an atlas pipeline, update this guide and all paths together.
 
+Match terrain textures initialize on first match entry rather than at the menu. The participant introduction provides reading time for existing dust/spark downloads and the first guided narrator portrait. Optional decoration never blocks entry and missing effect textures are skipped. Cached textures are reused across matches. Audio feedback is synthesized locally by `ui/GameAudio.ts`; no audio files, downloads, ownership-color exports or source-art replacements are added.
+
 ## Asset requirements
 
 - Preserve transparency for cutout sprites and check alpha edges against both light and dark backgrounds.

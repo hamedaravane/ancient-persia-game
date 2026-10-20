@@ -20,6 +20,7 @@ import { appContent, updateContent } from '../../pwa/markup';
 import { applyUpdate } from '../../pwa/updateFlow';
 import { menuContent } from './menu';
 import { humanHeader, humanHand } from './humanHud';
+import { introductionContent } from './matchIntroduction';
 
 export class GameHud {
     readonly boardViewport: HTMLElement;
@@ -32,6 +33,7 @@ export class GameHud {
     private sizeObserver: ResizeObserver;
     private lastPrimaryAt = -Infinity;
     private lastTradeReviewAt = -Infinity;
+    private matchPrepared = false;
     private markup = new Map<string, string>();
 
     constructor(
@@ -64,7 +66,13 @@ export class GameHud {
     }
 
     boardReady(): void {
+        this.matchPrepared = true;
         this.part('.board-loading').hidden = true;
+        this.render();
+        if (this.session.sheet?.kind === 'introduction')
+            this.parent
+                .querySelector<HTMLElement>('[data-action="enter-match"]')
+                ?.focus({ preventScroll: true });
     }
     private part(selector: string): HTMLElement {
         return this.parent.querySelector(selector)!;
@@ -216,6 +224,8 @@ export class GameHud {
         if (!this.session.sheet) return null;
         if (this.session.sheet.kind === 'update') return updateContent(this.app, this.session);
         if (this.session.sheet.kind === 'app') return appContent(this.app, this.session);
+        if (this.session.sheet.kind === 'introduction')
+            return introductionContent(this.session, this.matchPrepared);
         return sheetContent(this.session, this.app.updateReady);
     }
 
@@ -225,6 +235,12 @@ export class GameHud {
         if (this.app.updating) return;
         const [action, value, resource] = target.dataset.action!.split(':');
         const targetId = target.dataset.action!.slice(action.length + 1);
+        if (
+            action === 'enter-match' &&
+            this.matchPrepared &&
+            this.session.sheet?.kind === 'introduction'
+        )
+            this.session.closeSheet();
         if (action === 'play' || action === 'tutorial')
             this.session.requestPlay(action === 'tutorial');
         if (action === 'resume-match') this.session.resumeSaved();

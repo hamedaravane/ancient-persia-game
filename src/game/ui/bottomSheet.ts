@@ -76,6 +76,7 @@ export class BottomSheet {
             : undefined;
         const contentChanged = !!content.key && this.dialog.dataset.contentKey !== content.key;
         this.dialog.dataset.contentKey = content.key ?? '';
+        this.dialog.classList.toggle('introduction-sheet', content.key === 'match-introduction');
         const narrationChanged =
             !!content.narrator && this.dialog.dataset.narration !== content.narrator.key;
         const scrollTop = this.dialog.querySelector('.sheet-body')?.scrollTop ?? 0;

@@ -27,7 +27,7 @@ export function StartGame(parent: HTMLElement): Game {
     const bots = new BotTurnRunner(session, () => !document.hidden && !app.updating);
     document.addEventListener('visibilitychange', bots.refresh);
     const disconnectBotsPlatform = app.subscribe(bots.refresh);
-    const motion = new Motion();
+    const motion = new Motion(session.preferences);
     const hud = new GameHud(parent, session, app);
     const updates = new UpdateNotice(app, session);
     const stage = document.createElement('div');
@@ -38,7 +38,9 @@ export function StartGame(parent: HTMLElement): Game {
     const ui = new InterfaceScene(parent, session, motion);
     const scene = new GameScene(session, motion, hud.boardViewport, (readyScene) => {
         hud.boardReady();
-        feedback = new GameFeedback(parent, session, readyScene, ui, motion);
+        feedback = new GameFeedback(parent, session, readyScene, ui, motion, (transition) =>
+            hud.consumeRollOrigin(transition),
+        );
     });
     const initialSize = canvasPixelSize(
         parent.clientWidth || 390,

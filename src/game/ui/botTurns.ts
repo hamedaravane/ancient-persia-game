@@ -20,11 +20,14 @@ export class BotTurnRunner {
         this.timer = null;
         if (this.disposed || !this.available() || !this.session.botReady) return;
         const state = this.session.state!;
-        this.timer = setTimeout(() => {
-            this.timer = null;
-            if (!this.disposed && this.available()) this.session.advanceBot(state);
-            this.refresh();
-        }, this.delay);
+        this.timer = setTimeout(
+            () => {
+                this.timer = null;
+                if (!this.disposed && this.available()) this.session.advanceBot(state);
+                this.refresh();
+            },
+            this.delay * (this.session.preferences.snapshot.quick ? 0.55 : 1),
+        );
     };
 
     destroy(): void {

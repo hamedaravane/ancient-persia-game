@@ -25,6 +25,7 @@ const MATERIALS: Record<Material, readonly [number, number, number, number]> = {
 };
 
 export interface SurfaceOptions {
+    quiet?: boolean;
     pressed?: boolean;
     disabled?: boolean;
     accent?: number;
@@ -128,10 +129,10 @@ export function drawSurface(
         alpha * 0.6,
     );
 
-    drawStoneGrain(g, face, cut, base, light, foot, alpha);
+    if (!options.quiet) drawStoneGrain(g, face, cut, base, light, foot, alpha);
     g.lineStyle(options.accent !== undefined ? 2 : 1, options.accent ?? foot, alpha);
     stonePath(g, face, cut).strokePath();
-    if (w > 42 && h > 32) {
+    if (!options.quiet && w > 42 && h > 32) {
         // A recessed double incision reads as carving, with a pale lower lip.
         const inset = 6;
         const groove = {

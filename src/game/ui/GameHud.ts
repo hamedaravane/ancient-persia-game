@@ -1,16 +1,19 @@
+import { DEVELOPMENT_LABELS, cardAvailability } from './developmentMarkup';
+import { heroDice, actionDock, turnStatus } from './turnMarkup';
+import { turnSurface } from './turnSurface';
+import type { UiBox } from './graphicsTheme';
+import type { MatchTransition } from './transitions';
+import type { GameState } from '../core/types';
+import { EXPERIENCE_DEFAULTS, type ExperienceOption } from './experiencePreferences';
 import { resolutionActor } from '../core/robber';
-import { getVictoryPoints } from '../core/scoring';
-import { getBankTradeRatio } from '../core/ports';
-import { PRACTICE_TASKS } from '../tutorial/practice';
 import { LESSONS, type LessonId } from '../tutorial/lessons.fa';
 import { BUILD_TYPES } from '../core/building';
 import { isSetup } from '../core/setup';
-import { getBuildOption } from '../core/queries';
 import { RESOURCE_TYPES, type ResourceType, type TradeRatio } from '../core/types';
 import { BottomSheet, type SheetContent } from './bottomSheet';
-import { button, escape, number, tradeIcon } from './components';
+import { button, number } from './components';
 import { FA } from './messages.fa';
-import { BUILD_LABELS, costRow, sheetContent } from './sheets';
+import { BUILD_LABELS, sheetContent } from './sheets';
 import { type GameSession } from './session';
 import type { AppPlatform } from '../../pwa/app';
 import { appContent, updateContent } from '../../pwa/markup';
@@ -23,7 +26,9 @@ export class GameHud {
     private sheet: BottomSheet;
     private unsubscribe: () => void;
     private unsubscribePlatform: () => void;
+    private rollOrigin: { state: GameState; box: UiBox } | null = null;
     private lastNotice = '';
+    private lastAnnouncedTransition = 0;
     private sizeObserver: ResizeObserver;
     private lastPrimaryAt = -Infinity;
     private lastTradeReviewAt = -Infinity;
@@ -38,7 +43,7 @@ export class GameHud {
         parent.innerHTML = `<section class="main-menu" aria-label="آغاز بازی"><div class="menu-panel"></div></section>
             <section class="match-screen" aria-label="صفحه بازی" hidden>
                 <header class="match-bar"></header>
-                <div class="board-viewport"><div class="board-canvas" aria-hidden="true"></div><p class="board-loading">در حال آماده‌سازی جزیره…</p><div class="board-selection"></div></div>
+                <div class="board-viewport"><div class="board-canvas" aria-hidden="true"></div><p class="board-loading">در حال آماده‌سازی جزیره…</p><div class="board-selection"></div><div class="board-roll"></div></div>
                 <div class="context-line"></div><section class="resource-hand" aria-label="منابع شما"></section><nav class="action-dock" aria-label="ابزارهای نوبت"></nav><div class="primary-row"></div><div class="bottom-space"></div>
             </section><div class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>`;
         this.boardViewport = parent.querySelector('.board-canvas')!;
@@ -79,114 +84,38 @@ export class GameHud {
         this.updatePart('.menu-panel', menuContent(this.app, this.session));
         if (!state) {
             this.sheet.render(this.content(), focusAction);
-            if (focusAction && !this.session.sheet)
-                [...this.parent.querySelectorAll<HTMLElement>('[data-action]')]
-                    .find(
-                        (element) =>
-                            element.dataset.action === focusAction && !element.closest('dialog'),
-                    )
-                    ?.focus({ preventScroll: true });
+            if (focusAction && !this.session.sheet) this.restoreFocus(focusAction);
             return;
         }
         const human = this.session.humanPlayer!;
         const humanTurn = this.session.isHumanTurn;
         const mandatory = ['discard', 'robber', 'steal', 'road-building'].includes(state.phase);
         const humanDecision = resolutionActor(state) === human.id;
-        const canDeclare =
-            humanTurn &&
-            !this.session.practice &&
-            ['roll', 'actions'].includes(state.phase) &&
-            getVictoryPoints(state, human.id) >= state.victoryTarget;
+        const surface = turnSurface(state, human.id, !!this.session.practice);
+        const canDeclare = surface.canDeclare;
         const placement = this.session.placement;
         const opening = isSetup(state);
         const second =
             state.setup?.kind === 'placement' &&
             state.setup.settlements.length >= state.players.length;
         this.updatePart('.match-bar', humanHeader(this.session));
-        const storageWarning = this.session.saveStatus === 'unavailable' && !placement;
-        const availableBuilds = BUILD_TYPES.filter(
-            (type) =>
-                !getBuildOption(state, type, human.id).reason &&
-                (!this.session.practice || this.session.practice.stage === type),
+        this.part('.match-screen').classList.toggle('is-awaiting-roll', surface.hero);
+        this.part('.match-screen').classList.toggle(
+            'has-build-goal',
+            !!this.session.buildGoal && state.phase === 'actions' && !placement,
         );
-        const bankReady = RESOURCE_TYPES.some(
-            (r) => human.resources[r] >= getBankTradeRatio(state.board, human.id, r),
+        this.part('.match-screen').classList.toggle(
+            'has-storage-warning',
+            this.session.saveStatus === 'unavailable' ||
+                (!this.session.preferences.snapshot.introduced &&
+                    !this.session.practice &&
+                    !this.session.tutorial.enabled),
         );
-        const hasCards = RESOURCE_TYPES.some((r) => human.resources[r] > 0);
-        const partnerHasCards = state.players.some(
-            (p) => p.id !== human.id && RESOURCE_TYPES.some((r) => p.resources[r] > 0),
-        );
-        const tradeHint = bankReady
-            ? 'بانک آمادهٔ مبادله است'
-            : hasCards && partnerHasCards
-              ? 'می‌توانی پیشنهاد معامله بدهی'
-              : 'برای معامله منابع کافی نیست';
-        const actionHint = availableBuilds.length
-            ? `قابل ساخت: ${availableBuilds.map((type) => BUILD_LABELS[type]).join('، ')}؛ ${tradeHint}؛ یا پایان نوبت.`
-            : `ساخت آماده نیست؛ کمبود و محل را در ساخت ببین. ${tradeHint}؛ یا پایان نوبت.`;
-        const hint =
-            this.session.error ||
-            (mandatory
-                ? state.phase === 'discard'
-                    ? 'تاس ۷؛ بازیکن‌ها نصف منابع دستِ بیشتر از ۷ را انتخاب می‌کنند.'
-                    : state.phase === 'steal'
-                      ? 'یک حریف مجاور را برای گرفتن منبع تصادفی انتخاب کن.'
-                      : state.phase === 'road-building'
-                        ? 'کارت راه‌سازی؛ راه رایگان را انتخاب و تأیید کن.'
-                        : 'اهریمن را به یک خانهٔ متفاوت ببر؛ سپس حریف مجاور را انتخاب کن.'
-                : '') ||
-            (this.session.practice ? PRACTICE_TASKS[this.session.practice.stage] : '') ||
-            (storageWarning ? 'ذخیره خودکار فعال نیست؛ برای جزئیات بزن.' : '') ||
-            (!humanTurn && state.phase !== 'finished'
-                ? this.session.notice ||
-                  'رقبا دارن نوبتشون رو بازی می‌کنن؛ منابع پایین صفحه مال توئه.'
-                : opening
-                  ? state.phase === 'setup-roll'
-                      ? state.setup?.kind === 'starter' &&
-                        state.setup.contenders.length < state.players.length
-                          ? 'بالاترین تاس مساوی شد؛ فقط همون بازیکن‌ها دوباره تاس می‌ندازن.'
-                          : 'تاس آغازین فقط شروع‌کننده رو مشخص می‌کنه؛ هنوز محصولی نمی‌گیری.'
-                      : state.phase === 'setup-road'
-                        ? 'یک راه کنار همین آبادی انتخاب و تأیید کن؛ رایگانه.'
-                        : second
-                          ? 'آبادی دوم رو انتخاب کن؛ منابع آغازینت از زمین‌های کنار این آبادی میاد.'
-                          : 'آبادی اولت رو روی یکی از تقاطع‌های روشن انتخاب و تأیید کن.'
-                  : placement
-                    ? placement.kind === 'robber'
-                        ? 'خانه مقصد اهریمن را انتخاب و تأیید کنید.'
-                        : `${BUILD_LABELS[placement.kind]}: محل روشن را انتخاب و سپس ساخت را تأیید کنید.`
-                    : state.phase === 'roll'
-                      ? FA.normalRoll
-                      : this.session.tutorial.enabled
-                        ? this.session.tutorial.objective({ state, placement })
-                        : actionHint);
-        this.updatePart(
-            '.context-line',
-            button(
-                `<span>${escape(hint)}</span><span aria-hidden="true">≡</span>`,
-                storageWarning
-                    ? 'open-app'
-                    : this.session.practice
-                      ? 'open:help'
-                      : this.session.tutorial.enabled
-                        ? 'open:journal'
-                        : 'open:history',
-                {
-                    className: 'context-button',
-                    label: `${hint}؛ ${storageWarning ? 'جزئیات ذخیره بازی' : this.session.practice ? 'راهنمای تمرین' : this.session.tutorial.enabled ? 'آموزش و آناهیتا' : 'دیدن رویدادها'}`,
-                },
-            ),
-        );
+        this.updatePart('.board-roll', heroDice(this.session));
+        this.updatePart('.context-line', turnStatus(this.session));
         this.updatePart('.resource-hand', humanHand(this.session));
         this.part('.resource-hand').setAttribute('aria-label', `منابع ${human.name}`);
-        this.updatePart(
-            '.action-dock',
-            opening && placement
-                ? `<div class="placement-cost"><span>${placement.kind === 'road' ? 'راه کنار آبادی تازه' : second ? 'آبادی دوم' : 'آبادی اول'}</span><span class="muted">جانمایی آغازین • بدون هزینه</span></div>${button('پاک‌کردن انتخاب', 'cancel-placement', { className: 'button button--quiet', disabled: !placement.targetId })}`
-                : placement
-                  ? `<div class="placement-cost"><span>${state.phase === 'road-building' ? `راه رایگان • ${number(state.roadBuilding?.remaining ?? 0)} باقی‌مانده` : placement.kind === 'robber' ? 'جابه‌جایی اهریمن' : `هزینه ${BUILD_LABELS[placement.kind]}`} </span>${state.phase === 'road-building' ? '<span class="muted">بدون پرداخت منابع</span>' : placement.kind === 'robber' ? '<span class="muted">خانه فعلی قابل انتخاب نیست</span>' : costRow(getBuildOption(state, placement.kind))}</div>${button(placement.kind === 'robber' ? 'پاک‌کردن انتخاب' : 'لغو', 'cancel-placement', { className: 'button button--quiet', disabled: placement.kind === 'robber' && !placement.targetId })}`
-                  : `${button(`<span class="piece-symbol piece-symbol--settlement" aria-hidden="true"></span>ساخت (${number(availableBuilds.length)})`, 'open:build', { className: 'button dock-button', disabled: opening || mandatory || state.phase === 'finished' })}${button(`${tradeIcon(28)}معامله`, this.session.practice ? 'open:trade' : 'open:domestic', { className: 'button dock-button', disabled: state.phase !== 'actions' || (!!this.session.practice && this.session.practice.stage !== 'trade') })}${button('کارت‌ها', 'open:development', { className: 'button dock-button', disabled: opening || mandatory || !!this.session.practice || state.phase === 'finished' })}`,
-        );
+        this.updatePart('.action-dock', actionDock(this.session));
         const primaryLabel =
             mandatory && !humanDecision
                 ? 'منتظر انتخاب حریف…'
@@ -224,12 +153,14 @@ export class GameHud {
                                   : FA.endTurn;
         this.updatePart(
             '.primary-row',
-            button(primaryLabel, canDeclare ? 'declare-victory' : 'primary', {
-                className: `button button--primary${state.phase === 'actions' && !placement && !this.session.practice && !canDeclare ? ' button--end-turn' : ''}`,
-                disabled:
-                    (mandatory ? !humanDecision : !humanTurn && state.phase !== 'finished') ||
-                    (!!placement && !placement.targetId),
-            }),
+            surface.hero
+                ? ''
+                : button(primaryLabel, canDeclare ? 'declare-victory' : 'primary', {
+                      className: `button button--primary${state.phase === 'actions' && !placement && !this.session.practice && !canDeclare ? ' button--end-turn' : ''}`,
+                      disabled:
+                          (mandatory ? !humanDecision : !humanTurn && state.phase !== 'finished') ||
+                          (!!placement && !placement.targetId),
+                  }),
         );
         this.part('.board-selection').classList.toggle('is-placing', !!placement);
         this.updatePart(
@@ -238,15 +169,47 @@ export class GameHud {
                 ? `<div class="target-picker">${button(`انتخاب از ${number(this.session.targets.length)} محل مجاز`, 'open:targets', { className: 'button full-width' })}</div>`
                 : '',
         );
-        if (focusAction && !this.session.sheet)
-            [...this.parent.querySelectorAll<HTMLElement>('[data-action]')]
-                .find((el) => el.dataset.action === focusAction && !el.closest('dialog'))
-                ?.focus({ preventScroll: true });
-        if (this.session.notice !== this.lastNotice) {
-            this.part('.sr-only[role="status"]').textContent = this.session.notice;
+        if (focusAction && !this.session.sheet) this.restoreFocus(focusAction);
+        const transitionId = this.session.transition?.id ?? 0;
+        if (
+            this.session.notice !== this.lastNotice ||
+            transitionId !== this.lastAnnouncedTransition
+        ) {
+            let announcement = this.session.notice;
+            const transition = this.session.transition;
+            if (
+                transition?.action.kind === 'buy-development' &&
+                transition.before.players[transition.before.activePlayerIndex].id === human.id
+            ) {
+                const cards = state.development?.hands[human.id] ?? [];
+                const card = cards[cards.length - 1];
+                if (card)
+                    announcement = `${DEVELOPMENT_LABELS[card.kind]}؛ ${cardAvailability(this.session, card)}؛ اکنون ${number(cards.length)} کارت داری.`;
+            }
+            this.part('.sr-only[role="status"]').textContent = announcement;
             this.lastNotice = this.session.notice;
+            this.lastAnnouncedTransition = transitionId;
         }
         this.sheet.render(this.content(), focusAction);
+    }
+    private restoreFocus(action: string): void {
+        const preserved = [...this.parent.querySelectorAll<HTMLElement>('[data-action]')].find(
+            (el) =>
+                el.dataset.action === action && !el.closest('dialog') && !el.matches(':disabled'),
+        );
+        const fallback =
+            action === 'roll-dice'
+                ? this.parent.querySelector<HTMLElement>(
+                      '.action-dock button:not(:disabled), .primary-row button:not(:disabled)',
+                  )
+                : null;
+        (preserved ?? fallback)?.focus({ preventScroll: true });
+    }
+
+    consumeRollOrigin(transition: MatchTransition): UiBox | null {
+        const origin = this.rollOrigin;
+        this.rollOrigin = null;
+        return origin?.state === transition.before ? origin.box : null;
     }
 
     private content(): SheetContent | null {
@@ -288,6 +251,9 @@ export class GameHud {
             [
                 'build',
                 'development',
+                'development-rules',
+                'experience',
+                'experience-guide',
                 'trade',
                 'domestic',
                 'help',
@@ -304,6 +270,9 @@ export class GameHud {
                 kind: value as
                     | 'build'
                     | 'development'
+                    | 'development-rules'
+                    | 'experience'
+                    | 'experience-guide'
                     | 'trade'
                     | 'domestic'
                     | 'help'
@@ -364,6 +333,35 @@ export class GameHud {
             if (action === 'deal-withdraw') market.withdraw(Number(value));
             if (action === 'deal-finish' && performance.now() - this.lastTradeReviewAt >= 300)
                 market.finish(Number(value));
+        }
+        if (
+            action === 'pin-build' &&
+            (value === 'clear' || BUILD_TYPES.includes(value as (typeof BUILD_TYPES)[number]))
+        )
+            this.session.setBuildGoal(
+                value === 'clear' ? null : (value as (typeof BUILD_TYPES)[number]),
+            );
+        if (action === 'trade-for' && RESOURCE_TYPES.includes(value as ResourceType))
+            this.session.tradeForResource(value as ResourceType);
+        if (
+            action === 'experience' &&
+            Object.prototype.hasOwnProperty.call(EXPERIENCE_DEFAULTS, value) &&
+            value !== 'introduced'
+        )
+            this.session.setExperienceOption(value as ExperienceOption);
+        if (
+            action === 'roll-dice' &&
+            this.session.state &&
+            !this.session.sheet &&
+            turnSurface(this.session.state, this.session.humanPlayer!.id, !!this.session.practice)
+                .hero
+        ) {
+            const rect = this.parent.querySelector('.hero-dice')!.getBoundingClientRect();
+            this.rollOrigin = {
+                state: this.session.state,
+                box: { x: rect.left, y: rect.top, width: rect.width, height: rect.height },
+            };
+            this.session.roll();
         }
         if (action === 'buy-development') this.session.buyCard();
         if (action === 'development-select') this.session.selectDevelopment(value);

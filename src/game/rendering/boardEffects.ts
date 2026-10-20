@@ -34,8 +34,8 @@ export class BoardEffects {
                 targets: ring,
                 scale: 1.35,
                 alpha: 0,
-                duration: MOTION.board + 120,
-                delay,
+                duration: this.motion.duration(MOTION.board + 120),
+                delay: this.motion.duration(delay),
                 ease: 'Cubic.Out',
             }),
             () => ring.destroy(),
@@ -44,14 +44,14 @@ export class BoardEffects {
     piece(marker: GameObjects.Container): void {
         if (!this.enabled) return;
         this.burst({ x: 0, y: 6 }, 'art-dust', 32, marker);
-        marker.setScale(0.65).setAlpha(0.75);
+        marker.setScale(0.9).setAlpha(0.85);
         this.track(
             this.scene.tweens.add({
                 targets: marker,
                 scale: 1,
                 alpha: 1,
-                duration: MOTION.board,
-                ease: 'Back.Out',
+                duration: this.motion.duration(MOTION.board),
+                ease: 'Cubic.Out',
             }),
             () => {
                 if (marker.scene) marker.setScale(1).setAlpha(1);
@@ -65,7 +65,7 @@ export class BoardEffects {
         const tween = this.scene.tweens.addCounter({
             from: 0,
             to: 1,
-            duration: MOTION.board,
+            duration: this.motion.duration(MOTION.board),
             ease: 'Cubic.Out',
             onUpdate: (tween) => {
                 const progress = tween.getValue() ?? 1;
@@ -88,7 +88,7 @@ export class BoardEffects {
                 targets: marker,
                 x: to.x,
                 y: to.y,
-                duration: MOTION.board,
+                duration: this.motion.duration(MOTION.board),
                 ease: 'Cubic.InOut',
             }),
             () => {
@@ -110,7 +110,7 @@ export class BoardEffects {
                 scaleX: image.scaleX * 1.45,
                 scaleY: image.scaleY * 1.45,
                 alpha: 0,
-                duration: MOTION.board,
+                duration: this.motion.duration(MOTION.board),
                 ease: 'Cubic.Out',
             }),
             () => image.destroy(),

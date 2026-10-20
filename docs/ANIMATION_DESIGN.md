@@ -1,6 +1,6 @@
 # Animation: research and implementation
 
-Original research 2026-10-11; Graphics interface migration 2026-10-13. Motion presents confirmed MVP actions and introduces no rules. The current renderer supersedes earlier visible DOM effects.
+Original research 2026-10-11; Graphics interface migration 2026-10-13. Motion presents confirmed game actions and introduces no rules. The current renderer supersedes earlier visible DOM effects.
 
 ## Research
 
@@ -11,21 +11,25 @@ Original research 2026-10-11; Graphics interface migration 2026-10-13. Motion pr
 
 ## Current feedback
 
-| Event                                  | Visual feedback                                                                                                                 | Approximate duration                                                         |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| Button press                           | Recessed Graphics face and shortened depth while held; keyboard press also supported                                            | Pointer/key press lifetime                                                   |
-| Open a sheet                           | Graphics panel/content fade; semantic hit regions stay stationary                                                               | 220 ms                                                                       |
-| Roll                                   | Emphasis ring around confirmed dice; producing board-tile rings                                                                 | 400–520 ms                                                                   |
-| Receive production                     | Preserved resource icon in an ownership-bordered card flies from its tile to the active hand or another player's public summary | 620 ms travel, staggered by 35 ms after 220 ms                               |
-| Change resources                       | Exact totals update immediately; gained/spent runtime delta labels and player emphasis                                          | 400 ms emphasis; 1.1 s delta                                                 |
-| Preview target / choose trade resource | Finite gold outline on the corresponding control                                                                                | 400 ms                                                                       |
-| Change turn                            | Active-player ownership outline, score pips, and a short emphasis ring                                                          | 400 ms                                                                       |
-| Confirm building                       | Existing road trace or stone-piece settle, local ring, supplied dust/spark                                                      | 400–520 ms                                                                   |
-| Move Ahriman                           | Procedural shadow-spirit emblem glides from its previous tile to its confirmed destination                                      | 400 ms                                                                       |
-| Calm sea                               | Seven subtle wave packets with softly changing surface lighting; rendered at 30 Hz into a small cached target                   | Very slow local phase evolution; freezes in menus, modals and reduced motion |
-| Victory                                | Preserved medallion with the supplied glint and brief Graphics rosette sparkles                                                 | 830 ms including delay                                                       |
+| Event                                  | Visual feedback                                                                                               | Approximate duration                                                         |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Button press                           | Recessed Graphics face and shortened depth while held; keyboard press also supported                          | Pointer/key press lifetime                                                   |
+| Open a sheet                           | Graphics panel/content fade; semantic hit regions stay stationary                                             | 180 ms                                                                       |
+| Human roll                             | Large actual dice settle, then travel to the reserved header slot; producing board-tile rings                 | 150 ms settle; 280 ms travel after a 230 ms hold                             |
+| Action dock                            | Stable hammer/trade/deck controls fade in once the action phase is available                                  | 150 ms                                                                       |
+| Private purchase                       | Actual drawn card selects immediately; a small original back flips to its actual effect emblem                | 350 ms                                                                       |
+| Receive production                     | Up to six own-resource symbols fly from their tiles to the human hand, with actual quantities                 | 460 ms travel, staggered by 30 ms after 200 ms                               |
+| Change resources                       | Exact totals update immediately; gained/spent runtime delta labels and player emphasis                        | 320 ms emphasis; 1.1 s delta                                                 |
+| Preview target / choose trade resource | Finite gold outline on the corresponding control                                                              | 320 ms                                                                       |
+| Change turn                            | Active-player ownership outline, score pips, and a short emphasis ring                                        | 320 ms                                                                       |
+| Confirm building                       | Existing road trace or stone-piece settle, local ring, supplied dust/spark                                    | 400–520 ms                                                                   |
+| Move Ahriman                           | Procedural shadow-spirit emblem glides from its previous tile to its confirmed destination                    | 320 ms                                                                       |
+| Calm sea                               | Seven subtle wave packets with softly changing surface lighting; rendered at 30 Hz into a small cached target | Very slow local phase evolution; freezes in menus, modals and reduced motion |
+| Victory                                | Preserved medallion with the supplied glint and brief Graphics rosette sparkles                               | 830 ms including delay                                                       |
 
 No dice result is fabricated. Resource flights use the core production ledger, including actual city quantities and recipient ownership. Blocked tiles may show a muted ring but never send resources. A seven produces no normal resource flights. Starting grants appear directly in the initial hand.
+
+Quick feedback multiplies motion durations and bot pacing by 0.55. The in-game reduced-motion preference combines with the system preference; dice/card travel and scale are skipped, with actual results and action access retained. Optional sound and supported-device haptics are disabled by default, use local synthesis and never gate a command. See [MOBILE_GAME_EXPERIENCE.md](MOBILE_GAME_EXPERIENCE.md) for preferences, persistence and implementation boundaries.
 
 Anahita's narrator portrait has its own layer behind the front dialogue panel and outside the scrolling text mask. A new expression fades in and rises 12 pixels over 280 ms, including when its lazily loaded texture first becomes ready. This is a finite entrance, with no idle bobbing or repeated motion on focus/scroll changes. Reduced motion and hidden-tab preferences settle the portrait immediately. The dialogue controls remain stationary. See [TUTORIAL_DESIGN.md](TUTORIAL_DESIGN.md).
 
@@ -35,7 +39,7 @@ Anahita's narrator portrait has its own layer behind the front dialogue panel an
 - The session publishes an identified `MatchTransition` only after a successful command. Drafts, modal changes, rejected actions, layout changes, and effect completion do not publish a transition.
 - `ui/GameFeedback.ts` consumes each transition once after semantic HUD and board updates. `ui/GraphicsFeedback.ts` owns the full-shell Phaser feedback layer. `boardToClient()` and `clientToBoard()` bridge the inset board camera and measured semantic controls without using the entire canvas as the board.
 - `rendering/boardEffects.ts` owns board tweens and restores committed poses on cancellation. No effect callback pays, builds, relocates in state, or changes turns.
-- New state, sheet changes, board resize, leaving the match, visibility/preference changes, and destruction remove obsolete decoration. Returning from a sheet never replays a payout. Motion preference changes clear active travel immediately.
+- New state, sheet/selected-card changes, scrolling, board resize, leaving the match, visibility/preference changes, and destruction remove obsolete decoration. Returning from a sheet never replays a payout. Motion preference changes clear active travel immediately.
 - `ui/motion.ts` shares the live system preference. Reduced motion replaces board travel/scale with stationary feedback, omits resource flights and victory sparkles, keeps deltas stationary, and opens sheets immediately. The native dialog always applies modal focus semantics immediately.
 - Semantic DOM nodes are transparent; there are no visible DOM delta/flight/glint layers and no Web Animation groups. Phaser renders the material press state, feedback, and sheet fade. The modal header and content share an opacity entrance so visible geometry never travels away from its native input targets.
 - Stable HUD Text/Image objects survive unchanged content. Removed controls release their objects. The interface repaints on semantic/measurement changes; finite feedback tweens run independently without regenerating all text each frame.
@@ -44,4 +48,4 @@ The user-requested procedural sea adds quiet ambient wave motion behind the isla
 
 ## Verification
 
-Use `npm run check`. Pure Node tests cover session confirmation, core payment, Ahriman relocation, full inspection IDs, and camera/client coordinate agreement. The user performs actual visual/device review; no browser launch is part of routine verification.
+Routine verification uses TypeScript, scoped lint/format checks and Node Vitest. Leave production builds, the full `npm run check` and CI to the user under `AGENTS.md`. Pure Node tests cover actual dice geometry, interruption/reduced-motion parity, session roll guards, private purchases and goal persistence in addition to session confirmation, core payment, Ahriman relocation, full inspection IDs, and camera/client coordinate agreement. The user performs actual visual/device review; no browser launch is part of routine verification.

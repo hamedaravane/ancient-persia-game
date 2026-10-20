@@ -1,4 +1,5 @@
 import { drawTradeIcon } from '../rendering/tradeArt';
+import { drawActionEmblem, drawDevelopmentBack } from '../rendering/actionArt';
 import { SETTLEMENT, CITY } from '../rendering/pieceShapes';
 import type { GameObjects } from 'phaser';
 import { canvasDisplay } from '../rendering/display';
@@ -29,7 +30,42 @@ export function drawComponent(
     const owner = Number.isFinite(ownerValue) ? ownerValue : UI_INK.gold;
     const disabled = el instanceof HTMLButtonElement && el.disabled;
     const selected = el.getAttribute('aria-pressed') === 'true';
-    if (has('trade-icon')) {
+    if (has('action-emblem')) {
+        drawActionEmblem(g, box, el.dataset.emblem ?? 'victory-point');
+    } else if (has('development-back')) {
+        drawDevelopmentBack(g, box, true);
+    } else if (has('roll-object')) {
+        drawSurface(g, box, 'basalt', {
+            flat: true,
+            quiet: true,
+            pressed: pressed === el,
+            radius: 12,
+        });
+        g.lineStyle(1, UI_INK.gold, 0.5).strokeRoundedRect(
+            box.x + 6,
+            box.y + 6,
+            box.width - 12,
+            box.height - 12,
+            10,
+        );
+    } else if (has('development-card')) {
+        drawSurface(g, box, 'basalt', {
+            flat: true,
+            quiet: true,
+            accent: selected ? 0xf3d091 : 0xa2906a,
+            pressed: pressed === el,
+            radius: 7,
+        });
+    } else if (has('development-feature') || has('build-goal') || has('development-purchase')) {
+        drawSurface(g, box, 'inset', { quiet: true, flat: true, radius: 7 });
+    } else if (has('cost-token')) {
+        drawSurface(g, box, has('is-short') ? 'inset' : 'card', {
+            flat: true,
+            quiet: true,
+            radius: 4,
+            accent: has('is-short') ? 0xc6a06a : undefined,
+        });
+    } else if (has('trade-icon')) {
         drawTradeIcon(g, box, !!el.closest('button:disabled'));
     } else if (has('match-bar')) {
         const display = canvasDisplay(g.scene);
@@ -205,7 +241,8 @@ export function drawComponent(
             : has('button--primary')
               ? 'honey'
               : 'limestone';
-        if (has('button--tutorial')) material = 'basalt';
+        if (has('button--tutorial') || has('dock-cards') || has('pre-roll-card'))
+            material = 'basalt';
         if (has('context-button') || has('button--quiet') || el.tagName === 'SUMMARY')
             material = 'inset';
         if (has('resource-choice') || has('port-chip') || has('port-list-item'))
@@ -273,6 +310,10 @@ export function drawComponent(
                 el.tagName !== 'SUMMARY' &&
                 !has('button--end-turn') &&
                 !has('button--tutorial') &&
+                !has('roll-object') &&
+                !has('development-card') &&
+                !has('dock-cards') &&
+                !has('pre-roll-card') &&
                 !has('header-self') &&
                 !has('rival-card')
                 ? 0x314956

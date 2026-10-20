@@ -1456,3 +1456,394 @@ h3 {
     font-size: 12px;
     line-height: 18px;
 }
+
+/* Production turn objects: stable island projection; semantic controls remain stationary. */
+.match-screen {
+    --context-height: 32px;
+    --dock-height: 64px;
+    --primary-height: 52px;
+    grid-template-rows:
+        var(--header-height) minmax(0, 1fr) var(--context-height) var(--hand-height)
+        var(--dock-height) var(--primary-height) 4px;
+}
+.match-screen.is-awaiting-roll {
+    --primary-height: 0px;
+}
+.match-screen.has-storage-warning {
+    --context-height: 48px;
+}
+.match-screen.has-build-goal {
+    --context-height: 56px;
+}
+.is-awaiting-roll .board-canvas {
+    margin-bottom: 52px;
+}
+.board-roll {
+    position: absolute;
+    inset: 0 0 52px;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+    z-index: 2;
+}
+.board-roll:empty {
+    display: none;
+}
+.graphics-ui .board-roll {
+    opacity: 0 !important;
+}
+.roll-object {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: min(232px, calc(100% - 32px));
+    min-height: 168px;
+    padding: 18px 16px;
+    color: #f3ead8;
+    border: 0;
+    border-radius: 12px;
+    background: #3d4c48;
+    pointer-events: auto;
+}
+.hero-dice {
+    display: flex;
+    gap: 14px;
+    direction: ltr;
+}
+.hero-dice .dice-face {
+    width: 76px;
+    height: 78px;
+}
+.roll-caption {
+    font-size: 16px;
+    line-height: 24px;
+}
+.roll-object small {
+    font-size: 12px;
+    line-height: 18px;
+    color: #e1d5b9;
+}
+.dice-placeholder {
+    width: 85px;
+    flex-shrink: 0;
+}
+.context-line {
+    padding: 0 var(--hud-gutter);
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.turn-receipt {
+    font-size: 12px;
+    line-height: 18px;
+    color: #ded3b9;
+    text-align: center;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+.pre-roll-card {
+    width: 100%;
+    min-height: 52px;
+    color: #e9ddc3;
+    background: #3d4c48;
+    font-size: 13px;
+}
+.dock-button {
+    flex-direction: column;
+    height: 60px;
+    padding: 4px 6px;
+    gap: 1px;
+    font-size: 12px;
+    line-height: 18px;
+}
+.dock-cards {
+    color: #e9ddc3;
+    background: #3d4c48;
+}
+.action-emblem,
+.development-back {
+    display: inline-block;
+    flex-shrink: 0;
+    vertical-align: middle;
+}
+.primary-row:empty {
+    padding: 0;
+}
+.storage-warning {
+    min-height: 48px;
+}
+.cost-legend {
+    font-size: 12px;
+    line-height: 20px;
+    color: #c0c7bd;
+}
+.construction-list {
+    display: grid;
+    gap: 10px;
+}
+.construction-card {
+    padding: 12px;
+    color: #292d26;
+    --muted: #353a30;
+}
+.construction-heading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.construction-heading h3 {
+    font-size: 17px;
+}
+.construction-points {
+    margin-inline-start: auto;
+    font-size: 12px;
+    color: #30372c;
+}
+.visual-cost {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding: 7px 0;
+}
+.cost-token {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-height: 42px;
+    padding: 3px 5px;
+    color: #292d26;
+    background: #a9a594;
+    border-radius: 4px;
+}
+.cost-token .resource-icon {
+    --icon-size: 24px;
+}
+.cost-token > span {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.cost-token bdi {
+    font-size: 13px;
+    line-height: 19px;
+}
+.cost-token small {
+    font-size: 12px;
+    line-height: 16px;
+}
+.cost-token.is-short {
+    color: #ffe6b9;
+    background: #252b2d;
+}
+.construction-card .availability {
+    color: #30372c;
+    font-size: 12px;
+    line-height: 20px;
+    margin-bottom: 6px;
+}
+.construction-actions {
+    display: flex;
+    gap: 8px;
+}
+.construction-actions .button {
+    flex: 1;
+    font-size: 13px;
+    padding: 8px;
+}
+.construction-card details {
+    margin-top: 5px;
+}
+.construction-card summary {
+    min-height: 48px;
+    padding: 10px 18px;
+    font-size: 13px;
+    color: #e2ddcd;
+    background: #252b2d;
+    list-style: none;
+}
+.construction-card details p {
+    font-size: 13px;
+    margin: 8px 0;
+}
+.shortage-trade {
+    min-height: 48px;
+    font-size: 13px;
+    margin: 3px;
+}
+.build-goal {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px;
+    width: 100%;
+    min-height: 48px;
+    color: #f3ead8;
+    background: #252b2d;
+    border-radius: 7px;
+}
+.build-goal > span:nth-child(2) {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+}
+.build-goal strong {
+    font-size: 13px;
+    line-height: 20px;
+    font-weight: 400;
+}
+.build-goal strong,
+.build-goal small {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.build-goal small {
+    font-size: 12px;
+    line-height: 18px;
+}
+.build-goal .icon-button {
+    margin-inline-start: auto;
+}
+.development-hand {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+.development-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 140px;
+    padding: 12px 10px;
+    color: #f3ead8;
+    border: 0;
+    border-radius: 7px;
+    background: #3d4c48;
+}
+.development-card strong {
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 22px;
+}
+.development-card small {
+    font-size: 12px;
+    color: #e0d7be;
+    line-height: 20px;
+}
+.development-feature {
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr);
+    gap: 8px 12px;
+    padding: 14px;
+    color: #f3ead8;
+}
+.development-feature > p,
+.development-feature .card-resource-choice {
+    grid-column: 1 / -1;
+}
+.development-feature h3 {
+    font-size: 19px;
+}
+.development-feature > p {
+    font-size: 14px;
+    line-height: 25px;
+}
+.card-status {
+    font-size: 12px;
+    line-height: 22px;
+    color: #e4d6b4;
+}
+.card-resource-choice h3 {
+    font-size: 14px;
+}
+.card-resource-choice .resource-choice {
+    min-height: 70px;
+    padding: 4px 2px;
+}
+.development-purchase {
+    padding: 14px;
+    color: #f3ead8;
+}
+.purchase-heading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.purchase-heading small {
+    font-size: 12px;
+    color: #c0c7bd;
+}
+.development-purchase .availability,
+.development-purchase .muted {
+    font-size: 13px;
+    margin: 5px 0 10px;
+}
+.score-awards {
+    display: grid;
+    gap: 8px;
+    margin: 12px 0;
+}
+.score-award {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+}
+.score-award span:last-child {
+    display: flex;
+    flex-direction: column;
+}
+.score-award small {
+    font-size: 12px;
+    color: #c0c7bd;
+}
+.experience-settings {
+    display: grid;
+    gap: 8px;
+}
+@media (max-width: 359px) {
+    .cost-token {
+        padding: 3px;
+    }
+    .cost-token .resource-icon {
+        --icon-size: 21px;
+    }
+    .visual-cost {
+        gap: 4px;
+    }
+    .construction-card {
+        padding: 10px;
+    }
+    .hero-dice .dice-face {
+        width: 68px;
+        height: 70px;
+    }
+    .roll-object {
+        width: 216px;
+        min-height: 154px;
+    }
+}
+.construction-card > * + * {
+    margin-top: 4px;
+}
+.trade-build-feedback summary {
+    min-height: 48px;
+    padding: 10px 24px;
+    color: #e2ddcd;
+    cursor: pointer;
+    list-style: none;
+}
+.development-card:focus-visible,
+.roll-object:focus-visible {
+    outline: 3px solid #ffedb8;
+    outline-offset: 2px;
+}

@@ -34,7 +34,9 @@ export function humanHeader(session: GameSession): string {
               : null;
     const dice = roll
         ? `<div class="dice-result" role="img" aria-label="تاس شما: ${number(roll[0])} و ${number(roll[1])}؛ مجموع ${number(roll[0] + roll[1])}"><span class="dice-pair">${diceFace(roll[0])}${diceFace(roll[1])}</span><span class="dice-total">${number(roll[0] + roll[1])}</span></div>`
-        : '';
+        : session.isHumanTurn && ['roll', 'setup-roll'].includes(state.phase)
+          ? '<span class="dice-placeholder" aria-hidden="true"></span>'
+          : '';
     const rivals = standings
         .filter((p) => !p.human)
         .map((p) => {

@@ -11,6 +11,7 @@ import { BoardInput } from '../rendering/boardInput';
 import { BoardEffects } from '../rendering/boardEffects';
 import { createBoardCoast } from '../rendering/boardCoast';
 import { boardToClient, boardToScreen, fitBoard, type BoardLayout } from '../ui/layout';
+import { matchGeometry } from '../ui/matchGeometry';
 import { number } from '../ui/components';
 import type { GameSession } from '../ui/session';
 import { UI_FONT_FAMILY } from '../ui/typography';
@@ -122,7 +123,7 @@ export class GameScene extends Scene {
             width: rect.width,
             height: rect.height,
         });
-        this.layout = fitBoard(rect.width, rect.height);
+        this.layout = matchGeometry(rect.width, rect.height).board;
         this.effects?.clear();
         this.layoutListeners.forEach((listener) => listener());
         this.render(true);

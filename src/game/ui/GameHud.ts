@@ -5,15 +5,13 @@ import type { UiBox } from './graphicsTheme';
 import type { MatchTransition } from './transitions';
 import type { GameState } from '../core/types';
 import { EXPERIENCE_DEFAULTS, type ExperienceOption } from './experiencePreferences';
-import { resolutionActor } from '../core/robber';
 import { LESSONS, type LessonId } from '../tutorial/lessons.fa';
 import { BUILD_TYPES } from '../core/building';
-import { isSetup } from '../core/setup';
 import { RESOURCE_TYPES, type ResourceType, type TradeRatio } from '../core/types';
 import { BottomSheet, type SheetContent } from './bottomSheet';
-import { button, number } from './components';
-import { FA } from './messages.fa';
-import { BUILD_LABELS, sheetContent } from './sheets';
+import { number } from './components';
+import { sheetContent } from './sheets';
+import { matchGeometry } from './matchGeometry';
 import { type GameSession } from './session';
 import type { AppPlatform } from '../../pwa/app';
 import { appContent, updateContent } from '../../pwa/markup';
@@ -30,6 +28,9 @@ export class GameHud {
     private rollOrigin: { state: GameState; box: UiBox } | null = null;
     private lastNotice = '';
     private lastAnnouncedTransition = 0;
+    private receiptId = 0;
+    private receiptActive = false;
+    private receiptTimer: ReturnType<typeof setTimeout> | null = null;
     private sizeObserver: ResizeObserver;
     private lastPrimaryAt = -Infinity;
     private lastTradeReviewAt = -Infinity;
@@ -45,8 +46,8 @@ export class GameHud {
         parent.innerHTML = `<section class="main-menu" aria-label="آغاز بازی"><div class="menu-panel"></div></section>
             <section class="match-screen" aria-label="صفحه بازی" hidden>
                 <header class="match-bar"></header>
-                <div class="board-viewport"><div class="board-canvas" aria-hidden="true"></div><p class="board-loading">در حال آماده‌سازی جزیره…</p><div class="board-selection"></div><div class="board-roll"></div></div>
-                <div class="context-line"></div><section class="resource-hand" aria-label="منابع شما"></section><nav class="action-dock" aria-label="ابزارهای نوبت"></nav><div class="primary-row"></div><div class="bottom-space"></div>
+                <div class="board-viewport"><div class="board-stage"><div class="board-canvas" aria-hidden="true"></div><p class="board-loading">در حال آماده‌سازی جزیره…</p><div class="board-roll"></div><div class="context-line"></div></div></div>
+                <section class="resource-hand" aria-label="منابع شما"></section><section class="action-dock" aria-label="کنترل‌های نوبت"></section><div class="bottom-space"></div>
             </section><div class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>`;
         this.boardViewport = parent.querySelector('.board-canvas')!;
         this.sheet = new BottomSheet(parent, () => session.closeSheet());
@@ -56,11 +57,25 @@ export class GameHud {
         document.addEventListener('keydown', this.onKeyDown);
         this.unsubscribe = session.subscribe(() => this.render());
         this.unsubscribePlatform = app.subscribe(() => this.render());
-        this.sizeObserver = new ResizeObserver(([entry]) => {
-            if (entry.contentRect.height > 0)
-                parent.classList.toggle('is-compact', entry.contentRect.height < 720);
+        this.sizeObserver = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                if (entry.contentRect.height <= 0) continue;
+                if (entry.target.classList.contains('match-screen'))
+                    parent.classList.toggle('is-compact', entry.contentRect.height < 720);
+                else {
+                    const geometry = matchGeometry(
+                        entry.contentRect.width,
+                        entry.contentRect.height,
+                    );
+                    (entry.target as HTMLElement).style.setProperty(
+                        '--die-size',
+                        `${geometry.dieSize}px`,
+                    );
+                }
+            }
         });
         this.sizeObserver.observe(this.part('.match-screen'));
+        this.sizeObserver.observe(this.part('.board-stage'));
         this.render();
         if (!app.installed) session.openSheet({ kind: 'app' });
     }
@@ -96,87 +111,27 @@ export class GameHud {
             return;
         }
         const human = this.session.humanPlayer!;
-        const humanTurn = this.session.isHumanTurn;
-        const mandatory = ['discard', 'robber', 'steal', 'road-building'].includes(state.phase);
-        const humanDecision = resolutionActor(state) === human.id;
         const surface = turnSurface(state, human.id, !!this.session.practice);
-        const canDeclare = surface.canDeclare;
-        const placement = this.session.placement;
-        const opening = isSetup(state);
-        const second =
-            state.setup?.kind === 'placement' &&
-            state.setup.settlements.length >= state.players.length;
         this.updatePart('.match-bar', humanHeader(this.session));
         this.part('.match-screen').classList.toggle('is-awaiting-roll', surface.hero);
-        this.part('.match-screen').classList.toggle(
-            'has-build-goal',
-            !!this.session.buildGoal && state.phase === 'actions' && !placement,
-        );
-        this.part('.match-screen').classList.toggle(
-            'has-storage-warning',
-            this.session.saveStatus === 'unavailable' ||
-                (!this.session.preferences.snapshot.introduced &&
-                    !this.session.practice &&
-                    !this.session.tutorial.enabled),
-        );
         this.updatePart('.board-roll', heroDice(this.session));
-        this.updatePart('.context-line', turnStatus(this.session));
+        const receiptId = this.session.transition?.id ?? 0;
+        if (receiptId !== this.receiptId) {
+            if (this.receiptTimer) clearTimeout(this.receiptTimer);
+            this.receiptId = receiptId;
+            this.receiptActive = receiptId !== 0;
+            if (this.receiptActive)
+                this.receiptTimer = setTimeout(() => {
+                    this.receiptTimer = null;
+                    this.receiptActive = false;
+                    if (this.session.state === state)
+                        this.updatePart('.context-line', turnStatus(this.session, false));
+                }, 2800);
+        }
+        this.updatePart('.context-line', turnStatus(this.session, this.receiptActive));
         this.updatePart('.resource-hand', humanHand(this.session));
         this.part('.resource-hand').setAttribute('aria-label', `منابع ${human.name}`);
         this.updatePart('.action-dock', actionDock(this.session));
-        const primaryLabel =
-            mandatory && !humanDecision
-                ? 'منتظر انتخاب حریف…'
-                : state.phase === 'discard'
-                  ? 'انتخاب منابع دورریختنی'
-                  : state.phase === 'steal'
-                    ? 'انتخاب حریف'
-                    : canDeclare
-                      ? 'اعلام پیروزی؛ ۱۰ امتیاز داری'
-                      : this.session.practice &&
-                          !placement &&
-                          this.session.practice.stage !== 'roll'
-                        ? (
-                              {
-                                  road: 'بازکردن ساخت راه',
-                                  trade: 'بازکردن بانک؛ دریافت پشم',
-                                  settlement: 'بازکردن ساخت آبادی',
-                                  complete: 'تمرین تمام شد؛ بازگشت به منو',
-                              } as const
-                          )[this.session.practice.stage]
-                        : !humanTurn && state.phase !== 'finished'
-                          ? 'منتظر نوبت تو…'
-                          : placement
-                            ? placement.kind === 'robber'
-                                ? 'تأیید جابه‌جایی اهریمن'
-                                : opening
-                                  ? `تأیید ${placement.kind === 'road' ? 'راه آغازین' : second ? 'آبادی دوم' : 'آبادی اول'}`
-                                  : `تأیید ساخت ${BUILD_LABELS[placement.kind]}`
-                            : state.phase === 'setup-roll'
-                              ? 'تاس تعیین آغازکننده'
-                              : state.phase === 'roll'
-                                ? FA.roll
-                                : state.phase === 'finished'
-                                  ? 'نتیجه بازی'
-                                  : FA.endTurn;
-        this.updatePart(
-            '.primary-row',
-            surface.hero
-                ? ''
-                : button(primaryLabel, canDeclare ? 'declare-victory' : 'primary', {
-                      className: `button button--primary${state.phase === 'actions' && !placement && !this.session.practice && !canDeclare ? ' button--end-turn' : ''}`,
-                      disabled:
-                          (mandatory ? !humanDecision : !humanTurn && state.phase !== 'finished') ||
-                          (!!placement && !placement.targetId),
-                  }),
-        );
-        this.part('.board-selection').classList.toggle('is-placing', !!placement);
-        this.updatePart(
-            '.board-selection',
-            placement
-                ? `<div class="target-picker">${button(`انتخاب از ${number(this.session.targets.length)} محل مجاز`, 'open:targets', { className: 'button full-width' })}</div>`
-                : '',
-        );
         if (focusAction && !this.session.sheet) this.restoreFocus(focusAction);
         const transitionId = this.session.transition?.id ?? 0;
         if (
@@ -207,9 +162,7 @@ export class GameHud {
         );
         const fallback =
             action === 'roll-dice'
-                ? this.parent.querySelector<HTMLElement>(
-                      '.action-dock button:not(:disabled), .primary-row button:not(:disabled)',
-                  )
+                ? this.parent.querySelector<HTMLElement>('.action-dock button:not(:disabled)')
                 : null;
         (preserved ?? fallback)?.focus({ preventScroll: true });
     }
@@ -443,6 +396,7 @@ export class GameHud {
             this.session.cancelPlacement();
     };
     destroy(): void {
+        if (this.receiptTimer) clearTimeout(this.receiptTimer);
         this.unsubscribe();
         this.unsubscribePlatform();
         this.sizeObserver.disconnect();

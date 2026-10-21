@@ -22,7 +22,7 @@ export function saveLabel(session: GameSession): string {
 }
 /** Menu stays at two actions; Play also resumes an unfinished saved match. */
 export function menuStatus(app: AppPlatform, session: GameSession): string {
-    return `<p class="footnote" role="status">${session.savedMatch?.state.phase !== 'finished' && session.savedMatch ? 'سفرت ذخیره شده؛ با «بازی» از همون‌جا ادامه بده.' : 'تو و سه رقیب؛ یک جزیره و شش امتیاز تا پیروزی.'}</p>
+    return `<p class="footnote" role="status">${session.savedMatch?.state.phase !== 'finished' && session.savedMatch ? 'سفرت ذخیره شده؛ با «بازی» از همون‌جا ادامه بده.' : 'تو و سه رقیب؛ یک جزیره و ده امتیاز تا پیروزی.'}</p>
         ${session.saveStatus === 'unavailable' || session.saveStatus === 'invalid' ? `<p class="availability">${escape(saveLabel(session))}</p>` : ''}
         ${app.updateReady ? '<p class="footnote">نسخه تازه آماده‌ست؛ از منوی توقف داخل بازی هم می‌تونی به‌روزش کنی.</p>' : ''}`;
 }

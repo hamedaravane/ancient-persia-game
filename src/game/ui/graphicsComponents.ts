@@ -6,6 +6,7 @@ import { canvasDisplay } from '../rendering/display';
 import { headerBackdrop } from './headerModel';
 import { drawPlayerAvatar } from './playerAvatarArt';
 import type { AvatarId } from './playerIdentity';
+import { dockControl, matchFace, MATCH_INK } from './matchChrome';
 import {
     drawDie,
     drawRosette,
@@ -35,19 +36,20 @@ export function drawComponent(
     } else if (has('development-back')) {
         drawDevelopmentBack(g, box, true);
     } else if (has('roll-object')) {
-        drawSurface(g, box, 'basalt', {
-            flat: true,
-            quiet: true,
-            pressed: pressed === el,
-            radius: 12,
-        });
-        g.lineStyle(1, UI_INK.gold, 0.5).strokeRoundedRect(
-            box.x + 6,
-            box.y + 6,
-            box.width - 12,
-            box.height - 12,
-            10,
+        g.fillStyle(0x061725, 0.28).fillEllipse(
+            box.x + box.width / 2,
+            box.y + box.height - 23,
+            box.width - 8,
+            12,
         );
+    } else if (
+        has('dock-primary') ||
+        has('dock-button') ||
+        has('dock-cancel') ||
+        has('dock-targets') ||
+        has('pre-roll-card')
+    ) {
+        dockControl(g, box, has('dock-primary'), pressed === el, selected, disabled);
     } else if (has('development-card')) {
         drawSurface(g, box, 'basalt', {
             flat: true,
@@ -69,7 +71,7 @@ export function drawComponent(
         drawTradeIcon(g, box, !!el.closest('button:disabled'));
     } else if (has('match-bar')) {
         const display = canvasDisplay(g.scene);
-        drawSurface(g, headerBackdrop(box, display.width), 'inset', { radius: 0, flat: true });
+        matchFace(g, headerBackdrop(box, display.width), MATCH_INK.base, undefined, 0);
         g.lineStyle(1, UI_INK.gold, 0.4).lineBetween(
             box.x + 14,
             box.y + box.height - 1,
@@ -78,16 +80,12 @@ export function drawComponent(
         );
     } else if (has('player-avatar')) {
         drawPlayerAvatar(g, box, el.dataset.avatar as AvatarId, owner);
-    } else if (has('header-self')) {
-        if (has('is-active'))
-            g.fillStyle(owner).fillRoundedRect(box.x + box.width - 2, box.y + 10, 2, 28, 1);
-    } else if (has('rival-card')) {
-        drawSurface(g, box, 'inset', {
-            radius: 5,
-            flat: true,
-            accent: has('is-active') ? owner : undefined,
-            pressed: pressed === el,
-        });
+    } else if (has('header-active')) {
+        g.fillStyle(owner).fillRoundedRect(box.x + box.width - 2, box.y + 10, 2, 28, 1);
+    } else if (has('seat-chip')) {
+        if (has('is-active') || selected || pressed === el)
+            matchFace(g, box, MATCH_INK.raised, selected ? UI_INK.gold : owner, 7);
+        else g.fillStyle(owner).fillRoundedRect(box.x + box.width - 4, box.y + 8, 2, 15, 1);
         const target = Number(el.dataset.target) || 10;
         const score = Number(el.dataset.score) || 0;
         const spacing = (box.width - 16) / target;
@@ -105,21 +103,24 @@ export function drawComponent(
             drawNameSelection(g, el, box);
         }
     } else if (has('resource-hand')) {
-        drawSurface(g, { ...box, y: box.y - 5, height: box.height + 8 }, 'inset', {
-            radius: 22,
-            flat: true,
-        });
+        matchFace(g, box, MATCH_INK.base, undefined, 0);
+        g.lineStyle(1, UI_INK.gold, 0.28).lineBetween(
+            box.x + 16,
+            box.y,
+            box.x + box.width - 16,
+            box.y,
+        );
     } else if (has('bottom-space')) {
         // Paint through the home-indicator inset; semantic controls stay safely above it.
         const display = canvasDisplay(g.scene);
-        g.fillStyle(0x252b2d).fillRect(
+        g.fillStyle(MATCH_INK.base).fillRect(
             0,
             box.y,
             display.width,
             Math.max(0, display.height - box.y),
         );
-    } else if (has('action-dock') || has('primary-row')) {
-        g.fillStyle(0x252b2d).fillRect(box.x, box.y, box.width, box.height);
+    } else if (has('action-dock')) {
+        g.fillStyle(MATCH_INK.base).fillRect(box.x, box.y, box.width, box.height);
     } else if (has('menu-panel')) {
         drawSurface(g, box, 'inset', { radius: 28, accent: 0xb88c48, flat: true });
         // Stepped corner cuts recall palace reliefs; geometry stays quiet behind text.
@@ -156,21 +157,15 @@ export function drawComponent(
         }
         if (has('is-active')) drawRosette(g, box.x + box.width / 2, box.y + 1, 3.5, owner);
     } else if (has('hand-resource')) {
-        drawSurface(g, box, 'card', { radius: 13, flat: true });
-        const colors: Record<string, number> = {
-            wood: 0x557560,
-            brick: 0x965f49,
-            wheat: 0x947135,
-            wool: 0x687957,
-            stone: 0x627078,
-        };
-        g.fillStyle(colors[el.dataset.resource ?? ''] ?? UI_INK.gold, 0.8).fillRoundedRect(
-            box.x + 12,
-            box.y + box.height - 3,
-            Math.max(3, box.width - 24),
-            2,
-            1,
-        );
+        if (el.nextElementSibling)
+            g.lineStyle(1, MATCH_INK.edge, 0.5).lineBetween(
+                box.x,
+                box.y + 10,
+                box.x,
+                box.y + box.height - 10,
+            );
+    } else if (has('header-menu')) {
+        dockControl(g, box, false, pressed === el, false, false);
     } else if (has('owner-dot') || has('owner-badge')) {
         drawSurface(g, box, 'inset', {
             radius: has('owner-dot') ? 6 : 14,
@@ -317,8 +312,12 @@ export function drawComponent(
                 !has('development-card') &&
                 !has('dock-cards') &&
                 !has('pre-roll-card') &&
-                !has('header-self') &&
-                !has('rival-card')
+                !has('dock-button') &&
+                !has('dock-cancel') &&
+                !has('dock-targets') &&
+                !has('header-menu') &&
+                !has('header-active') &&
+                !has('seat-chip')
                 ? 0x314956
                 : 0xffedb8,
         ).strokeRoundedRect(box.x - 2, box.y - 2, box.width + 4, box.height + 4, 16);

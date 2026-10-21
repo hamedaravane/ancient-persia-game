@@ -69,7 +69,7 @@ export class GameFeedback {
             if (transition && transition.after === state) this.play(transition);
         }
         if (this.session.placement?.targetId && this.session.placement !== this.lastPlacement)
-            this.ui.feedback?.pulse(this.query('.primary-row button'));
+            this.ui.feedback?.pulse(this.query('.dock-primary'));
         if (this.session.error && this.session.error !== this.lastError)
             this.ui.feedback?.pulse(
                 this.query('dialog[open] .availability') ?? this.query('.context-line'),
@@ -100,12 +100,17 @@ export class GameFeedback {
         this.audio.play(transition, humanId);
         for (const resource of RESOURCE_TYPES) {
             const delta = human.resources[resource] - previousHuman.resources[resource];
-            if (delta)
+            if (delta) {
+                this.ui.feedback?.resourceChange(
+                    this.query(`.hand-resource[data-resource="${resource}"]`),
+                    delta < 0,
+                );
                 this.ui.feedback?.delta(
                     this.query(`.hand-resource[data-resource="${resource}"]`),
                     `${delta > 0 ? '+' : '−'}${number(Math.abs(delta))}`,
                     delta < 0,
                 );
+            }
         }
         if (
             (action.kind === 'roll' || action.kind === 'setup-roll') &&

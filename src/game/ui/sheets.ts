@@ -220,17 +220,22 @@ export function sheetContent(session: GameSession, updateReady = false): SheetCo
     if (sheet.kind === 'player') {
         const selected = state.players.find(({ id }) => id === sheet.id)!;
         const summary = getPlayerSummary(state, selected.id, player.id);
+        const own = selected.id === player.id;
         return {
             title: selected.name,
-            body: `<div class="player-detail" style="--owner:${color(selected.color)}"><span class="owner-badge">${number(state.players.indexOf(selected) + 1)}</span><p class="score-large">${number(summary.score)} <span>از ${number(state.victoryTarget)} امتیاز</span></p></div><dl class="detail-list"><div><dt>راه</dt><dd>${number(summary.roads)}</dd></div><div><dt>آبادی</dt><dd>${number(summary.settlements)}</dd></div><div><dt>شهر</dt><dd>${number(summary.cities)}</dd></div><div><dt>مجموع منابع</dt><dd>${number(summary.resources)}</dd></div><div><dt>امتیاز کارت‌های مخفی تو</dt><dd>${number((state.development?.hands[selected.id] ?? []).filter((c) => c.kind === 'victory-point').length)}</dd></div></dl>${scoreAwards(state, selected.id)}<h3>بندرهای در دسترس</h3>${ownedPortsMarkup(state.board, selected.id)}<p class="footnote">هر آبادی ۱ و هر شهر ۲ امتیاز دارد؛ عنوان‌های راه و ارتش هرکدام ۲ امتیاز می‌دهند. کارت‌های امتیازی حریف‌ها مخفی‌اند. راه‌ها به ۱۵ قطعه محدودند.</p>`,
+            body: `<div class="player-detail" style="--owner:${color(selected.color)}"><span class="owner-badge">${number(state.players.indexOf(selected) + 1)}</span><p class="score-large">${number(summary.score)} <span>از ${number(state.victoryTarget)} امتیاز</span></p></div><dl class="detail-list"><div><dt>راه</dt><dd>${number(summary.roads)}</dd></div><div><dt>آبادی</dt><dd>${number(summary.settlements)}</dd></div><div><dt>شهر</dt><dd>${number(summary.cities)}</dd></div><div><dt>مجموع منابع</dt><dd>${number(summary.resources)}</dd></div>${own ? `<div><dt>امتیاز کارت‌های مخفی تو</dt><dd>${number((state.development?.hands[selected.id] ?? []).filter((c) => c.kind === 'victory-point').length)}</dd></div>` : ''}</dl>${scoreAwards(state, selected.id, player.id)}<h3>بندرهای در دسترس</h3>${ownedPortsMarkup(state.board, selected.id)}<p class="footnote">هر آبادی ۱ و هر شهر ۲ امتیاز دارد؛ عنوان‌های راه و ارتش هرکدام ۲ امتیاز می‌دهند. کارت‌های امتیازی حریف‌ها مخفی‌اند. راه‌ها به ۱۵ قطعه محدودند.</p>`,
             footer:
-                button('کارت‌های تو', 'open:development', {
-                    className: 'button full-width',
-                    disabled: !!session.practice,
-                }) +
-                button('برنامهٔ ساخت', 'open:build', {
-                    className: 'button button--quiet full-width',
-                }),
+                own && ['roll', 'actions'].includes(state.phase)
+                    ? button('کارت‌های تو', 'open:development', {
+                          className: 'button full-width',
+                          disabled: !!session.practice,
+                      }) +
+                      button('برنامهٔ ساخت', 'open:build', {
+                          className: 'button button--quiet full-width',
+                      })
+                    : button('بازگشت به جزیره', 'close-sheet', {
+                          className: 'button button--quiet full-width',
+                      }),
         };
     }
     if (sheet.kind === 'tile') {

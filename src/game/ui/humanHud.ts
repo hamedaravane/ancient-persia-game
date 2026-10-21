@@ -6,72 +6,49 @@ import { PHASE_LABELS } from './sheets';
 import type { GameSession } from './session';
 import { headerPlayers } from './headerModel';
 
-/** Personal status stays human-owned; a compact public scoreboard shows the competition. */
+/** Active-turn status plus four compact, individually inspectable public seats. */
 export function humanHeader(session: GameSession): string {
-    const state = session.state!;
-    const human = session.humanPlayer!;
+    const state = session.state!,
+        human = session.humanPlayer!;
     const standings = headerPlayers(state, human.id);
-    const own = standings.find((p) => p.human)!;
-    const active = state.players[state.activePlayerIndex];
+    const active =
+        standings.find((p) => p.id === state.winnerId) ?? standings[state.activePlayerIndex];
     const phase = session.practice
-        ? 'صفحهٔ تمرین • بدون حرکت رقبا'
+        ? 'تمرین · بدون حرکت رقبا'
         : state.phase === 'finished'
-          ? PHASE_LABELS.finished
-          : session.isHumanTurn
-            ? PHASE_LABELS[state.phase]
-            : state.phase === 'setup-roll'
-              ? `تاس آغازین ${active.name}`
-              : isSetup(state)
-                ? `جانمایی ${active.name}`
-                : `نوبت ${active.name}`;
-    const roll =
-        state.phase === 'setup-roll'
-            ? state.setup?.lastRoll?.playerId === human.id
-                ? state.setup.lastRoll.dice
-                : null
-            : session.isHumanTurn
-              ? state.lastRoll
-              : null;
+          ? 'پایان بازی'
+          : PHASE_LABELS[state.phase];
+    const roll = state.phase === 'setup-roll' ? state.setup?.lastRoll?.dice : state.lastRoll;
     const dice = roll
-        ? `<div class="dice-result" role="img" aria-label="تاس شما: ${number(roll[0])} و ${number(roll[1])}؛ مجموع ${number(roll[0] + roll[1])}"><span class="dice-pair">${diceFace(roll[0])}${diceFace(roll[1])}</span><span class="dice-total">${number(roll[0] + roll[1])}</span></div>`
-        : session.isHumanTurn && ['roll', 'setup-roll'].includes(state.phase)
-          ? '<span class="dice-placeholder" aria-hidden="true"></span>'
-          : '';
-    const rivals = standings
-        .filter((p) => !p.human)
-        .map((p) => {
-            const status =
-                p.id === state.winnerId
-                    ? 'برنده'
-                    : p.active
-                      ? 'نوبت'
-                      : p.leading
-                        ? 'پیشتاز'
-                        : 'امتیاز';
-            return button(
-                `${playerAvatar(p.avatar)}<span class="rival-copy"><span class="rival-name"><bdi>${escape(p.name)}</bdi> <span class="bot-label">ربات</span></span><span class="rival-score">${number(p.score)} / ${number(state.victoryTarget)} <span>${status}</span></span></span>`,
-                'open:opponents',
+        ? `<div class="dice-result" role="img" aria-label="آخرین تاس: ${number(roll[0])} و ${number(roll[1])}؛ مجموع ${number(roll[0] + roll[1])}"><span class="dice-pair">${diceFace(roll[0])}${diceFace(roll[1])}</span><span class="dice-total">${number(roll[0] + roll[1])}</span></div>`
+        : '<span class="dice-placeholder" aria-hidden="true"></span>';
+    const heading = button(
+        `${playerAvatar(active.avatar)}<span class="turn-heading"><strong>${state.phase === 'finished' ? `${escape(active.name)} برنده شد` : active.human ? 'نوبت تو' : `نوبت ${escape(active.name)}`}</strong><span class="phase-label">${escape(phase)}${isSetup(state) ? '' : ` · دور ${number(state.turn)}`}</span></span>`,
+        `player:${active.id}`,
+        {
+            className: 'header-active',
+            ownerColor: active.color,
+            label: `${active.name}؛ ${phase}؛ دیدن وضعیت بازیکن فعال`,
+        },
+    );
+    const chips = standings
+        .map((p) =>
+            button(
+                `<span class="seat-name"><bdi>${escape(p.name)}</bdi>${p.human ? '<small>تو</small>' : ''}</span><span class="seat-score${p.human ? ' human-score' : ''}"><bdi dir="ltr">${number(p.score)} <small>/ ${number(state.victoryTarget)}</small></bdi></span>`,
+                `player:${p.id}`,
                 {
-                    className: `rival-card${p.active ? ' is-active' : ''}${p.leading ? ' is-leading' : ''}`,
+                    className: `seat-chip${p.active ? ' is-active' : ''}${p.human ? ' is-human' : ''}`,
                     ownerColor: p.color,
-                    label: `${p.name}، ربات؛ ${number(p.score)} از ${number(state.victoryTarget)} امتیاز؛ رتبه ${number(p.rank)}${p.active ? '؛ در حال بازی' : ''}${p.leading ? '؛ پیشتاز' : ''}؛ دیدن وضعیت رقبا`,
+                    pressed: session.sheet?.kind === 'player' && session.sheet.id === p.id,
+                    label: `${p.name}${p.human ? '، تو' : '، ربات'}؛ ${number(p.score)} از ${number(state.victoryTarget)} امتیاز${p.active ? '؛ در حال بازی' : ''}؛ جزئیات بازیکن`,
                 },
             ).replace(
                 '<button ',
                 `<button data-score="${p.score}" data-target="${state.victoryTarget}" `,
-            );
-        })
+            ),
+        )
         .join('');
-    const self = button(
-        `${playerAvatar(own.avatar)}<span class="turn-heading"><span class="human-name"><bdi>${escape(human.name)}</bdi> <span class="bot-label">تو</span></span><span class="human-score">${number(own.score)} / ${number(state.victoryTarget)} امتیاز • رتبهٔ نمایان ${number(own.rank)}</span><span class="phase-label">${escape(phase)} • ${isSetup(state) ? 'آغاز جزیره' : `دور ${number(state.turn)}`}</span></span>`,
-        `player:${human.id}`,
-        {
-            className: `header-self${own.active ? ' is-active' : ''}`,
-            ownerColor: human.color,
-            label: `${human.name}، شما؛ ${number(own.score)} از ${number(state.victoryTarget)} امتیاز؛ رتبه ${number(own.rank)}؛ ${phase}؛ وضعیت من`,
-        },
-    );
-    return `<div class="header-personal">${self}${dice}${button('⋯', 'open:help', { className: 'icon-button', label: 'منوی توقف بازی' })}</div><nav class="header-rivals" style="--rival-count:${standings.length - 1}" aria-label="امتیاز و نوبت رقبا">${rivals}</nav>`;
+    return `<div class="header-personal">${heading}${dice}${button('⋯', 'open:help', { className: 'icon-button header-menu', label: 'منوی توقف بازی' })}</div><div class="header-seats" style="--seat-count:${standings.length}" role="group" aria-label="بازیکنان؛ هدف ${number(state.victoryTarget)} امتیاز">${chips}</div>`;
 }
 
 /** Passive production changes this inventory even on an opponent's roll. */

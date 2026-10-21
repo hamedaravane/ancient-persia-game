@@ -60,14 +60,14 @@ export class GraphicsFeedback {
         if (end.width < 1 || end.height < 1) return;
         const width = source.width,
             height = source.height;
-        const face = Math.min((width - 14) / 2, height);
+        const face = Math.min((width - 10) / 2, height);
         const dice = this.scene.add.container(
             source.x - this.origin.x + width / 2,
             source.y - this.origin.y + height / 2,
         );
         const g = this.scene.add.graphics();
-        drawDie(g, { x: -face - 7, y: -face / 2, width: face, height: face }, values[0]);
-        drawDie(g, { x: 7, y: -face / 2, width: face, height: face }, values[1]);
+        drawDie(g, { x: -face - 5, y: -height / 2, width: face, height }, values[0]);
+        drawDie(g, { x: 5, y: -height / 2, width: face, height }, values[1]);
         dice.add(g);
         this.effects.add(dice);
         this.diceDestination = destination;
@@ -84,7 +84,8 @@ export class GraphicsFeedback {
             targets: dice,
             x: end.x + end.width / 2,
             y: end.y + end.height / 2,
-            scale: Math.min(end.width / width, end.height / face),
+            scaleX: end.width / width,
+            scaleY: end.height / height,
             delay: this.motion.duration(230),
             duration: this.motion.duration(280),
             ease: 'Cubic.InOut',
@@ -139,6 +140,21 @@ export class GraphicsFeedback {
             alpha: 0,
             duration: this.motion.duration(MOTION.board),
             onComplete: () => ring.destroy(),
+        });
+    }
+    resourceChange(element: HTMLElement | null, spent: boolean): void {
+        if (!element || !this.motion.visible) return;
+        const box = this.box(element);
+        const wash = this.scene.add
+            .graphics()
+            .fillStyle(spent ? 0xe9ad81 : 0xb4d5b6, 0.2)
+            .fillRoundedRect(box.x + 2, box.y + 2, box.width - 4, box.height - 4, 5);
+        this.effects.add(wash);
+        this.scene.tweens.add({
+            targets: wash,
+            alpha: 0,
+            duration: this.motion.reduced ? 260 : this.motion.duration(320),
+            onComplete: () => wash.destroy(),
         });
     }
     delta(element: HTMLElement | null, value: string, spent: boolean): void {

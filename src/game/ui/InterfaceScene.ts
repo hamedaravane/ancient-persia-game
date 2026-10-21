@@ -45,6 +45,7 @@ export class InterfaceScene extends Scene {
     private nextNode = 0;
     private origin = { x: 0, y: 0 };
     private displayWidth = 390;
+    private displayHeight = 844;
     private density = 1;
     private pressed: Element | null = null;
     private cleanup: Array<() => void> = [];
@@ -83,9 +84,9 @@ export class InterfaceScene extends Scene {
             this.textures.get(`ui-${name}`).add('crop', 0, x, y, w, h);
         }
         this.hud = this.layer();
+        this.dock = this.layer();
         this.roll = this.layer();
         this.hints = this.layer();
-        this.dock = this.layer();
         this.theatre = this.layer();
         this.modal = this.layer();
         this.content = this.layer();
@@ -270,6 +271,7 @@ export class InterfaceScene extends Scene {
     private paint(time: number): void {
         const display = configureDisplayCamera(this);
         this.displayWidth = display.width;
+        this.displayHeight = display.height;
         this.density = Math.max(
             display.pixelWidth / display.width,
             display.pixelHeight / display.height,
@@ -350,8 +352,7 @@ export class InterfaceScene extends Scene {
                 this.portraitExpression = '';
                 drawSurface(this.modal.graphics, box, 'inset', {
                     radius: 24,
-                    accent: 0x8b8069,
-                    flat: true,
+                    accent: UI_INK.gold,
                 });
             }
             const header = dialog.querySelector<HTMLElement>('.sheet-header')!;
@@ -559,7 +560,8 @@ export class InterfaceScene extends Scene {
             }
             if (style.textOverflow === 'ellipsis') {
                 const width =
-                    element.clientWidth -
+                    element.getBoundingClientRect().width +
+                    0.5 -
                     parseFloat(style.paddingLeft) -
                     parseFloat(style.paddingRight);
                 const fitted = fitText(
@@ -586,19 +588,46 @@ export class InterfaceScene extends Scene {
             // Honor CSS overflow regions without shrinking Persian labels or text.
             let ancestor: HTMLElement | null = element;
             let left = 0,
-                right = this.displayWidth;
+                right = this.displayWidth,
+                top = 0,
+                bottom = this.displayHeight;
             while (ancestor && ancestor !== this.parent) {
-                if (['hidden', 'clip'].includes(getComputedStyle(ancestor).overflowX)) {
-                    const box = this.box(ancestor);
+                const overflow = getComputedStyle(ancestor);
+                const clipsX = ['hidden', 'clip'].includes(overflow.overflowX);
+                const clipsY = ['hidden', 'clip'].includes(overflow.overflowY);
+                if (!clipsX && !clipsY) {
+                    ancestor = ancestor.parentElement;
+                    continue;
+                }
+                const box = this.box(ancestor);
+                if (clipsX) {
                     left = Math.max(left, box.x);
                     right = Math.min(right, box.x + box.width);
+                }
+                if (clipsY) {
+                    top = Math.max(top, box.y);
+                    bottom = Math.min(bottom, box.y + box.height);
                 }
                 ancestor = ancestor.parentElement;
             }
             const cropLeft = Math.max(0, left - x);
             const cropWidth = Math.max(0, Math.min(text.displayWidth, right - x) - cropLeft);
-            if (cropLeft === 0 && cropWidth >= text.displayWidth) text.setCrop();
-            else text.setCrop(cropLeft * this.density, 0, cropWidth * this.density, text.height);
+            const cropTop = Math.max(0, top - y);
+            const cropHeight = Math.max(0, Math.min(text.displayHeight, bottom - y) - cropTop);
+            if (
+                cropLeft === 0 &&
+                cropWidth >= text.displayWidth &&
+                cropTop === 0 &&
+                cropHeight >= text.displayHeight
+            )
+                text.setCrop();
+            else
+                text.setCrop(
+                    cropLeft * this.density,
+                    cropTop * this.density,
+                    cropWidth * this.density,
+                    cropHeight * this.density,
+                );
         }
     }
     private scrollIndicator(body: HTMLElement, graphics: GameObjects.Graphics): void {

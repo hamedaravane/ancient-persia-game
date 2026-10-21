@@ -6,7 +6,7 @@ import { PHASE_LABELS } from './sheets';
 import type { GameSession } from './session';
 import { headerPlayers } from './headerModel';
 
-/** Active-turn status plus four compact, individually inspectable public seats. */
+/** The human captain keeps their identity and private score; opponents use public seals. */
 export function humanHeader(session: GameSession): string {
     const state = session.state!,
         human = session.humanPlayer!;
@@ -22,25 +22,33 @@ export function humanHeader(session: GameSession): string {
     const dice = roll
         ? `<div class="dice-result" role="img" aria-label="آخرین تاس: ${number(roll[0])} و ${number(roll[1])}؛ مجموع ${number(roll[0] + roll[1])}"><span class="dice-pair">${diceFace(roll[0])}${diceFace(roll[1])}</span><span class="dice-total">${number(roll[0] + roll[1])}</span></div>`
         : '<span class="dice-placeholder" aria-hidden="true"></span>';
+    const own = standings.find((p) => p.human)!;
+    const turnLabel =
+        state.phase === 'finished'
+            ? `${escape(active.name)} برنده شد`
+            : active.human
+              ? 'نوبت توست!'
+              : `نوبت ${escape(active.name)}`;
     const heading = button(
-        `${playerAvatar(active.avatar)}<span class="turn-heading"><strong>${state.phase === 'finished' ? `${escape(active.name)} برنده شد` : active.human ? 'نوبت تو' : `نوبت ${escape(active.name)}`}</strong><span class="phase-label">${escape(phase)}${isSetup(state) ? '' : ` · دور ${number(state.turn)}`}</span></span>`,
-        `player:${active.id}`,
+        `${playerAvatar(own.avatar)}<span class="turn-heading"><strong><bdi>${escape(own.name)}</bdi></strong><span class="phase-label">${turnLabel}</span></span><span class="captain-score human-score"><span class="score-symbol" aria-hidden="true"></span><bdi dir="ltr">${number(own.score)}<small> / ${number(state.victoryTarget)}</small></bdi></span>`,
+        `player:${own.id}`,
         {
-            className: 'header-active',
-            ownerColor: active.color,
-            label: `${active.name}؛ ${phase}؛ دیدن وضعیت بازیکن فعال`,
+            className: `header-active${own.active ? ' is-active' : ''}`,
+            ownerColor: own.color,
+            label: `${own.name}، تو؛ ${number(own.score)} از ${number(state.victoryTarget)} امتیاز؛ ${phase}؛ جزئیات بازیکن`,
         },
     );
-    const chips = standings
+    const opponents = standings.filter((p) => !p.human);
+    const chips = opponents
         .map((p) =>
             button(
-                `<span class="seat-name"><bdi>${escape(p.name)}</bdi>${p.human ? '<small>تو</small>' : ''}</span><span class="seat-score${p.human ? ' human-score' : ''}"><bdi dir="ltr">${number(p.score)} <small>/ ${number(state.victoryTarget)}</small></bdi></span>`,
+                `${playerAvatar(p.avatar)}<span class="opponent-copy"><span class="seat-name"><bdi>${escape(p.name)}</bdi></span><span class="seat-score"><bdi dir="ltr">${number(p.score)} <small>/ ${number(state.victoryTarget)}</small></bdi>${p.active ? '<small class="seat-turn">در حال بازی</small>' : ''}</span></span>`,
                 `player:${p.id}`,
                 {
-                    className: `seat-chip${p.active ? ' is-active' : ''}${p.human ? ' is-human' : ''}`,
+                    className: `seat-chip${p.active ? ' is-active' : ''}`,
                     ownerColor: p.color,
                     pressed: session.sheet?.kind === 'player' && session.sheet.id === p.id,
-                    label: `${p.name}${p.human ? '، تو' : '، ربات'}؛ ${number(p.score)} از ${number(state.victoryTarget)} امتیاز${p.active ? '؛ در حال بازی' : ''}؛ جزئیات بازیکن`,
+                    label: `${p.name}، ربات؛ ${number(p.score)} از ${number(state.victoryTarget)} امتیاز${p.active ? '؛ در حال بازی' : ''}؛ جزئیات بازیکن`,
                 },
             ).replace(
                 '<button ',
@@ -48,7 +56,7 @@ export function humanHeader(session: GameSession): string {
             ),
         )
         .join('');
-    return `<div class="header-personal">${heading}${dice}${button('⋯', 'open:help', { className: 'icon-button header-menu', label: 'منوی توقف بازی' })}</div><div class="header-seats" style="--seat-count:${standings.length}" role="group" aria-label="بازیکنان؛ هدف ${number(state.victoryTarget)} امتیاز">${chips}</div>`;
+    return `<div class="header-personal">${heading}${dice}${button('<span class="menu-gear" aria-hidden="true"></span><small>منو</small>', 'open:help', { className: 'header-menu', label: 'منوی توقف بازی' })}</div><div class="header-seats" style="--seat-count:${opponents.length}" role="group" aria-label="حریفان؛ ${escape(phase)}${isSetup(state) ? '' : ` · دور ${number(state.turn)}`}؛ هدف ${number(state.victoryTarget)} امتیاز">${chips}</div>`;
 }
 
 /** Passive production changes this inventory even on an opponent's roll. */

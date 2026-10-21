@@ -46,8 +46,8 @@ export class GameHud {
         parent.innerHTML = `<section class="main-menu" aria-label="آغاز بازی"><div class="menu-panel"></div></section>
             <section class="match-screen" aria-label="صفحه بازی" hidden>
                 <header class="match-bar"></header>
-                <div class="board-viewport"><div class="board-stage"><div class="board-canvas" aria-hidden="true"></div><p class="board-loading">در حال آماده‌سازی جزیره…</p><div class="board-roll"></div><div class="context-line"></div></div></div>
-                <section class="resource-hand" aria-label="منابع شما"></section><section class="action-dock" aria-label="کنترل‌های نوبت"></section><div class="bottom-space"></div>
+                <div class="board-viewport"><div class="board-stage"><div class="board-canvas" aria-hidden="true"></div><p class="board-loading">در حال آماده‌سازی جزیره…</p></div></div><div class="context-line"></div>
+                <section class="resource-hand" aria-label="منابع شما"></section><section class="action-dock" aria-label="کنترل‌های نوبت"></section><div class="bottom-space"></div><div class="board-roll"></div>
             </section><div class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>`;
         this.boardViewport = parent.querySelector('.board-canvas')!;
         this.sheet = new BottomSheet(parent, () => session.closeSheet());
@@ -67,7 +67,11 @@ export class GameHud {
                         entry.contentRect.width,
                         entry.contentRect.height,
                     );
-                    (entry.target as HTMLElement).style.setProperty(
+                    this.part('.match-screen').classList.toggle(
+                        'dice-on-ledge',
+                        geometry.diceOnLedge,
+                    );
+                    this.part('.board-roll').style.setProperty(
                         '--die-size',
                         `${geometry.dieSize}px`,
                     );
@@ -179,7 +183,19 @@ export class GameHud {
         if (this.session.sheet.kind === 'app') return appContent(this.app, this.session);
         if (this.session.sheet.kind === 'introduction')
             return introductionContent(this.session, this.matchPrepared);
-        return sheetContent(this.session, this.app.updateReady);
+        const content = sheetContent(this.session, this.app.updateReady);
+        const kind = this.session.sheet.kind;
+        content.tone =
+            kind === 'build'
+                ? 'coral'
+                : ['trade', 'domestic', 'port', 'ports'].includes(kind)
+                  ? 'turquoise'
+                  : kind.startsWith('development')
+                    ? 'amethyst'
+                    : kind === 'results'
+                      ? 'emerald'
+                      : 'lapis';
+        return content;
     }
 
     private onClick = (event: MouseEvent): void => {

@@ -1,0 +1,816 @@
+/* Royal expedition: layout and runtime typography. Phaser paints enamel and gold. */
+:root {
+    background: #182746;
+    color: #fff4dc;
+    --muted: #d1d9f3;
+    --gold: #ffcf75;
+}
+.game-app {
+    background: #24345b;
+}
+.match-screen {
+    --header-height: 124px;
+    --hand-height: 66px;
+    --dock-height: 84px;
+    position: relative;
+    grid-template-rows:
+        var(--header-height) minmax(0, 1fr) 42px var(--hand-height) var(--dock-height)
+        6px;
+}
+.match-bar {
+    grid-template-rows: 62px 48px;
+    padding: 5px 10px 9px;
+    gap: 0;
+}
+.header-personal {
+    gap: 7px;
+}
+.header-active {
+    min-height: 58px;
+    padding: 3px 6px;
+    gap: 7px;
+    color: #fff4dc;
+}
+.header-active .player-avatar {
+    width: 42px;
+    height: 42px;
+    flex-basis: 42px;
+}
+.turn-heading strong {
+    font-size: 16px;
+    line-height: 24px;
+}
+.phase-label {
+    color: #ffdf99;
+    font-size: 12px;
+    line-height: 20px;
+}
+.captain-score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    gap: 0;
+    width: 43px;
+    height: 48px;
+    color: #3e3250;
+    font-size: 20px;
+    line-height: 24px;
+}
+.captain-score .score-symbol {
+    width: 16px;
+    height: 16px;
+}
+.captain-score small {
+    font-size: 11px;
+}
+.header-menu {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 50px;
+    flex-shrink: 0;
+    border: 0;
+    background: transparent;
+    color: #fff4dc;
+    padding: 3px 0 6px;
+    gap: 0;
+}
+.header-menu small {
+    font-size: 11px;
+    line-height: 16px;
+}
+.menu-gear {
+    display: block;
+    width: 23px;
+    height: 23px;
+}
+.header-seats {
+    gap: 6px;
+    align-items: stretch;
+}
+.seat-chip {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 6px;
+    padding: 3px 7px 6px;
+    color: #fff4dc;
+}
+.seat-chip .player-avatar {
+    width: 27px;
+    height: 27px;
+    flex-basis: 27px;
+}
+.opponent-copy {
+    min-width: 0;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: flex-start;
+}
+.seat-name {
+    font-size: 13px;
+    line-height: 19px;
+}
+.seat-score {
+    display: flex;
+    gap: 4px;
+    font-size: 14px;
+    line-height: 18px;
+    color: #fff4dc;
+}
+.seat-score small {
+    color: #d7e3ff;
+    font-size: 10px;
+}
+.seat-score .seat-turn {
+    color: #ffe4a8;
+    font-size: 9px;
+}
+.dice-result {
+    width: 51px;
+    gap: 0;
+    flex-direction: column;
+    padding-top: 2px;
+}
+.dice-pair {
+    gap: 3px;
+}
+.dice-face {
+    width: 24px;
+    height: 26px;
+}
+.dice-total {
+    width: 26px;
+    min-width: 26px;
+    height: 19px;
+    font-size: 15px;
+    line-height: 19px;
+    color: #ffdf99;
+}
+.dice-placeholder {
+    width: 0;
+}
+.resource-hand {
+    gap: 5px;
+    padding: 5px 10px 3px;
+}
+.hand-resource {
+    grid-template-columns: 29px minmax(0, auto);
+    grid-template-rows: 32px 18px;
+    column-gap: 1px;
+    padding: 1px 3px 5px;
+    color: #fff4dc;
+}
+.hand-resource .resource-icon {
+    --icon-size: 29px;
+}
+.resource-count {
+    font-size: 21px;
+    line-height: 30px;
+}
+.resource-label {
+    color: #fff0ce;
+    font-size: 11px;
+    line-height: 17px;
+}
+.action-dock {
+    grid-template-columns: minmax(0, 1fr) minmax(90px, 0.38fr);
+    gap: 10px;
+    padding: 5px 10px 7px;
+}
+.dock-tools {
+    gap: 7px;
+    grid-template-columns: repeat(3, minmax(48px, 1fr));
+}
+.dock-button {
+    height: 66px;
+    padding: 3px 2px 7px;
+    gap: 1px;
+    font-size: 13px;
+    line-height: 20px;
+    color: #fff4dc;
+    border-radius: 18px;
+}
+.dock-build {
+    color: #3e3250;
+}
+.dock-button:disabled {
+    color: #dce2ee;
+}
+.dock-button[aria-pressed='true'] {
+    color: #fff4dc;
+}
+.dock-primary {
+    min-height: 68px;
+    flex-direction: column-reverse;
+    justify-content: center;
+    padding: 6px 4px 9px;
+    gap: 0;
+    font-size: 13px;
+    line-height: 20px;
+    border-radius: 24px;
+    color: #42304a;
+}
+.dock-primary:disabled {
+    color: #e5e9f3;
+}
+.dock-action-mark {
+    font-size: 27px;
+    line-height: 27px;
+}
+.dock-cancel {
+    color: #fff4dc;
+    min-height: 52px;
+    padding-inline: 9px;
+}
+.dock-targets {
+    color: #fff4dc;
+    min-height: 56px;
+    padding: 3px 9px 7px;
+}
+.dock-targets small {
+    color: #e2edff;
+}
+.dock-idle,
+.dock-waiting {
+    color: #dce5fb;
+}
+.pre-roll-card {
+    color: #fff4dc;
+}
+.board-roll {
+    bottom: calc(var(--hand-height) + var(--dock-height) + 56px + env(safe-area-inset-bottom, 0px));
+}
+.dice-on-ledge .board-roll {
+    bottom: calc(7px + env(safe-area-inset-bottom, 0px));
+    left: auto;
+    right: max(10px, env(safe-area-inset-right, 0px));
+    width: 142px;
+}
+.dice-on-ledge.is-awaiting-roll .dock-roll-options {
+    padding-inline-start: 150px;
+    justify-content: flex-end;
+}
+.dice-on-ledge.is-awaiting-roll .dock-idle {
+    font-size: 12px;
+    max-width: 132px;
+}
+.dice-on-ledge .roll-object {
+    min-width: 136px;
+    padding: 0 10px;
+    gap: 3px;
+}
+.dice-on-ledge .roll-caption {
+    font-size: 12px;
+    line-height: 18px;
+}
+.dice-on-ledge .pre-roll-card {
+    padding-inline: 7px;
+    font-size: 12px;
+    gap: 5px;
+}
+.dice-on-ledge .pre-roll-card small {
+    font-size: 11px;
+}
+.roll-object {
+    padding: 3px 16px 5px;
+    gap: 5px;
+    min-width: 148px;
+    color: #fff4dc;
+}
+.roll-caption {
+    font-size: 13px;
+    line-height: 20px;
+}
+.hero-dice {
+    gap: 12px;
+}
+.context-line {
+    position: static;
+    padding: 0 10px;
+    align-self: stretch;
+}
+.context-line:empty {
+    display: flex;
+}
+.turn-receipt {
+    padding: 5px 15px 8px;
+    color: #393351;
+    font-size: 13px;
+    line-height: 21px;
+}
+.placement-guidance {
+    flex-direction: row;
+    color: #393351;
+    padding: 3px 10px 6px;
+    gap: 9px;
+}
+.placement-guidance .turn-receipt {
+    font-size: 12px;
+    line-height: 18px;
+    max-width: 170px;
+}
+.placement-guidance .cost-row {
+    flex-wrap: nowrap;
+    gap: 4px;
+}
+.placement-guidance .resource-value {
+    font-size: 12px;
+    gap: 2px;
+}
+.placement-guidance .turn-receipt {
+    padding: 0;
+}
+.context-button {
+    color: #393351;
+    padding: 9px 15px 12px;
+}
+.button {
+    color: #fff4dc;
+    --muted: #d1d9f3;
+    --gold: #ffcf75;
+}
+.button--primary {
+    color: #42304a;
+    --muted: #42304a;
+    --gold: #674127;
+}
+.button--quiet,
+.button--tutorial {
+    color: #fff4dc;
+    --muted: #d1d9f3;
+    --gold: #ffcf75;
+}
+.button:disabled {
+    color: #e5e9f3;
+}
+.icon-button {
+    color: #fff4dc;
+}
+.resource-choice,
+.port-chip,
+.port-list-item {
+    color: #393351;
+    --muted: #514963;
+    --gold: #79512b;
+}
+.resource-choice:disabled {
+    color: #e5e9f3;
+}
+.trade-tabs > button,
+.deal-target {
+    color: #fff4dc;
+}
+.deal-target .bot-label {
+    color: #d1d9f3;
+}
+.main-menu {
+    padding-inline: max(22px, env(safe-area-inset-left));
+}
+.menu-panel {
+    padding: 30px 22px 26px;
+}
+.menu-crown {
+    display: grid;
+    place-items: center;
+    height: 100px;
+    margin-bottom: 8px;
+}
+.menu-emblem {
+    margin: 0;
+}
+.menu-panel h1 {
+    font-size: clamp(38px, 11vw, 54px);
+    letter-spacing: 2px;
+    color: #ffe2a0;
+    margin: 2px 0 8px;
+}
+.menu-panel .eyebrow {
+    color: #c2f3ee;
+    font-size: 14px;
+}
+.menu-invitation {
+    font-size: 15px;
+    color: #fff4dc;
+    line-height: 28px;
+}
+.menu-adventure {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-block: 22px;
+}
+.menu-adventure > span {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 10px 4px;
+}
+.menu-adventure small {
+    font-size: 12px;
+    line-height: 20px;
+    color: #fff1ce;
+}
+.menu-actions {
+    margin-block: 18px;
+    gap: 12px;
+}
+.menu-actions > .button {
+    min-height: 64px;
+    gap: 14px;
+    font-size: 19px;
+    padding: 8px 14px 12px;
+}
+.menu-actions > .menu-play {
+    min-height: 78px;
+    font-size: 24px;
+    color: #fff4dc;
+}
+.menu-actions .button > span:not(.action-emblem):not(.menu-play-mark) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+}
+.menu-actions small {
+    font-size: 12px;
+    line-height: 20px;
+}
+.menu-play-mark {
+    display: block;
+    width: 26px;
+    height: 30px;
+}
+.menu-panel > .footnote {
+    color: #dce5fb;
+    font-size: 12px;
+    line-height: 22px;
+}
+.bottom-sheet {
+    color: #fff4dc;
+    border-radius: 28px 28px 0 0;
+}
+.sheet-header {
+    min-height: 66px;
+    padding-top: 8px;
+    padding-bottom: 10px;
+    color: #fff4dc;
+}
+.sheet-header h2 {
+    color: #fff4dc;
+    font-size: 20px;
+}
+.sheet-body {
+    line-height: 1.9;
+    padding-top: 18px;
+}
+.sheet-context {
+    padding-top: 8px;
+}
+.sheet-footer {
+    padding-top: 12px;
+}
+.construction-heading {
+    min-height: 52px;
+}
+.construction-heading .piece-symbol {
+    width: 44px;
+    height: 44px;
+}
+.construction-heading .piece-symbol--road {
+    height: 30px;
+}
+.construction-heading h3 {
+    font-size: 20px;
+}
+.construction-points {
+    max-width: 93px;
+    font-size: 12px;
+    line-height: 20px;
+    color: #655038;
+}
+.construction-card {
+    padding: 14px;
+    border-radius: 18px;
+    color: #393351;
+    --muted: #514963;
+}
+.construction-card h3 {
+    color: #393351;
+}
+.construction-card .availability {
+    color: #4c4053;
+    font-size: 13px;
+    line-height: 22px;
+}
+.construction-card > * + * {
+    margin-top: 7px;
+}
+.cost-token {
+    padding: 4px 6px;
+    border-radius: 9px;
+    color: #393351;
+}
+.cost-token.is-short {
+    color: #fff4dc;
+}
+.cost-legend {
+    color: #d1d9f3;
+}
+.construction-actions .button {
+    min-height: 50px;
+    font-size: 14px;
+}
+.construction-card summary {
+    color: #fff4dc;
+    border-radius: 10px;
+}
+.construction-card .muted {
+    color: #514963;
+}
+.development-card {
+    min-height: 161px;
+    padding: 16px 10px 19px;
+    gap: 9px;
+    color: #fff4dc;
+    border-radius: 18px;
+}
+.development-card .action-emblem {
+    width: 52px !important;
+    height: 52px !important;
+}
+.development-card strong {
+    font-size: 17px;
+}
+.development-card small {
+    color: #fff0ce;
+}
+.development-feature {
+    padding: 18px;
+    border-radius: 18px;
+}
+.development-purchase {
+    padding: 18px;
+    border-radius: 18px;
+}
+.purchase-heading h3 {
+    color: #ffe2a0;
+}
+.purchase-heading small {
+    color: #d1d9f3;
+}
+.deal-summary {
+    padding: 14px;
+    gap: 18px;
+}
+.trade-side {
+    padding: 14px 10px 16px;
+}
+.trade-side h3 {
+    color: #fff0ce;
+}
+.trade-review {
+    padding: 18px;
+}
+.score-large {
+    font-size: 40px;
+    color: #ffe2a0;
+    line-height: 1.5;
+}
+.score-large > span {
+    color: #d1d9f3;
+}
+.score-award {
+    min-height: 60px;
+    padding: 10px 14px;
+}
+.winner-name {
+    color: #ffe2a0;
+    font-size: 27px;
+}
+.victory-art {
+    padding: 18px 0;
+}
+.results-list article {
+    border-radius: 16px;
+    color: #393351;
+    --muted: #514963;
+}
+.intro-participant {
+    border-radius: 18px;
+    min-height: 72px;
+}
+.intro-participant .player-avatar {
+    width: 46px;
+    height: 46px;
+    flex-basis: 46px;
+}
+.narrator-sheet .narrator-heading h2 {
+    color: #ffe2a0;
+}
+.narrator-role {
+    color: #d1d9f3;
+}
+.narrator-sheet .sheet-body {
+    padding-top: 14px;
+}
+@media (max-width: 359px), (max-height: 719px) {
+    .match-screen,
+    .is-compact .match-screen {
+        --header-height: 112px;
+        --hand-height: 60px;
+        --dock-height: 84px;
+    }
+    .match-bar {
+        grid-template-rows: 54px 48px;
+        padding: 2px 8px 8px;
+    }
+    .header-active {
+        min-height: 52px;
+        gap: 5px;
+        padding-inline: 4px;
+    }
+    .header-active .player-avatar {
+        width: 34px;
+        height: 34px;
+        flex-basis: 34px;
+    }
+    .turn-heading strong {
+        font-size: 14px;
+        line-height: 22px;
+    }
+    .phase-label {
+        font-size: 11px;
+        line-height: 18px;
+    }
+    .captain-score {
+        width: 36px;
+        height: 44px;
+        font-size: 18px;
+    }
+    .header-personal {
+        gap: 4px;
+    }
+    .seat-chip {
+        gap: 4px;
+        padding-inline: 5px;
+    }
+    .seat-chip .player-avatar {
+        width: 23px;
+        height: 23px;
+        flex-basis: 23px;
+    }
+    .seat-name {
+        font-size: 12px;
+    }
+    .seat-turn {
+        display: none;
+    }
+    .resource-hand {
+        padding-inline: 8px;
+        gap: 4px;
+    }
+    .hand-resource {
+        grid-template-columns: 24px minmax(0, auto);
+        grid-template-rows: 28px 17px;
+        padding-inline: 2px;
+    }
+    .hand-resource .resource-icon {
+        --icon-size: 24px;
+    }
+    .resource-count {
+        font-size: 19px;
+        line-height: 27px;
+    }
+    .action-dock {
+        gap: 8px;
+        padding-inline: 8px;
+    }
+    .dock-tools {
+        gap: 5px;
+    }
+    .dock-button {
+        height: 60px;
+        font-size: 12px;
+        line-height: 18px;
+    }
+    .dock-primary {
+        min-height: 62px;
+        font-size: 12px;
+        line-height: 19px;
+    }
+    .dock-action-mark {
+        font-size: 24px;
+        line-height: 24px;
+    }
+    .menu-panel {
+        padding: 18px 16px;
+    }
+    .menu-crown {
+        height: 76px;
+        margin-bottom: 4px;
+    }
+    .menu-emblem {
+        width: 62px !important;
+        height: 62px !important;
+    }
+    .menu-adventure {
+        margin-block: 12px;
+        gap: 7px;
+    }
+    .menu-actions {
+        margin-block: 12px;
+    }
+    .menu-actions > .menu-play {
+        min-height: 64px;
+        font-size: 22px;
+    }
+    .menu-actions > .button {
+        min-height: 56px;
+    }
+    .menu-invitation {
+        font-size: 13px;
+    }
+    .construction-card {
+        padding: 12px;
+    }
+    .cost-token {
+        padding-inline: 4px;
+    }
+}
+
+.hand-resource[data-resource='wheat'] {
+    color: #42304a;
+}
+.hand-resource[data-resource='wheat'] .resource-label {
+    color: #42304a;
+}
+
+.turn-heading strong {
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    max-height: 40px;
+    font-size: 15px;
+    line-height: 20px;
+    overflow-wrap: anywhere;
+}
+@media (max-width: 359px), (max-height: 719px) {
+    .turn-heading strong {
+        font-size: 13px;
+        line-height: 18px;
+        max-height: 36px;
+    }
+}
+
+.victory-score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 38px;
+    line-height: 1.5;
+    color: #ffdf86;
+}
+.victory-score small {
+    font-size: 13px;
+    line-height: 22px;
+    color: #d1d9f3;
+}
+
+.card-status,
+.deal-target .bot-label {
+    color: #fff4dc;
+}
+
+/* Keep the label field wider than its natural glyph bounds: fractional browser
+   rounding must never abbreviate the short robot identities. */
+.seat-name {
+    width: 100%;
+}
+.seat-name bdi {
+    flex: 1;
+    min-width: 0;
+}
+.dock-primary:not(:disabled),
+.dock-build:not(:disabled),
+.button.context-button:not(:disabled) {
+    color: #42304a;
+    --muted: #514963;
+    --gold: #79512b;
+}
+.result-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+.result-actions .button {
+    font-size: 13px;
+    padding-inline: 8px;
+}

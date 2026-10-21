@@ -1,8 +1,10 @@
 import { artSprite, button, escape } from './components';
+import type { Material } from './graphicsTheme';
 import { ART, type ArtName } from '../assets';
 
 export interface SheetContent {
     title: string;
+    tone?: Material;
     body: string;
     /** Persistent context painted outside the scrolling body mask. */
     context?: string;
@@ -76,6 +78,7 @@ export class BottomSheet {
             : undefined;
         const contentChanged = !!content.key && this.dialog.dataset.contentKey !== content.key;
         this.dialog.dataset.contentKey = content.key ?? '';
+        this.dialog.dataset.tone = content.tone ?? 'lapis';
         this.dialog.classList.toggle('introduction-sheet', content.key === 'match-introduction');
         const narrationChanged =
             !!content.narrator && this.dialog.dataset.narration !== content.narrator.key;

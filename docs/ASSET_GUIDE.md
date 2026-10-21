@@ -129,3 +129,7 @@ Sunmark retains the existing gold sun-rosette/griffin victory emblem as its app 
 ## Player avatars
 
 `ui/playerAvatarArt.ts` draws four original stone seals (human, Atlas, ASIMO, Sophia) as Phaser Graphics. `ui/playerIdentity.ts` derives their stable identity from seat/human ownership; colors remain runtime data. No avatar bitmaps, manufacturer logos, network images, or per-color copies are shipped. The name entry and header labels remain runtime text.
+
+## Royal expedition interface
+
+The colorful UI introduces no new runtime image or font downloads. `ui/graphicsTheme.ts` draws enamel gradients, gold, parchment and ivory; `ui/royalArt.ts` adds original stepped wings, sun/card settings, resource plinths and menu gear geometry. Card-kind colors remain presentation data. The palace, original rosette/victory art, narrator figures and generated resource atlas remain in use. Persian labels are runtime text, and owner colors remain separate from material colors. Review screenshots under `docs/design/royal-expedition/` are development artifacts, outside the runtime asset tree.

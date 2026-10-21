@@ -1,27 +1,27 @@
 import type { GameObjects } from 'phaser';
-import type { UiBox } from './graphicsTheme';
+import { drawSurface, type Material, type UiBox } from './graphicsTheme';
 
-export const MATCH_INK = { base: 0x142b3b, raised: 0x203f50, edge: 0x496374, gold: 0xc6a06a };
+export const MATCH_INK = { base: 0x24345b, raised: 0x36568c, edge: 0x7e9dc6, gold: 0xffcf75 };
 
-/** Restrained lapis and limestone for frequent actions; ornament belongs to the world. */
 export function matchFace(
     g: GameObjects.Graphics,
     b: UiBox,
     fill = MATCH_INK.base,
     rim?: number,
-    radius = 9,
+    radius = 12,
 ): void {
     g.fillStyle(fill).fillRoundedRect(b.x, b.y, b.width, b.height, radius);
     if (rim !== undefined)
-        g.lineStyle(1, rim, 0.7).strokeRoundedRect(
-            b.x + 0.5,
-            b.y + 0.5,
-            b.width - 1,
-            b.height - 1,
+        g.lineStyle(1.5, rim, 0.8).strokeRoundedRect(
+            b.x + 1,
+            b.y + 1,
+            b.width - 2,
+            b.height - 2,
             radius,
         );
 }
 
+/** Tool seals and the larger turn seal share craftsmanship, with distinct enamel colors. */
 export function dockControl(
     g: GameObjects.Graphics,
     b: UiBox,
@@ -29,30 +29,15 @@ export function dockControl(
     pressed: boolean,
     selected: boolean,
     disabled: boolean,
+    tone: Material = 'lapis',
 ): void {
-    if (primary) {
-        if (!disabled)
-            g.fillStyle(0x081b29, 0.3).fillRoundedRect(b.x, b.y + 2, b.width, b.height - 1, 12);
-        matchFace(
-            g,
-            b,
-            disabled ? 0x394a52 : pressed ? 0xc9a36b : 0xe1c58e,
-            disabled ? 0x71828b : 0xf1dcb1,
-            12,
-        );
-        if (!disabled)
-            g.lineStyle(1, 0xb08d57, 0.6).lineBetween(
-                b.x + 13,
-                b.y + b.height - 4,
-                b.x + b.width - 13,
-                b.y + b.height - 4,
-            );
-    } else if (pressed || selected)
-        matchFace(
-            g,
-            b,
-            pressed ? 0x305365 : MATCH_INK.raised,
-            selected ? MATCH_INK.gold : MATCH_INK.edge,
-        );
-    // Disabled tools have no raised surface; their label and native state explain availability.
+    const face = primary ? { ...b, x: b.x + 3, width: b.width - 6 } : b;
+    drawSurface(g, face, primary ? 'honey' : tone, {
+        pressed,
+        disabled,
+        radius: primary ? b.height / 2 : tone === 'honey' ? 14 : 21,
+        accent: selected ? 0xffe6a1 : undefined,
+        quiet: !primary,
+    });
+    if (selected) g.fillStyle(0xffe6a1).fillCircle(b.x + b.width / 2, b.y + b.height - 7, 2);
 }

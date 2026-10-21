@@ -2,11 +2,14 @@ import type { AppPlatform } from '../../pwa/app';
 import { menuStatus } from '../../pwa/markup';
 import { BRAND } from '../../brand';
 import { artSprite, button } from './components';
+import { actionEmblem } from './developmentMarkup';
 import type { GameSession } from './session';
 
 export function menuContent(app: AppPlatform, session: GameSession): string {
-    return `${artSprite('corner', 42, 'panel-corner panel-corner--start')}${artSprite('corner', 42, 'panel-corner panel-corner--end')}${artSprite('rosette', 44, 'menu-emblem')}
-        <p class="eyebrow">${BRAND.persianName} • سرزمین فرصت‌ها</p><h1 dir="ltr" lang="en">${BRAND.name}</h1><p>با ساخت آبادی و شهر به ۱۰ امتیاز برس.</p>${artSprite('divider', 120, 'menu-divider')}
-        <div class="menu-actions">${button('بازی', 'play', { className: 'button button--primary full-width', disabled: app.updating })}${button('آموزش', 'tutorial', { className: 'button button--tutorial full-width', disabled: app.updating })}</div>
-        <p class="footnote">آموزش کوتاه: تاس، منابع، راه، معامله و امتیاز را خودت تمرین کن؛ بازی ذخیره‌شده محفوظ می‌ماند.</p>${menuStatus(app, session)}`;
+    return `<div class="menu-crown" aria-hidden="true">${artSprite('rosette', 76, 'menu-emblem')}</div>
+        <p class="eyebrow">${BRAND.persianName} · سرزمین فرصت‌ها</p><h1 dir="ltr" lang="en">${BRAND.name}</h1>
+        <p class="menu-invitation">جزیره‌ای تازه. هزار راه برای پیروزی.</p>
+        <div class="menu-adventure" aria-label="تاس بریز، بساز، به ده امتیاز برس"><span>${actionEmblem('road', 32)}<small>راه بساز</small></span><span>${actionEmblem('year-of-plenty', 32)}<small>منابع بگیر</small></span><span>${actionEmblem('victory-point', 32)}<small>۱۰ امتیاز</small></span></div>
+        <div class="menu-actions">${button('<span class="menu-play-mark" aria-hidden="true"></span><span>بازی<small>سفر به جزیره</small></span>', 'play', { className: 'button button--primary menu-play full-width', disabled: app.updating })}${button(`${actionEmblem('road-building', 26)}<span>آموزش<small>با بازی‌کردن یاد بگیر</small></span>`, 'tutorial', { className: 'button button--tutorial full-width', disabled: app.updating })}</div>
+        <p class="footnote">با آبادی، شهر و کارت‌ها به ۱۰ امتیاز برس.<br>آموزش، بازی ذخیره‌شده‌ات را تغییر نمی‌دهد.</p>${menuStatus(app, session)}`;
 }

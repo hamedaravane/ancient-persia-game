@@ -104,17 +104,20 @@ test.each([
 ])(
     'portrait %i preserves coastal clearance and a separate ocean action band',
     (width, height, top, bottom) => {
-        const oldRows = width === 320 ? 312 : 316;
-        const chrome = 100 + 56 + 68 + 4;
-        expect(oldRows - chrome).toBeGreaterThanOrEqual(84);
+        const chrome = width < 360 ? 112 + 42 + 60 + 84 + 6 : 124 + 42 + 66 + 84 + 6;
         const available = height - top - bottom - chrome;
-        const { board, seaBand, dieSize } = matchGeometry(width, available);
+        const { board, seaBand, dieSize, diceOnLedge } = matchGeometry(width, available);
+        // Number medallions must remain distinct at the smallest supported portrait.
+        expect(board.hexRadius).toBeGreaterThanOrEqual(22);
         expect(board.centerY + 4 * board.hexRadius + 40).toBeLessThanOrEqual(
             available - seaBand + 0.001,
         );
         expect(board.centerY - 4 * board.hexRadius - 40).toBeGreaterThanOrEqual(-0.001);
         expect(5 * Math.sqrt(3) * board.hexRadius + 80).toBeLessThanOrEqual(width + 0.001);
         expect(dieSize).toBeGreaterThanOrEqual(48);
-        expect(dieSize + 2 + 6 + 20 + 8 + 8).toBeLessThanOrEqual(seaBand + 0.001);
+        if (diceOnLedge) {
+            expect(seaBand).toBe(0);
+            expect(dieSize + 2 + 3 + 18).toBeLessThanOrEqual(84);
+        } else expect(dieSize + 2 + 5 + 20 + 8 + 8).toBeLessThanOrEqual(seaBand + 0.001);
     },
 );

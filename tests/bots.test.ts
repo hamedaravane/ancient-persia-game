@@ -86,8 +86,8 @@ test('human input cannot roll, build, trade, select, or end a bot turn; personal
     const header = humanHeader(session);
     expect(header).toContain(before.players[0].name);
     expect(header).toContain(before.players[1].name);
-    expect(header).toContain('class="header-rivals"');
-    expect(header).not.toContain('dice-result');
+    expect(header).toContain('class="header-seats"');
+    expect(header).toContain('آخرین تاس:');
     expect(session.history.at(-1)?.player).toBe(before.players[1].name);
     const hand = humanHand(session);
     session.state!.players[1].resources.wood += 900;

@@ -105,10 +105,8 @@ h3 {
 .graphics-ui .context-line,
 .graphics-ui .resource-hand,
 .graphics-ui .action-dock,
-.graphics-ui .primary-row,
 .graphics-ui .bottom-space,
 .graphics-ui .board-loading,
-.graphics-ui .board-selection,
 .graphics-ui > .bottom-sheet {
     opacity: 0 !important;
 }
@@ -117,20 +115,18 @@ h3 {
 }
 
 .match-screen {
-    --hand-height: 60px;
-    --header-height: 104px;
+    --hand-height: 56px;
+    --header-height: 100px;
     display: grid;
     height: 100%;
     padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
         env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
-    grid-template-rows:
-        var(--header-height) minmax(0, 1fr) 48px var(--hand-height)
-        52px 52px 4px;
+    grid-template-rows: var(--header-height) minmax(0, 1fr) var(--hand-height) 68px 4px;
 }
 .match-bar {
     display: grid;
     grid-template-rows: 48px 48px;
-    gap: 4px;
+    gap: 0;
     padding: 2px 10px;
     min-width: 0;
 }
@@ -140,137 +136,105 @@ h3 {
     gap: 6px;
     min-width: 0;
 }
-.header-self {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex: 1;
-    min-width: 0;
-    height: 48px;
-    padding: 0 4px;
-    border: 0;
-    background: transparent;
-    color: #f3ead8;
-    text-align: start;
-}
 .player-avatar {
     display: block;
     flex: 0 0 36px;
     width: 36px;
     height: 36px;
 }
-.turn-heading {
+.header-active {
+    display: flex;
     flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-}
-.human-name {
-    display: flex;
-    gap: 4px;
-    align-items: baseline;
-    font-size: 14px;
-    line-height: 18px;
-}
-.human-name bdi {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-.bot-label {
-    flex-shrink: 0;
-    font-size: 10px;
-    color: #c0c7bd;
-}
-.human-score {
-    color: var(--gold);
-    font-size: 11px;
-    line-height: 14px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-.phase-label {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    font-size: 10px;
-    line-height: 12px;
-    color: #c0c7bd;
-}
-.header-rivals {
-    display: grid;
-    grid-template-columns: repeat(var(--rival-count, 3), minmax(0, 1fr));
-    gap: 6px;
-    min-width: 0;
-}
-.rival-card {
-    display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 8px;
     min-width: 0;
-    height: 48px;
-    padding: 4px 6px 7px;
+    min-height: 48px;
+    padding: 0 8px;
     border: 0;
-    background: #252b2d;
+    background: transparent;
     color: #f3ead8;
     text-align: start;
 }
-.rival-card .player-avatar {
-    flex-basis: 26px;
-    width: 26px;
-    height: 26px;
+.header-active .player-avatar {
+    width: 28px;
+    height: 28px;
+    flex-basis: 28px;
 }
-.rival-copy {
+.turn-heading {
     display: flex;
-    flex-direction: column;
     flex: 1;
+    flex-direction: column;
     min-width: 0;
-    line-height: 17px;
 }
-.rival-name {
-    display: flex;
-    gap: 3px;
-    align-items: baseline;
-    font-size: 12px;
-}
-.rival-name bdi {
+.turn-heading strong {
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 23px;
     overflow: hidden;
-    white-space: nowrap;
     text-overflow: ellipsis;
+    white-space: nowrap;
 }
-.rival-score {
+.phase-label {
+    color: #c4d2d7;
+    font-size: 12px;
+    line-height: 18px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.header-menu {
+    color: #f3ead8;
+    background: transparent;
+    border-radius: 9px;
+}
+.header-seats {
+    display: grid;
+    grid-template-columns: repeat(var(--seat-count, 4), minmax(0, 1fr));
+    gap: 4px;
+    min-width: 0;
+}
+.seat-chip {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    min-height: 48px;
+    padding: 2px 7px 5px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: #e1e7e5;
+}
+.seat-name {
     display: flex;
     gap: 4px;
+    max-width: 100%;
     align-items: baseline;
     font-size: 12px;
+    line-height: 18px;
+}
+.seat-name bdi {
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
-.rival-score > span {
-    font-size: 10px;
-    color: #c0c7bd;
+.seat-name small,
+.bot-label {
+    font-size: 11px;
+    color: #bdcbd1;
 }
-.rival-card.is-active .rival-score > span {
-    color: #ffe2a0;
+.seat-score {
+    font-size: 16px;
+    line-height: 21px;
+    color: #f3ead8;
 }
-@media (max-width: 359px) {
-    .rival-card {
-        gap: 4px;
-        padding-inline: 4px;
-    }
-    .rival-card .player-avatar {
-        flex-basis: 24px;
-        width: 24px;
-        height: 24px;
-    }
-    .rival-name,
-    .rival-score {
-        font-size: 11px;
-    }
-    .rival-score > span,
-    .rival-name .bot-label {
-        font-size: 9px;
-    }
+.seat-score small {
+    font-size: 12px;
+    color: #bdcbd1;
+}
+.seat-chip.is-active .seat-name {
+    color: #ffe4ac;
 }
 .dice-result {
     display: flex;
@@ -383,18 +347,6 @@ h3 {
     padding: 12px;
     font-size: 14px;
 }
-.board-selection {
-    min-width: 0;
-}
-.board-selection.is-placing {
-    padding: 0 var(--hud-gutter) 4px;
-}
-.target-picker {
-    display: block;
-}
-.target-picker button {
-    font-size: 13px;
-}
 .context-line {
     min-width: 0;
     padding-inline: var(--hud-gutter);
@@ -427,47 +379,48 @@ h3 {
 }
 .resource-hand {
     display: flex;
-    gap: 5px;
-    padding: 2px var(--hud-gutter);
+    gap: 0;
+    padding: 3px 10px;
 }
 .hand-resource {
     position: relative;
     flex: 1;
     min-width: 0;
     display: grid;
-    grid-template-columns: auto auto;
-    grid-template-rows: 22px 22px;
+    grid-template-columns: 24px minmax(0, auto);
+    grid-template-rows: 27px 17px;
     align-content: center;
     justify-content: center;
     align-items: center;
     justify-items: center;
-    color: #292d26;
-    --muted: #353a30;
-    --gold: #48351f;
-    padding: 4px;
+    color: #f3ead8;
+    padding: 0 4px;
     column-gap: 4px;
 }
 .hand-resource .resource-icon {
     grid-column: 1;
-    grid-row: 2;
-    transform: none;
-    --icon-size: 22px;
+    grid-row: 1;
+    --icon-size: 24px;
 }
 .resource-count {
-    grid-column: 1 / -1;
+    grid-column: 2;
     grid-row: 1;
     font-size: 20px;
-    line-height: 22px;
+    line-height: 27px;
     font-variant-numeric: tabular-nums;
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 .resource-label {
-    grid-column: 2;
+    grid-column: 1 / -1;
     grid-row: 2;
-    text-align: center;
-    font-size: 11px;
-    color: #353a30;
-    line-height: 14px;
+    font-size: 12px;
+    line-height: 17px;
+    color: #c4d2d7;
 }
+
 .resource-icon {
     display: inline-block;
     flex-shrink: 0;
@@ -516,24 +469,6 @@ h3 {
     --muted: #c0c7bd;
     --gold: #c6a06a;
     background: #252b2d;
-}
-.dock-button {
-    flex: 1 1 0;
-    font-size: 14px;
-    height: 48px;
-    padding: 9px 7px 11px;
-    gap: 7px;
-    white-space: nowrap;
-}
-.primary-row {
-    padding: 2px var(--hud-gutter);
-}
-.primary-row > button {
-    width: 100%;
-    height: 48px;
-    font-size: 17px;
-    line-height: 22px;
-    padding: 11px 12px 13px;
 }
 .icon-button {
     display: inline-grid;
@@ -1249,9 +1184,6 @@ h3 {
     .sheet-body {
         padding-inline: 12px;
     }
-    .phase-label {
-        font-size: 10px;
-    }
 }
 
 .player-label {
@@ -1516,32 +1448,21 @@ h3 {
     line-height: 18px;
 }
 
-/* Production turn objects: stable island projection; semantic controls remain stationary. */
-.match-screen {
-    --context-height: 32px;
-    --dock-height: 64px;
-    --primary-height: 52px;
-    grid-template-rows:
-        var(--header-height) minmax(0, 1fr) var(--context-height) var(--hand-height)
-        var(--dock-height) var(--primary-height) 4px;
+/* One adaptive action workspace, with quiet shared chrome and a dedicated ocean band. */
+.board-stage {
+    position: relative;
+    min-height: 0;
+    min-width: 0;
 }
-.match-screen.is-awaiting-roll {
-    --primary-height: 0px;
-}
-.match-screen.has-storage-warning {
-    --context-height: 48px;
-}
-.match-screen.has-build-goal {
-    --context-height: 56px;
-}
-.is-awaiting-roll .board-canvas {
-    margin-bottom: 52px;
+.board-canvas {
+    position: absolute;
+    inset: 0;
 }
 .board-roll {
     position: absolute;
-    inset: 0 0 52px;
-    display: grid;
-    place-items: center;
+    inset: auto 0 8px;
+    display: flex;
+    justify-content: center;
     pointer-events: none;
     z-index: 2;
 }
@@ -1556,85 +1477,198 @@ h3 {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 12px;
-    width: min(232px, calc(100% - 32px));
-    min-height: 168px;
-    padding: 18px 16px;
+    gap: 6px;
+    min-width: 128px;
+    min-height: 76px;
+    padding: 4px 8px;
     color: #f3ead8;
     border: 0;
-    border-radius: 12px;
-    background: #3d4c48;
+    border-radius: 10px;
+    background: transparent;
     pointer-events: auto;
 }
 .hero-dice {
     display: flex;
-    gap: 14px;
+    gap: 10px;
     direction: ltr;
 }
 .hero-dice .dice-face {
-    width: 76px;
-    height: 78px;
+    width: var(--die-size, 56px);
+    height: calc(var(--die-size, 56px) + 2px);
 }
 .roll-caption {
-    font-size: 16px;
-    line-height: 24px;
-}
-.roll-object small {
-    font-size: 12px;
-    line-height: 18px;
-    color: #e1d5b9;
+    font-size: 13px;
+    line-height: 20px;
 }
 .dice-placeholder {
     width: 85px;
     flex-shrink: 0;
 }
 .context-line {
-    padding: 0 var(--hud-gutter);
+    position: absolute;
+    inset: auto 12px 8px;
     min-height: 0;
     display: flex;
     align-items: center;
     justify-content: center;
+    pointer-events: none;
+}
+.context-line:empty {
+    display: none;
+}
+.context-line button {
+    pointer-events: auto;
 }
 .turn-receipt {
-    font-size: 12px;
-    line-height: 18px;
-    color: #ded3b9;
+    max-width: 100%;
+    width: fit-content;
+    padding: 6px 12px;
+    font-size: 13px;
+    line-height: 20px;
+    color: #e4eceb;
     text-align: center;
     overflow: hidden;
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
 }
-.pre-roll-card {
-    width: 100%;
-    min-height: 52px;
-    color: #e9ddc3;
-    background: #3d4c48;
+.context-button {
+    min-height: 48px;
+    width: auto;
+    max-width: 100%;
     font-size: 13px;
+}
+.action-dock {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(104px, 0.65fr);
+    align-items: center;
+    gap: 10px;
+    padding: 6px 12px 8px;
+}
+.dock-roll-options {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-width: 0;
+}
+.dock-roll-options .context-button {
+    flex: 1;
+    font-size: 12px;
+    text-align: center;
+    justify-content: center;
+    padding: 4px;
+}
+.dock-roll-options .dock-idle {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+}
+.dock-idle:only-child {
+    grid-column: 1 / -1;
+}
+.dock-tools {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(48px, 1fr));
+    min-width: 0;
+    gap: 2px;
 }
 .dock-button {
     flex-direction: column;
-    height: 60px;
-    padding: 4px 6px;
-    gap: 1px;
+    height: 52px;
+    min-width: 48px;
+    padding: 2px;
+    gap: 2px;
+    font-size: 12px;
+    line-height: 18px;
+    color: #e7e3d5;
+    background: transparent;
+    border-radius: 9px;
+}
+.dock-button:disabled {
+    color: #a8bbc6;
+}
+.dock-button[aria-pressed='true'] {
+    color: #ffe4ac;
+}
+.dock-primary {
+    width: 100%;
+    min-height: 52px;
+    padding: 8px 10px;
+    gap: 6px;
+    justify-content: space-between;
+    color: #2c2c25;
+    background: #e1c58e;
+    font-size: 14px;
+    line-height: 22px;
+    border-radius: 12px;
+}
+.dock-primary:disabled {
+    color: #d9e2e5;
+    background: #394a52;
+}
+.dock-action-mark {
+    font-size: 22px;
+    line-height: 24px;
+}
+.dock-idle,
+.dock-waiting {
+    font-size: 13px;
+    line-height: 20px;
+    color: #c4d2d7;
+    text-align: center;
+}
+.dock-selection {
+    display: flex;
+    min-width: 0;
+    gap: 6px;
+    align-items: center;
+    justify-content: space-between;
+}
+.dock-selection .placement-cost {
     font-size: 12px;
     line-height: 18px;
 }
-.dock-cards {
+.dock-selection .cost-row {
+    gap: 4px;
+    flex-wrap: nowrap;
+}
+.dock-selection .resource-icon {
+    --icon-size: 16px;
+}
+.dock-selection .resource-value {
+    font-size: 12px;
+    gap: 1px;
+}
+.dock-cancel {
+    padding: 4px;
+    min-width: 48px;
+    flex-shrink: 0;
+    height: 48px;
+    color: #d9e2e5;
+    font-size: 12px;
+    background: transparent;
+}
+.pre-roll-card {
+    justify-self: center;
+    min-height: 48px;
+    padding: 2px 12px;
     color: #e9ddc3;
-    background: #3d4c48;
+    background: transparent;
+    font-size: 13px;
+}
+.pre-roll-card small {
+    display: block;
+    font-size: 12px;
+    line-height: 18px;
 }
 .action-emblem,
 .development-back {
     display: inline-block;
     flex-shrink: 0;
     vertical-align: middle;
-}
-.primary-row:empty {
-    padding: 0;
-}
-.storage-warning {
-    min-height: 48px;
 }
 .cost-legend {
     font-size: 12px;
@@ -1882,13 +1916,20 @@ h3 {
     .construction-card {
         padding: 10px;
     }
-    .hero-dice .dice-face {
-        width: 68px;
-        height: 70px;
+    .hand-resource {
+        grid-template-columns: 22px minmax(0, auto);
+        column-gap: 2px;
+        padding-inline: 2px;
     }
-    .roll-object {
-        width: 216px;
-        min-height: 154px;
+    .hand-resource .resource-icon {
+        --icon-size: 22px;
+    }
+    .resource-count {
+        font-size: 18px;
+    }
+    .action-dock {
+        gap: 6px;
+        padding-inline: 10px;
     }
 }
 .construction-card > * + * {
@@ -1905,4 +1946,49 @@ h3 {
 .roll-object:focus-visible {
     outline: 3px solid #ffedb8;
     outline-offset: 2px;
+}
+
+/* Target picking stays inside the same dock in every placement phase. */
+.board-viewport {
+    display: block;
+}
+.board-stage {
+    height: 100%;
+}
+.dock-targets {
+    flex: 1;
+    min-width: 48px;
+    min-height: 48px;
+    padding: 3px 6px;
+    flex-direction: column;
+    gap: 0;
+    color: #e7e3d5;
+    background: transparent;
+    font-size: 13px;
+    line-height: 20px;
+}
+.dock-targets small {
+    font-size: 12px;
+    color: #c4d2d7;
+}
+.placement-guidance {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 4px 10px;
+    color: #f3ead8;
+}
+.placement-guidance .turn-receipt {
+    padding: 0;
+}
+.placement-guidance .cost-row {
+    gap: 8px;
+}
+.placement-guidance .resource-icon {
+    --icon-size: 20px;
+}
+.placement-guidance .resource-value {
+    font-size: 13px;
+    line-height: 22px;
 }

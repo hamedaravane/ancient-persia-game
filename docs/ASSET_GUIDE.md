@@ -67,7 +67,7 @@ The quality profile starts at WebP quality 95, method 6, and tries 98, 100, then
 
 ## Procedural interface materials
 
-The current stone UI is drawn with Phaser Graphics, with cut corners, broad chisel facets, recessed keylines, deterministic mineral flecks/patina, and shallow border seams. These are presentation geometry, not new PNG textures. Grain stays at the perimeter so text remains legible, and its local generator never uses `Math.random()` or the core random source. No runtime/source art is replaced or duplicated for this treatment. Stone is the sole approved interface; ornaments and victory art retain their original Image frames, while resource frames are generated from code. Semantic icon dimensions use a shared CSS `--icon-size`, preserving the frame aspect ratio at each placement size without transform or negative-margin offsets.
+The current stone UI is drawn with Phaser Graphics, with cut corners, broad chisel facets, recessed keylines, deterministic mineral flecks/patina, and shallow border seams. These are presentation geometry, not new PNG textures. Grain stays at the perimeter so text remains legible, and its local generator never uses `Math.random()` or the core random source. No runtime/source art is replaced or duplicated for this treatment. The match uses a lighter fixed lapis/limestone treatment with shared surfaces and thin rims; heavier carved surfaces remain in focused sheets and menus; ornaments and victory art retain their original Image frames, while resource frames are generated from code. Semantic icon dimensions use a shared CSS `--icon-size`, preserving the frame aspect ratio at each placement size without transform or negative-margin offsets.
 
 ## Current files
 

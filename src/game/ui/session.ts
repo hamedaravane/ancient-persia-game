@@ -436,6 +436,7 @@ export class GameSession {
                 'update',
                 'experience',
                 'experience-guide',
+                'player',
             ].includes(sheet.kind)
         )
             return;
@@ -450,7 +451,7 @@ export class GameSession {
         )
             return;
         if (!this.isHumanTurn && ['trade', 'targets', 'end-turn'].includes(sheet.kind)) return;
-        if (sheet.kind === 'player' && sheet.id !== this.humanPlayer?.id) return;
+        if (sheet.kind === 'player' && !this.state?.players.some((p) => p.id === sheet.id)) return;
         if (this.sheet?.kind === 'domestic' && sheet.kind !== 'domestic') this.trading.dismiss();
         this.sheet = sheet;
         this.emit();

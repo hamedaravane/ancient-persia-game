@@ -29,6 +29,8 @@ interface PaintLayer {
  */
 export class InterfaceScene extends Scene {
     private hud: PaintLayer;
+    private roll: PaintLayer;
+    private hints: PaintLayer;
     private dock: PaintLayer;
     private theatre: PaintLayer;
     private modal: PaintLayer;
@@ -50,6 +52,10 @@ export class InterfaceScene extends Scene {
     private hadSheet = false;
     private hadActionPhase = false;
     private dockOpenedAt = -Infinity;
+    private rollKey = '';
+    private hintKey = '';
+    private rollAppearedAt = -Infinity;
+    private hintAppearedAt = -Infinity;
     private narratorLoading = false;
     private unavailablePortraits = new Set<string>();
     private portraitExpression = '';
@@ -77,6 +83,8 @@ export class InterfaceScene extends Scene {
             this.textures.get(`ui-${name}`).add('crop', 0, x, y, w, h);
         }
         this.hud = this.layer();
+        this.roll = this.layer();
+        this.hints = this.layer();
         this.dock = this.layer();
         this.theatre = this.layer();
         this.modal = this.layer();
@@ -149,7 +157,10 @@ export class InterfaceScene extends Scene {
             this.motion.subscribe(() => {
                 this.feedback?.clear();
                 if (this.motion.reduced) this.sheetOpenedAt = -Infinity;
-                if (this.motion.reduced || !this.motion.visible) this.portraitChangedAt = -Infinity;
+                if (this.motion.reduced || !this.motion.visible) {
+                    this.portraitChangedAt = -Infinity;
+                    this.rollAppearedAt = this.hintAppearedAt = -Infinity;
+                }
                 this.invalidate();
             }),
         );
@@ -205,6 +216,15 @@ export class InterfaceScene extends Scene {
                 ? Math.min(1, 0.3 + (0.7 * Math.max(0, time - this.dockOpenedAt)) / dockDuration)
                 : 1,
         );
+        for (const [layer, since] of [
+            [this.roll, this.rollAppearedAt],
+            [this.hints, this.hintAppearedAt],
+        ] as const) {
+            const duration = this.motion.duration(160);
+            layer.container.setAlpha(
+                duration ? Math.min(1, 0.4 + (0.6 * Math.max(0, time - since)) / duration) : 1,
+            );
+        }
     }
     private animatePortrait(time: number): void {
         if (!this.theatre) return;
@@ -257,11 +277,35 @@ export class InterfaceScene extends Scene {
         this.loadNarrator();
         const origin = this.parent.getBoundingClientRect();
         this.origin = { x: origin.left, y: origin.top };
-        for (const layer of [this.hud, this.dock, this.theatre, this.modal, this.content])
+        for (const layer of [
+            this.hud,
+            this.roll,
+            this.hints,
+            this.dock,
+            this.theatre,
+            this.modal,
+            this.content,
+        ])
             this.begin(layer);
         const menu = this.parent.querySelector<HTMLElement>('.main-menu')!;
         const match = this.parent.querySelector<HTMLElement>('.match-screen')!;
         this.paintTree(this.session.state ? match : menu, this.hud);
+        const rollRoot = match.querySelector<HTMLElement>('.board-roll')!;
+        const hintRoot = match.querySelector<HTMLElement>('.context-line')!;
+        const rollKey = this.session.state
+            ? `${this.session.state.turn}:${rollRoot.textContent}`
+            : '';
+        const hintKey = this.session.state ? (hintRoot.textContent ?? '') : '';
+        if (rollKey !== this.rollKey) this.rollAppearedAt = time;
+        if (hintKey !== this.hintKey) this.hintAppearedAt = time;
+        this.rollKey = rollKey;
+        this.hintKey = hintKey;
+        this.roll.container.setVisible(!!this.session.state);
+        this.hints.container.setVisible(!!this.session.state);
+        if (this.session.state) {
+            this.paintTree(rollRoot, this.roll);
+            this.paintTree(hintRoot, this.hints);
+        }
         this.dock.container.setVisible(!!this.session.state);
         if (this.session.state)
             this.paintTree(match.querySelector<HTMLElement>('.action-dock')!, this.dock);
@@ -328,7 +372,15 @@ export class InterfaceScene extends Scene {
             this.content.container.setAlpha(1);
         } else this.portraitExpression = '';
         this.hadSheet = !!dialog;
-        for (const layer of [this.hud, this.dock, this.theatre, this.modal, this.content])
+        for (const layer of [
+            this.hud,
+            this.roll,
+            this.hints,
+            this.dock,
+            this.theatre,
+            this.modal,
+            this.content,
+        ])
             this.end(layer);
     }
     private loadNarrator(): void {
@@ -386,6 +438,8 @@ export class InterfaceScene extends Scene {
                 element.classList.contains('sr-only') ||
                 element.classList.contains('board-canvas') ||
                 (element.classList.contains('action-dock') && layer !== this.dock) ||
+                (element.classList.contains('board-roll') && layer !== this.roll) ||
+                (element.classList.contains('context-line') && layer !== this.hints) ||
                 this.feedback?.hides(element)
             )
                 return;

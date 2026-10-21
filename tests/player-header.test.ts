@@ -73,7 +73,7 @@ test('names retain Persian joining, are bounded, and cannot inject markup or bid
     expect(sheetContent(session).body).not.toContain('value="<img');
 });
 
-test('public standings show ties, the acting bot, and all four distinct avatars without exposing hands', () => {
+test('public standings show ties, the acting bot, and four individually inspectable seats without exposing hands', () => {
     vi.spyOn(Math, 'random').mockReturnValue(0.5);
     const session = new GameSession();
     session.start(4, false, 'آرین');
@@ -86,6 +86,7 @@ test('public standings show ties, the acting bot, and all four distinct avatars 
     owned[0].building!.type = 'city';
     state.phase = 'actions';
     state.activePlayerIndex = 1;
+    state.lastRoll = [4, 4];
     const rows = headerPlayers(state, humanId);
     expect(rows.map((p) => p.score)).toEqual([3, 2, 2, 2]);
     expect(rows.map((p) => p.rank)).toEqual([1, 2, 2, 2]);
@@ -95,8 +96,10 @@ test('public standings show ties, the acting bot, and all four distinct avatars 
     const header = humanHeader(session);
     const hand = humanHand(session);
     expect(header).toContain('نوبت اطلس');
-    expect(header.match(/class="bot-label">ربات/g)).toHaveLength(3);
-    expect(header).not.toContain('dice-result');
+    expect(header.match(/، ربات؛/g)).toHaveLength(3);
+    expect(header.match(/class="seat-chip/g)).toHaveLength(4);
+    for (const p of state.players) expect(header).toContain(`data-action="player:${p.id}"`);
+    expect(header).toContain('آخرین تاس:');
     state.players[1].resources.wood = 987;
     expect(humanHeader(session)).toBe(header);
     expect(humanHand(session)).toBe(hand);
@@ -124,8 +127,8 @@ test('avatars remain distinct for legacy three-seat saves and a human in a diffe
     }
     const session = new GameSession();
     session.start(3, false);
-    expect(humanHeader(session).match(/class="rival-card/g)).toHaveLength(2);
-    expect(humanHeader(session)).toContain('--rival-count:2');
+    expect(humanHeader(session).match(/class="seat-chip/g)).toHaveLength(3);
+    expect(humanHeader(session)).toContain('--seat-count:3');
 });
 
 test('header covers the full notch and side insets while the reference board retains its width', () => {

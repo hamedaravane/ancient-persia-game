@@ -166,7 +166,7 @@ export function sheetContent(session: GameSession, updateReady = false): SheetCo
                   ? 'هر دو سوی مبادله را انتخاب کنید.'
                   : 'مبادله آماده تأیید است.';
         const selector = (side: 'give' | 'receive', title: string) =>
-            `<section class="trade-side" aria-label="${title}"><h3>${title} <span class="muted">${side === 'give' && !session.give ? 'نرخ هر منبع روی کارت' : `${number(side === 'give' ? ratio : 1)} واحد`}</span></h3><div class="resource-selector">${RESOURCE_TYPES.map(
+            `<section class="trade-side trade-side--${side}" aria-label="${title}"><h3>${title} <span class="muted">${side === 'give' && !session.give ? 'نرخ هر منبع روی کارت' : `${number(side === 'give' ? ratio : 1)} واحد`}</span></h3><div class="resource-selector">${RESOURCE_TYPES.map(
                 (r) => {
                     const best = getBankTradeRatio(state.board, player.id, r);
                     return button(
@@ -283,14 +283,15 @@ export function sheetContent(session: GameSession, updateReady = false): SheetCo
         const winner = state.players.find(({ id }) => id === state.winnerId)!;
         return {
             title: FA.winnerTitle,
-            body: `<div class="victory-art">${artSprite('victory', 112, 'victory-emblem')}</div><p class="winner-name" style="--owner:${color(winner.color)}">${escape(winner.name)} ${FA.winnerSuffix}</p><div class="results-list">${state.players
+            body: `<div class="victory-art">${artSprite('victory', 112, 'victory-emblem')}</div><p class="winner-name" style="--owner:${color(winner.color)}">${escape(winner.name)} ${FA.winnerSuffix}</p><p class="victory-score">${number(getPlayerSummary(state, winner.id).score)}<small>امتیاز · پایان این ماجراجویی</small></p><div class="results-list">${state.players
                 .map((p) => {
                     const s = getPlayerSummary(state, p.id);
                     return `<article><div class="row-between"><h3>${escape(p.name)}</h3><span>${number(s.score)} امتیاز</span></div><p class="muted">${number(s.settlements)} آبادی + ${number(s.cities)} شهر</p></article>`;
                 })
                 .join(
                     '',
-                )}</div>${button('دفتر سفر آناهیتا', 'open:journal', { className: 'button full-width' })}${button('دیدن صفحه نهایی', 'close-sheet', { className: 'button full-width' })}${button(FA.newGame, 'new-game', { className: 'button button--primary full-width' })}`,
+                )}</div>${button('دفتر سفر آناهیتا', 'open:journal', { className: 'button full-width' })}`,
+            footer: `<div class="result-actions">${button('دیدن جزیره', 'close-sheet', { className: 'button button--quiet' })}${button(FA.newGame, 'new-game', { className: 'button button--primary' })}</div>`,
         };
     }
     if (session.practice)

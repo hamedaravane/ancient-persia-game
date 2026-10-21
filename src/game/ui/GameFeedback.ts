@@ -172,7 +172,7 @@ export class GameFeedback {
                 );
         }
         if (action.kind === 'end-turn' && this.session.isHumanTurn)
-            this.ui.feedback?.pulse(this.query('.turn-heading'), active.color);
+            this.ui.feedback?.turnStart(this.query('.header-active .player-avatar'), active.color);
         if (after.phase === 'finished') this.ui.feedback?.victory();
         if (!this.session.sheet) this.board.playTransition(transition);
     }

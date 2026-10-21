@@ -40,6 +40,8 @@ function fixture(reduced = false, quick = false) {
         'lineStyle',
         'strokePath',
         'fillRect',
+        'fillRoundedRect',
+        'strokeRoundedRect',
         'fillCircle',
         'strokeRect',
         'clear',
@@ -80,7 +82,7 @@ test('dice feedback uses actual faces, client coordinates and no rule randomness
     });
     const { feedback, graphics, scene, containers, destination } = fixture();
     feedback.diceRoll({ x: 100, y: 200, width: 166, height: 78 }, destination, [2, 5]);
-    expect(graphics.fillCircle).toHaveBeenCalledTimes(7);
+    expect(graphics.fillCircle).toHaveBeenCalledTimes(14); // Seven pips, each with a recessed highlight.
     expect(containers[1]).toMatchObject({ x: 173, y: 234 });
     expect(scene.tweens.add.mock.calls[1][0]).toMatchObject({ x: 215.5, y: 28 });
     expect(feedback.hides(destination)).toBe(true);

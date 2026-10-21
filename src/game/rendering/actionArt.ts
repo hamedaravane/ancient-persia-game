@@ -15,22 +15,22 @@ export function drawActionEmblem(g: GameObjects.Graphics, box: UiBox, kind: stri
         g.closePath().fillPath();
     };
     if (kind === 'hammer') {
-        polygon([-12, 14, 6, -10, 12, -6, -6, 18], 0x977147);
+        polygon([-12, 14, 6, -10, 12, -6, -6, 18], 0xb87b49);
         polygon(
             [-10, -12, -3, -19, 10, -10, 16, -11, 19, -3, 10, 2, 3, -3, -1, 1, -12, -6],
-            0x344b46,
+            0x26385c,
         );
-        polygon([-8, -12, -3, -16, 7, -9, 3, -5], 0xc8d0bb);
+        polygon([-8, -12, -3, -16, 7, -9, 3, -5], 0xf4f5ed);
     } else if (kind === 'knight') {
         polygon(
             [-10, 17, 14, 17, 10, 11, 8, -6, 5, -14, -5, -18, -3, -10, -15, 3, -8, 8, 0, 2, -4, 11],
-            0xd0b27d,
+            0xffd47e,
         );
-        g.fillStyle(0x344b46).fillCircle(cx - 4 * scale, cy - 5 * scale, 1.7 * scale);
+        g.fillStyle(0x26385c).fillCircle(cx - 4 * scale, cy - 5 * scale, 1.7 * scale);
     } else if (kind === 'road-building' || kind === 'road') {
-        polygon([-17, 5, 8, -12, 15, -5, -10, 12], 0xc7b58d);
-        polygon([-12, 12, 13, -5, 18, 1, -6, 18], 0x6f8b70);
-        g.lineStyle(2 * scale, 0x344b46).lineBetween(
+        polygon([-17, 5, 8, -12, 15, -5, -10, 12], 0xffe5a5);
+        polygon([-12, 12, 13, -5, 18, 1, -6, 18], 0x73d7be);
+        g.lineStyle(2 * scale, 0x26385c).lineBetween(
             cx - 3 * scale,
             cy - 5 * scale,
             cx + 5 * scale,
@@ -42,8 +42,8 @@ export function drawActionEmblem(g: GameObjects.Graphics, box: UiBox, kind: stri
             [8, 6],
             [0, -9],
         ]) {
-            g.fillStyle(0xd0b27d).fillCircle(cx + dx * scale, cy + dy * scale, 6 * scale);
-            g.lineStyle(1.5 * scale, 0x344b46).strokeCircle(
+            g.fillStyle(0xffd47e).fillCircle(cx + dx * scale, cy + dy * scale, 6 * scale);
+            g.lineStyle(1.5 * scale, 0x26385c).strokeCircle(
                 cx + dx * scale,
                 cy + dy * scale,
                 3.5 * scale,
@@ -51,7 +51,7 @@ export function drawActionEmblem(g: GameObjects.Graphics, box: UiBox, kind: stri
         }
     } else if (kind === 'year-of-plenty') {
         for (const direction of [-1, 1]) {
-            g.lineStyle(2 * scale, 0xc6a06a).lineBetween(
+            g.lineStyle(2 * scale, 0xffcf75).lineBetween(
                 cx + direction * 4 * scale,
                 cy + 16 * scale,
                 cx + direction * 7 * scale,
@@ -67,7 +67,7 @@ export function drawActionEmblem(g: GameObjects.Graphics, box: UiBox, kind: stri
                         direction * 7,
                         -3 + i * 8,
                     ],
-                    0xd1b776,
+                    0xffd66d,
                 );
         }
     } else drawRosette(g, cx, cy, Math.min(box.width, box.height) * 0.39);
@@ -84,8 +84,8 @@ export function drawDevelopmentBack(g: GameObjects.Graphics, box: UiBox, stack =
                 radius: 4,
                 flat: true,
             });
-    drawSurface(g, { x, y, width, height }, 'basalt', { radius: 4, flat: true, accent: 0xbca16c });
+    drawSurface(g, { x, y, width, height }, 'amethyst', { radius: 7, accent: 0xffcf75 });
     if (width > 22)
-        g.lineStyle(1, 0xc6a06a, 0.75).strokeRect(x + 5, y + 5, width - 10, height - 10);
+        g.lineStyle(1, 0xffcf75, 0.75).strokeRect(x + 5, y + 5, width - 10, height - 10);
     drawRosette(g, x + width / 2, y + height / 2, Math.min(width, height) * 0.25);
 }

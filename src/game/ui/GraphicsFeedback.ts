@@ -110,7 +110,7 @@ export class GraphicsFeedback {
             duration: this.motion.duration(120),
             onComplete: () => {
                 g.clear();
-                drawSurface(g, { x: -29, y: -38, width: 58, height: 76 }, 'basalt', {
+                drawSurface(g, { x: -29, y: -38, width: 58, height: 76 }, 'lapis', {
                     flat: true,
                     quiet: true,
                     accent: UI_INK.gold,
@@ -141,6 +141,34 @@ export class GraphicsFeedback {
             duration: this.motion.duration(MOTION.board),
             onComplete: () => ring.destroy(),
         });
+    }
+    /** A finite sunburst announces your turn around the captain's crest. */
+    turnStart(element: HTMLElement | null, owner: number): void {
+        if (!element || !this.effects || this.motion.reduced || !this.motion.visible) return;
+        const b = this.box(element);
+        const cx = b.x + b.width / 2,
+            cy = b.y + b.height / 2;
+        const rays = this.scene.add.graphics();
+        for (let i = 0; i < 8; i++) {
+            const angle = (i * Math.PI) / 4;
+            const inner = b.width * 0.55,
+                outer = inner + (i % 2 ? 4 : 7);
+            rays.lineStyle(2, i % 2 ? owner : UI_INK.gold, 0.9).lineBetween(
+                cx + Math.cos(angle) * inner,
+                cy + Math.sin(angle) * inner,
+                cx + Math.cos(angle) * outer,
+                cy + Math.sin(angle) * outer,
+            );
+        }
+        this.effects.add(rays);
+        this.scene.tweens.add({
+            targets: rays,
+            alpha: 0,
+            delay: this.motion.duration(180),
+            duration: this.motion.duration(520),
+            onComplete: () => rays.destroy(),
+        });
+        this.pulse(element, UI_INK.gold);
     }
     resourceChange(element: HTMLElement | null, spent: boolean): void {
         if (!element || !this.motion.visible) return;

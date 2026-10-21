@@ -6,24 +6,38 @@ export interface UiBox {
     width: number;
     height: number;
 }
-export type Material = 'limestone' | 'honey' | 'basalt' | 'inset' | 'card' | 'ivory';
+export type Material =
+    | 'limestone'
+    | 'honey'
+    | 'lapis'
+    | 'inset'
+    | 'card'
+    | 'ivory'
+    | 'turquoise'
+    | 'emerald'
+    | 'amethyst'
+    | 'coral';
 
+/** Shared enamel, gold and parchment palette. Text colors live in semantic CSS. */
 export const UI_INK = {
-    ivory: 0xf3ead8,
-    gold: 0xc6a06a,
-    muted: 0xc0c7bd,
-    shadow: 0x101715,
-    navy: 0x34362f,
+    ivory: 0xfff4dc,
+    gold: 0xffcf75,
+    muted: 0xd1d9f3,
+    shadow: 0x111b3b,
+    navy: 0x25345e,
 };
 const MATERIALS: Record<Material, readonly [number, number, number, number]> = {
-    limestone: [0xd0c4ae, 0xb9ac93, 0xf4e7cc, 0x746a59],
-    honey: [0xe1c58e, 0xd1ac70, 0xf7deb0, 0x8f6c42],
-    ivory: [0xece3cf, 0xd6cbb5, 0xfff6dd, 0x8f846f],
-    basalt: [0x596762, 0x3d4c48, 0x85948b, 0x25312f],
-    inset: [0x343a3a, 0x252b2d, 0x59605c, 0x171d1f],
-    card: [0xc3beb0, 0xa9a594, 0xe5dfcb, 0x6f6d5f],
+    limestone: [0xfff1cd, 0xebd4a2, 0xfffbe9, 0xa87543],
+    honey: [0xffdf86, 0xf4b94d, 0xfff1ba, 0xa76230],
+    ivory: [0xffffff, 0xf4e9d0, 0xffffff, 0xa58c64],
+    lapis: [0x416bb5, 0x2a4787, 0x9fcbff, 0x1d305c],
+    inset: [0x334a78, 0x24345b, 0x7d9dcc, 0x14213e],
+    card: [0xfff3d7, 0xf0ddb5, 0xfffcf0, 0xba9158],
+    turquoise: [0x1d7885, 0x165968, 0xa1f2e5, 0x164556],
+    emerald: [0x237e61, 0x195d49, 0xb3f1bd, 0x17493e],
+    amethyst: [0x7d56b6, 0x563786, 0xe4baff, 0x392755],
+    coral: [0xb74461, 0x8f304f, 0xffc3b1, 0x712d4b],
 };
-
 export interface SurfaceOptions {
     quiet?: boolean;
     pressed?: boolean;
@@ -33,211 +47,106 @@ export interface SurfaceOptions {
     flat?: boolean;
 }
 
-/** Cut corners and directional facets replace the polished, rounded button face. */
-function stonePath(g: GameObjects.Graphics, box: UiBox, cut: number): GameObjects.Graphics {
-    const { x, y, width: w, height: h } = box;
-    return g
-        .beginPath()
-        .moveTo(x + cut, y)
-        .lineTo(x + w - cut, y)
-        .lineTo(x + w, y + cut)
-        .lineTo(x + w, y + h - cut)
-        .lineTo(x + w - cut, y + h)
-        .lineTo(x + cut, y + h)
-        .lineTo(x, y + h - cut)
-        .lineTo(x, y + cut)
-        .closePath();
+function mix(a: number, b: number, t: number): number {
+    const channel = (shift: number) =>
+        Math.round(((a >> shift) & 255) * (1 - t) + ((b >> shift) & 255) * t);
+    return (channel(16) << 16) | (channel(8) << 8) | channel(0);
 }
 
-function facet(
+/** Bounded strips give real canvas gradients without textures, masks or random grain. */
+function enamel(
     g: GameObjects.Graphics,
-    points: readonly number[],
-    color: number,
-    alpha: number,
+    b: UiBox,
+    radius: number,
+    top: number,
+    bottom: number,
 ): void {
-    g.fillStyle(color, alpha).beginPath().moveTo(points[0], points[1]);
-    for (let i = 2; i < points.length; i += 2) g.lineTo(points[i], points[i + 1]);
-    g.closePath().fillPath();
+    g.fillStyle(bottom).fillRoundedRect(b.x, b.y, b.width, b.height, radius);
+    const insetAt = (y: number) => {
+        const edge = Math.min(y, b.height - y);
+        return edge < radius
+            ? radius - Math.sqrt(Math.max(0, radius * radius - (radius - edge) ** 2))
+            : 0;
+    };
+    // One-pixel shoulder strips keep the corners smooth even on tall panels;
+    // the central field needs only 32 bands. No polygon triangulation per strip.
+    const cuts = [0];
+    for (let y = 1; y < radius; y++) cuts.push(y);
+    cuts.push(radius);
+    for (let i = 1; i <= 32; i++) cuts.push(radius + ((b.height - radius * 2) * i) / 32);
+    for (let y = b.height - radius + 1; y < b.height; y++) cuts.push(y);
+    cuts.push(b.height);
+    for (let i = 0; i < cuts.length - 1; i++) {
+        const y = cuts[i],
+            end = cuts[i + 1];
+        if (end <= y) continue;
+        const inset = Math.max(insetAt(y), insetAt(end));
+        g.fillStyle(mix(top, bottom, (y + end) / (b.height * 2))).fillRect(
+            b.x + inset,
+            b.y + y,
+            b.width - inset * 2,
+            end - y + 0.05,
+        );
+    }
 }
 
+/** Crafted enamel: a shaded foot, soft face, gold setting and fine upper highlight. */
 export function drawSurface(
     g: GameObjects.Graphics,
     box: UiBox,
     material: Material = 'limestone',
     options: SurfaceOptions = {},
 ): void {
-    const { x, y, width: w, height: h } = box;
-    if (w < 2 || h < 2) return;
-    const [top, base, light, foot] = MATERIALS[material];
-    const cut = Math.min(options.radius ?? 6, 7, w * 0.18, h * 0.18);
-    const alpha = options.disabled ? 0.8 : 1;
-    const depth = options.flat || options.disabled ? 0 : options.pressed ? 1 : 2;
-    const face = { ...box, height: h - depth };
-    // The foot fits inside the measured control; only a one-pixel shadow escapes it.
-    if (depth > 0) {
-        g.fillStyle(0x101715, 0.3 * alpha);
-        stonePath(g, { ...face, y: y + depth + 1 }, cut).fillPath();
-        g.fillStyle(foot, alpha);
-        stonePath(g, { ...face, y: y + depth }, cut).fillPath();
+    if (box.width < 3 || box.height < 3) return;
+    let [top, base, light, foot] = MATERIALS[material];
+    if (options.disabled) {
+        top = mix(top, 0x697184, 0.8);
+        base = mix(base, 0x515c73, 0.85);
+        light = 0x9caabd;
+        foot = 0x303d55;
     }
-    g.fillStyle(base, alpha);
-    stonePath(g, face, cut).fillPath();
-
-    // Shallow chiseled facets retain the material without dominating small controls.
-    const bevel = Math.min(options.flat ? 1.5 : 2, h * 0.12, w * 0.1);
-    const bottom = y + face.height;
-    facet(
-        g,
-        [x + cut, y, x + w - cut, y, x + w - cut - bevel, y + bevel, x + cut + bevel, y + bevel],
-        light,
-        alpha * 0.8,
-    );
-    facet(
-        g,
-        [x, y + cut, x + bevel, y + cut + bevel, x + bevel, bottom - cut - bevel, x, bottom - cut],
-        top,
-        alpha,
-    );
-    facet(
-        g,
-        [
-            x + cut,
-            bottom,
-            x + w - cut,
-            bottom,
-            x + w - cut - bevel,
-            bottom - bevel,
-            x + cut + bevel,
-            bottom - bevel,
-        ],
-        foot,
-        alpha * 0.7,
-    );
-    facet(
-        g,
-        [
-            x + w,
-            y + cut,
-            x + w,
-            bottom - cut,
-            x + w - bevel,
-            bottom - cut - bevel,
-            x + w - bevel,
-            y + cut + bevel,
-        ],
-        foot,
-        alpha * 0.6,
-    );
-
-    if (!options.quiet) drawStoneGrain(g, face, cut, base, light, foot, alpha);
-    g.lineStyle(options.accent !== undefined ? 2 : 1, options.accent ?? foot, alpha);
-    stonePath(g, face, cut).strokePath();
-    if (!options.quiet && w > 42 && h > 32) {
-        // A recessed double incision reads as carving, with a pale lower lip.
-        const inset = 6;
-        const groove = {
-            x: x + inset,
-            y: y + inset,
-            width: w - inset * 2,
-            height: face.height - inset * 2,
-        };
-        g.lineStyle(1, foot, alpha * 0.5);
-        stonePath(g, groove, Math.max(1, cut - 3)).strokePath();
-        g.lineStyle(1, light, alpha * 0.25).lineBetween(
-            x + inset + cut,
-            bottom - inset + 1,
-            x + w - inset - cut,
-            bottom - inset + 1,
-        );
-    }
-    if (options.pressed) {
-        g.fillStyle(0x101715, 0.12);
-        stonePath(g, face, cut).fillPath();
-    }
-}
-
-/** Stable mineral grain and tool marks stay around the perimeter, away from labels. */
-function drawStoneGrain(
-    g: GameObjects.Graphics,
-    box: UiBox,
-    cut: number,
-    base: number,
-    light: number,
-    dark: number,
-    alpha: number,
-): void {
-    const { x, y, width: w, height: h } = box;
-    if (w < 20 || h < 20) return;
-    let seed = ((Math.round(w) * 73856093) ^ (Math.round(h) * 19349663) ^ base) >>> 0;
-    const sample = () => {
-        seed ^= seed << 13;
-        seed ^= seed >>> 17;
-        seed ^= seed << 5;
-        return (seed >>> 0) / 4294967296;
+    const depth = options.pressed ? 1 : options.flat ? 2 : 4;
+    const face = {
+        ...box,
+        y: box.y + (options.pressed ? 2 : 0),
+        height: Math.max(2, box.height - depth - (options.pressed ? 2 : 0)),
     };
-    const count = Math.min(48, Math.floor((w + h) / 5));
-    const band = Math.min(10, h * 0.18);
-    // Broad, barely visible mineral patches break uniform faces without speckling text.
-    for (let i = 0; i < 6; i++) {
-        const px = x + cut + sample() * Math.max(0, w - cut * 2 - 14);
-        const py = i % 2 ? y + 3 : y + h - band;
-        facet(
-            g,
-            [
-                px,
-                py + 2,
-                px + 7,
-                py,
-                px + 14,
-                py + 3,
-                px + 10,
-                py + band * 0.6,
-                px + 2,
-                py + band * 0.5,
-            ],
-            i % 2 ? light : dark,
-            alpha * 0.07,
+    const radius = Math.min(options.radius ?? 13, face.height / 2, box.width / 2);
+    g.fillStyle(UI_INK.shadow, 0.35).fillRoundedRect(
+        box.x,
+        box.y + 3,
+        box.width,
+        box.height - 1,
+        radius,
+    );
+    g.fillStyle(foot).fillRoundedRect(box.x, box.y + depth, box.width, box.height - depth, radius);
+    enamel(g, face, radius, options.pressed ? base : top, base);
+    g.lineStyle(
+        options.accent !== undefined ? 2 : 1.2,
+        options.accent ?? foot,
+        0.9,
+    ).strokeRoundedRect(face.x + 0.6, face.y + 0.6, face.width - 1.2, face.height - 1.2, radius);
+    // The reflected light stops before the lettering; small counters stay uncluttered.
+    g.lineStyle(1.4, light, options.quiet ? 0.35 : 0.75).lineBetween(
+        face.x + radius,
+        face.y + 2,
+        face.x + face.width - radius,
+        face.y + 2,
+    );
+    if (!options.quiet && face.width > 90 && face.height > 44) {
+        g.lineStyle(1, light, 0.22).strokeRoundedRect(
+            face.x + 5,
+            face.y + 5,
+            face.width - 10,
+            face.height - 10,
+            Math.max(2, radius - 4),
         );
-    }
-    for (let i = 0; i < count; i++) {
-        const px = x + cut + sample() * (w - cut * 2);
-        const py = i % 2 ? y + 2 + sample() * band : y + h - 2 - sample() * band;
-        g.fillStyle(i % 3 ? dark : light, alpha * (i % 3 ? 0.11 : 0.18)).fillRect(
-            px,
-            py,
-            0.7 + sample() * 1.6,
-            0.6 + sample() * 0.6,
-        );
-    }
-    // Shallow broken seams run along the outer border instead of through the label.
-    if (w > 90 && h > 36) {
-        const start = x + w * 0.14;
-        g.lineStyle(1, dark, alpha * 0.17)
-            .beginPath()
-            .moveTo(start, y + h - 4)
-            .lineTo(start + w * 0.12, y + h - 6)
-            .lineTo(start + w * 0.23, y + h - 5)
-            .strokePath();
-        g.lineStyle(1, light, alpha * 0.16).lineBetween(
-            start,
-            y + h - 3,
-            start + w * 0.12,
-            y + h - 5,
-        );
-    }
-    if (w > 160 && h > 42) {
-        // A few short tooling cuts are confined to the shoulders of larger slabs.
-        for (let i = 0; i < 3; i++) {
-            const px = x + 13 + i * 4;
-            g.lineStyle(1, dark, alpha * 0.32).lineBetween(px, y + 3, px - 2, y + 6);
-            g.lineStyle(1, light, alpha * 0.3).lineBetween(px + 1, y + 3, px - 1, y + 6);
-        }
     }
 }
 
-/** Achaemenid stepped rosette: ornament without introducing a new bitmap asset. */
+/** Achaemenid eight-petal sun seal, shared by victory, cards and player medals. */
 export function drawRosette(
-    graphics: GameObjects.Graphics,
+    g: GameObjects.Graphics,
     x: number,
     y: number,
     radius: number,
@@ -245,22 +154,29 @@ export function drawRosette(
 ): void {
     const points = Array.from({ length: 16 }, (_, i) => {
         const angle = (i * Math.PI) / 8;
-        const r = i % 2 ? radius * 0.65 : radius;
+        const r = i % 2 ? radius * 0.67 : radius;
         return { x: x + Math.cos(angle) * r, y: y + Math.sin(angle) * r };
     });
-    graphics.fillStyle(color).beginPath().moveTo(points[0].x, points[0].y);
-    for (const point of points.slice(1)) graphics.lineTo(point.x, point.y);
-    graphics.closePath().fillPath();
-    graphics.fillStyle(UI_INK.navy).fillCircle(x, y, radius * 0.35);
-    graphics.fillStyle(color).fillCircle(x, y, radius * 0.15);
+    g.fillStyle(0x94602f)
+        .beginPath()
+        .moveTo(points[0].x, points[0].y + 1);
+    for (const p of points.slice(1)) g.lineTo(p.x, p.y + 1);
+    g.closePath().fillPath();
+    g.fillStyle(color).beginPath().moveTo(points[0].x, points[0].y);
+    for (const p of points.slice(1)) g.lineTo(p.x, p.y);
+    g.closePath().fillPath();
+    g.fillStyle(UI_INK.navy).fillCircle(x, y, radius * 0.35);
+    g.fillStyle(0xffe8a8).fillCircle(x, y - radius * 0.04, radius * 0.18);
 }
 
-/** The supplied dice sheet has a baked checkerboard; clean dice are now Graphics. */
-export function drawDie(graphics: GameObjects.Graphics, box: UiBox, value: number): void {
-    drawSurface(graphics, box, 'ivory', { radius: 7 });
+/** Directly tappable ivory objects; pips always reflect authoritative dice values. */
+export function drawDie(g: GameObjects.Graphics, box: UiBox, value: number): void {
+    drawSurface(g, box, 'ivory', { radius: box.width * 0.23 });
     const { x, y, width: w, height: h } = box;
-    const dot = (px: number, py: number) =>
-        graphics.fillStyle(0x3b3029).fillCircle(x + w * px, y + (h - 3) * py, w * 0.065);
+    const dot = (px: number, py: number) => {
+        g.fillStyle(0x28365c).fillCircle(x + w * px, y + (h - 3) * py, w * 0.068);
+        g.fillStyle(0x0c1c3b, 0.5).fillCircle(x + w * px, y + (h - 3) * py - 0.7, w * 0.042);
+    };
     if (value % 2) dot(0.5, 0.5);
     if (value >= 2) {
         dot(0.28, 0.28);

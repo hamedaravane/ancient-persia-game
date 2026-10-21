@@ -97,7 +97,9 @@ test('public standings show ties, the acting bot, and four individually inspecta
     const hand = humanHand(session);
     expect(header).toContain('نوبت اطلس');
     expect(header.match(/، ربات؛/g)).toHaveLength(3);
-    expect(header.match(/class="seat-chip/g)).toHaveLength(4);
+    expect(header.match(/class="seat-chip/g)).toHaveLength(3);
+    expect(header.match(/class="header-active/g)).toHaveLength(1);
+    expect(header).toContain('captain-score human-score');
     for (const p of state.players) expect(header).toContain(`data-action="player:${p.id}"`);
     expect(header).toContain('آخرین تاس:');
     state.players[1].resources.wood = 987;
@@ -127,8 +129,8 @@ test('avatars remain distinct for legacy three-seat saves and a human in a diffe
     }
     const session = new GameSession();
     session.start(3, false);
-    expect(humanHeader(session).match(/class="seat-chip/g)).toHaveLength(3);
-    expect(humanHeader(session)).toContain('--seat-count:3');
+    expect(humanHeader(session).match(/class="seat-chip/g)).toHaveLength(2);
+    expect(humanHeader(session)).toContain('--seat-count:2');
 });
 
 test('header covers the full notch and side insets while the reference board retains its width', () => {

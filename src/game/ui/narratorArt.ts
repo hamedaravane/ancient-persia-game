@@ -26,18 +26,18 @@ export function drawNarratorLight(g: GameObjects.Graphics, stage: UiBox): void {
 
 /** The front stone lip occludes the portrait's crop, attaching her silhouette to the dialogue. */
 export function drawNarratorPanel(g: GameObjects.Graphics, box: UiBox): void {
-    drawSurface(g, box, 'inset', { radius: 24, accent: 0xb99461, flat: true });
+    drawSurface(g, box, 'inset', { radius: 24, accent: 0xffcf75, flat: true });
     drawSurface(g, { x: box.x + 12, y: box.y - 4, width: box.width - 24, height: 8 }, 'honey', {
         radius: 3,
         flat: true,
     });
     const center = box.x + box.width / 2;
-    drawRosette(g, center, box.y + 3, 8, 0xc6a06a);
-    g.fillStyle(0x528e87).fillCircle(center, box.y + 3, 3);
+    drawRosette(g, center, box.y + 3, 8, 0xffcf75);
+    g.fillStyle(0x56dbcc).fillCircle(center, box.y + 3, 3);
     // Small stepped corner engravings echo the palace, leaving the reading field quiet.
     for (const direction of [-1, 1]) {
         const x = direction < 0 ? box.x + 9 : box.x + box.width - 9;
-        g.lineStyle(1, 0xc6a06a, 0.55)
+        g.lineStyle(1, 0xffcf75, 0.55)
             .beginPath()
             .moveTo(x, box.y + 38)
             .lineTo(x, box.y + 12)

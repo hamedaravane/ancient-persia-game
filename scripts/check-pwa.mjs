@@ -11,7 +11,7 @@ const precached = new Set(
 );
 const base = new URL(
     process.env.PWA_CHECK_BASE ??
-        `https://example.com${process.env.PAGES_BASE_PATH !== undefined ? `${process.env.PAGES_BASE_PATH}/` : '/ancient-persia-game/'}`,
+        `https://example.com${process.env.PAGES_BASE_PATH !== undefined ? `${process.env.PAGES_BASE_PATH}/` : '/sunmark-web/'}`,
 );
 const manifestUrl = new URL('manifest.webmanifest', base);
 assert.equal(manifest.name, 'Sunmark');

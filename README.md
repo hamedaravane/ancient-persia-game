@@ -1,10 +1,10 @@
-# Sunmark
+# Sunmark Web
 
 **Sunmark (سان‌مارک)** is a mobile-first, Persian-language local strategy board game inspired by hex-based resource production and settlement building. Matches have one human and three automatic local bots, with a generated board, player-chosen opening settlements/roads in CATAN order, turn-based production, building, negotiated player/bot trades, bank trades, development cards, Ahriman, and a ten-point victory target.
 
-[Play the game](https://hamedaravane.github.io/ancient-persia-game/)
+[Play the game](https://hamedaravane.github.io/sunmark-web/)
 
-The game is branded **Sunmark** throughout its menu, tutorial, browser, and install metadata. The existing Pages address and internal save/app identifiers remain stable so current installations and saved matches continue working.
+This repository, **sunmark-web**, contains the Phaser web client and installable PWA. The game remains branded **Sunmark** throughout its menu, tutorial, browser, and install metadata. The NestJS backend belongs in the separate **sunmark-server** repository. Internal app/save identifiers are retained for compatibility; the renamed Pages path reuses the original same-origin save slot. See [release and installation compatibility](docs/PWA_RELEASE.md#repository-rename).
 
 ## Requirements
 
@@ -38,14 +38,14 @@ ESLint uses a flat configuration, TypeScript project-service analysis, recommend
 
 ## GitHub Pages
 
-The playable game is published at [hamedaravane.github.io/ancient-persia-game](https://hamedaravane.github.io/ancient-persia-game/). This runs the current single-player game with local bots in the browser; it does not add online matchmaking or a server.
+The playable game is published at [hamedaravane.github.io/sunmark-web](https://hamedaravane.github.io/sunmark-web/). This runs the current single-player game with local bots in the browser; it does not add online matchmaking or a server.
 
 `.github/workflows/deploy-pages.yml` deploys each push to `main` and supports manual runs from GitHub Actions or `gh workflow run deploy-pages.yml`. It installs locked dependencies with Node 24, checks lint/formatting/tests, type-checks and builds the game, uploads only `dist/`, and deploys through the `github-pages` environment. Official actions are pinned to verified release commits; publishing permissions are limited to the deployment job.
 
 The workflow reads the site's base path from Pages settings and passes it to Vite at build time. This preserves the shared local configuration while making JavaScript, CSS, terrain, ocean artwork, resource icons, and fonts load correctly below the repository URL. To reproduce the project-site build locally:
 
 ```sh
-npm run build -- --base=/ancient-persia-game/
+npm run build -- --base=/sunmark-web/
 ```
 
 Pages must use **GitHub Actions** as its publishing source. The setup follows [GitHub's custom Pages workflow guidance](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages) and [Vite's Pages deployment guidance](https://vite.dev/guide/static-deploy.html). Monitor publishing with `gh run list --workflow deploy-pages.yml`.

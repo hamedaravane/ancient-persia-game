@@ -25,6 +25,12 @@ export interface SaveStorage {
 }
 export type SaveStatus = 'saved' | 'empty' | 'invalid' | 'unavailable';
 
+/** The renamed Pages site shares its original save slot on the same origin. */
+export function matchStorageKey(scope: string): string {
+    const saveScope = scope === '/sunmark-web/' ? '/ancient-persia-game/' : scope;
+    return `ancient-persia.match.v1:${saveScope}`;
+}
+
 export function decodeSave(raw: string): SavedMatch | null {
     try {
         if (raw.length > 1_000_000) return null;

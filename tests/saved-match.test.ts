@@ -1,7 +1,12 @@
 import { completeSessionSetup } from './helpers/setup';
 import { expect, test, vi } from 'vitest';
 import { GameSession } from '../src/game/ui/session';
-import { decodeSave, MatchStore, type SaveStorage } from '../src/game/persistence/matchStore';
+import {
+    decodeSave,
+    MatchStore,
+    matchStorageKey,
+    type SaveStorage,
+} from '../src/game/persistence/matchStore';
 
 function fixture() {
     const values = new Map<string, string>();
@@ -16,6 +21,25 @@ function fixture() {
     completeSessionSetup(session);
     return { storage, session, values, reload: () => new GameSession(new MatchStore(storage)) };
 }
+
+test('the renamed Pages site resumes and updates the original scoped save without crossing other sites', () => {
+    const { storage, session, values } = fixture();
+    const originalKey = matchStorageKey('/ancient-persia-game/');
+    values.set(originalKey, JSON.stringify(session.savedMatch));
+    const renamed = new GameSession(new MatchStore(storage, matchStorageKey('/sunmark-web/')));
+    renamed.requestPlay();
+    expect(renamed.state).toEqual(session.state);
+    expect(renamed.history).toEqual(session.history);
+    expect(renamed.transition).toBeNull();
+
+    renamed.setBuildGoal('city');
+    const original = new GameSession(new MatchStore(storage, originalKey));
+    original.requestPlay();
+    expect(original.buildGoal).toBe('city');
+    expect(original.state).toEqual(session.state);
+    const unrelated = new GameSession(new MatchStore(storage, matchStorageKey('/another-game/')));
+    expect(unrelated.savedMatch).toBeNull();
+});
 
 test('a confirmed roll survives reopening without rolling again or replaying its animation', () => {
     const { session, reload } = fixture();

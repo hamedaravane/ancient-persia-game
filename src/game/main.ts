@@ -7,7 +7,7 @@ import { Motion } from './ui/motion';
 import { InterfaceScene } from './ui/InterfaceScene';
 import { BackdropScene } from './scenes/BackdropScene';
 import { canvasPixelSize } from './rendering/displayGeometry';
-import { MatchStore } from './persistence/matchStore';
+import { MatchStore, matchStorageKey } from './persistence/matchStore';
 import { AppPlatform } from '../pwa/app';
 import { connectPlatform } from '../pwa/browser';
 import { BotTurnRunner } from './ui/botTurns';
@@ -21,7 +21,7 @@ export function StartGame(parent: HTMLElement): Game {
         /* Private/blocked storage remains playable. */
     }
     const scope = new URL(import.meta.env.BASE_URL, document.baseURI).pathname;
-    const session = new GameSession(new MatchStore(storage, `ancient-persia.match.v1:${scope}`));
+    const session = new GameSession(new MatchStore(storage, matchStorageKey(scope)));
     const app = new AppPlatform();
     const disconnectPlatform = connectPlatform(app);
     const bots = new BotTurnRunner(session, () => !document.hidden && !app.updating);

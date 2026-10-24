@@ -78,7 +78,7 @@ function browser() {
     vi.stubGlobal(
         'document',
         Object.assign(new EventTarget(), {
-            baseURI: 'https://example.com/ancient-persia-game/',
+            baseURI: 'https://example.com/sunmark-web/',
             visibilityState: 'visible',
         }),
     );
@@ -101,8 +101,8 @@ test('offline readiness waits for activation and controller changes never reload
         URL,
         { scope: string },
     ];
-    expect(url.href).toBe('https://example.com/ancient-persia-game/sw.js');
-    expect(options.scope).toBe('/ancient-persia-game/');
+    expect(url.href).toBe('https://example.com/sunmark-web/sw.js');
+    expect(options.scope).toBe('/sunmark-web/');
     expect(app.offline).toBe('preparing');
     fixture.worker.state = 'activated';
     fixture.registration.active = fixture.worker;
